@@ -2,54 +2,80 @@
 
 **Passive Web Application Security Auditing & OWASP Top 10 (2025) Compliance Platform**
 
-WAPTrix is a lightweight, strictly passive web application security auditing framework modeled after **Burp Suite's Passive Audit**. Feed it a list of authorized subdomains and WAPTrix performs non-intrusive HTTP/TLS inspection, maps every finding to **CWE**, **OWASP WSTG v4.2**, **CVSS v3.1**, and the **OWASP Top 10 (2025)**, and generates a subdomain-wise compliance dashboard alongside exportable security reports.
+WAPTrix is a strictly passive web application security auditing framework modeled after **Burp Suite's Passive Audit**. Give it a list of authorized subdomains and it performs non-intrusive HTTP/TLS inspection. Every finding is mapped to **CWE**, **OWASP WSTG v4.2**, **CVSS v3.1** and the **OWASP Top 10 (2025)**. You get a compliance dashboard broken down by subdomain, plus reports you can export.
 
-> **Strictly Passive by Design:** WAPTrix only performs standard read-only HTTP `GET` requests and TLS handshakes. It does **not** perform fuzzing, injection, brute-forcing, or destructive active scanning.
+> **Strictly passive by design.** WAPTrix sends only read-only HTTP `GET` requests (to `/`, `/robots.txt` and `/.well-known/security.txt`) and standard TLS handshakes. It does **not** fuzz, inject payloads, forge `Origin` headers, brute-force, authenticate, or request paths it discovers. Only audit systems you are explicitly authorized to test.
 
 ## Key Features
 
-- **Subdomain-Wise Visibility:** Audit dozens of subdomains concurrently and inspect each target's HTTP status, TLS posture, captured headers, individual compliance grade (`A`–`F`), and raw evidence.
-- **OWASP Top 10 (2025) Compliance Matrix:** Interactive **Subdomain × OWASP Top 10** heatmap (`Pass` / `Warning` / `Fail` / `Manual Review`). Categories that cannot be verified passively are honestly flagged as `Manual Review Required` rather than false passes.
-- **Burp-Style Passive Audit Checks:**
-   - **Security Headers:** `CSP`, `HSTS`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`.
-   - **Transport & TLS:** Missing HTTPS redirects, deprecated TLS versions (`< TLS 1.2`), certificate expiry/mismatch, and mixed-content references.
-   - **Cookie Hygiene:** Missing `Secure`, `HttpOnly`, `SameSite`, and overly broad domain scoping.
-   - **CORS & Caching:** Misconfigured `Access-Control-Allow-Origin` / credentials pairs and missing `Cache-Control: no-store` on authenticated responses.
-   - **Information & Exception Disclosure:** Verbose `Server` / `X-Powered-By` banners, framework stack traces, debug pages, and developer comments in HTML.
-   - **Client-Side & Form Hygiene:** Insecure `http://` form actions, missing anti-CSRF token patterns, missing Subresource Integrity (`SRI`) on external scripts, and passive library fingerprinting.
-   - **Security Metadata:** Passive inspection of `/.well-known/security.txt` and `/robots.txt`.
-- **Declarative Scope Guard:** Enforces an authorization reference, host normalization/deduplication, private-IP protection, and per-host rate limiting.
-- **Multi-Format Reporting:** Export either the **full engagement** or a **single subdomain** to **PDF**, **HTML**, **JSON**, **CSV**, and **SARIF 2.1.0** (ready for GitHub Code Scanning / CI pipelines).
-- **Offline Demo Mode:** Includes a realistic 5-subdomain sample dataset for instant testing and offline demonstrations.
+- **Subdomain-wise visibility.** Audit dozens of subdomains concurrently. For each one you see its HTTP status, TLS posture, captured headers, compliance grade (`A`–`F`), and raw evidence.
+- **OWASP Top 10 (2025) compliance matrix.** An interactive **Subdomain × Category** heatmap (`Pass` / `Warning` / `Fail` / `Manual Review`). WAPTrix marks categories that cannot be verified passively as `Manual Review` instead of passing them by mistake.
+- **45 Burp-style passive rules** in 7 modules:
+  - **Security headers:** `CSP` (missing / unsafe sources / report-only), `HSTS` (missing / short max-age), `X-Frame-Options` / `frame-ancestors`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.
+  - **Transport & TLS:**
+    - no HTTPS, or no HTTP→HTTPS redirect
+    - deprecated protocols (negotiated, or accepted by a capped TLS 1.1 ClientHello)
+    - weak ciphers
+    - certificates that are expired, about to expire, mismatched to the hostname, or untrusted
+    - active and passive mixed content
+  - **Cookie hygiene:** missing `Secure`, `HttpOnly` (with session-cookie awareness), `SameSite`, `SameSite=None` without `Secure`, and parent-domain scoping. Cookie values are redacted in evidence.
+  - **CORS & caching:** wildcard origin with credentials, `null` origin, wildcard origin, and sensitive responses that do not send `Cache-Control: no-store`.
+  - **Information disclosure:**
+    - version banners in `Server`, `X-Powered-By` and similar headers
+    - stack traces (Python, Java, .NET, PHP, Node, Ruby, Go, SQL)
+    - debug modes (Django, Werkzeug, Laravel, Symfony, Rails and others)
+    - sensitive HTML comments, private IP addresses and email addresses
+  - **Client-side & forms:**
+    - passwords submitted in cleartext, and insecure form actions
+    - POST forms without anti-CSRF tokens, and password autocomplete
+    - missing SRI on third-party scripts and stylesheets
+    - **vulnerable JS library fingerprinting** (jQuery, jQuery UI, AngularJS, Bootstrap, Lodash, Moment, Handlebars, Underscore, Vue 2, DOMPurify, Axios)
+  - **Security metadata:** `security.txt` (RFC 9116) that is missing, invalid or expired, and sensitive `Disallow` entries in `robots.txt`.
+- **Declarative scope guard.** It enforces:
+  - a mandatory authorization reference
+  - host normalization and deduplication (IDNA, ports, URLs)
+  - wildcard rejection and an optional allowlist of scope domains
+  - **private, loopback and link-local IP protection after DNS resolution**
+  - redirects followed only on the same host, and a per-host rate limit
+- **Multi-format reporting.** Export the **full engagement** or a **single subdomain** to **PDF** (WeasyPrint, with an automatic print-ready HTML fallback), **HTML**, **JSON**, **CSV** (protected against formula injection) and **SARIF 2.1.0** (for GitHub Code Scanning and CI).
+- **Offline demo mode.** A realistic dataset of 5 subdomains (`*.acme-corp.example`), generated by running the real engine against mocked responses.
 
 ## Tech Stack
 
 | Layer | Technologies |
 | --- | --- |
-| **Backend & Passive Engine** | Python 3.11+, FastAPI, Pydantic v2, `httpx` (async), `beautifulsoup4`, `cryptography` |
-| **CLI & Storage** | Typer, SQLite |
+| **Backend & passive engine** | Python 3.11+, FastAPI, Pydantic v2, `httpx` (async), `beautifulsoup4`, `cryptography`, `ssl` |
+| **CLI & storage** | Typer + Rich, SQLite |
 | **Reporting** | Jinja2, WeasyPrint (PDF), SARIF 2.1.0, CSV, JSON |
-| **Frontend Dashboard** | React 18, Vite, Tailwind CSS, Recharts, Lucide Icons |
-| **Testing** | `pytest`, `pytest-asyncio` |
+| **Frontend dashboard** | React 18, Vite 5, Tailwind CSS 3, Recharts, Lucide icons |
+| **Testing** | `pytest`, `pytest-asyncio`, `httpx.MockTransport` |
 
 ## Project Structure
 
 ```
-waptrix/
+WAPTRIX/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py                     # FastAPI REST API
-│   │   ├── cli.py                      # Typer CLI (`waptrix audit`, `waptrix demo`)
-│   │   ├── db.py                       # SQLite persistence
-│   │   ├── models/                     # Pydantic schemas (Audit, Finding)
-│   │   ├── engine/                     # Scope guard, async HTTP/TLS fetcher, auditor
-│   │   ├── checks/                     # Modular Burp-style passive check rules
-│   │   ├── compliance/                 # OWASP Top 10 (2025) mapping & scoring engine
-│   │   └── reporting/                  # PDF, HTML, JSON, CSV, SARIF 2.1.0 exporters
-│   ├── sample_data/                    # Built-in 5-subdomain demo dataset
-│   ├── tests/                          # Unit tests for checks & compliance scoring
+│   │   ├── main.py                  # FastAPI REST API + CORS (+ serves frontend/dist if built)
+│   │   ├── cli.py                   # Typer CLI: audit, demo, rules, serve
+│   │   ├── db.py                    # SQLite persistence (audits, subdomain results, findings)
+│   │   ├── models/                  # Pydantic schemas: audit.py, finding.py
+│   │   ├── engine/
+│   │   │   ├── scope_guard.py       # Authorization, normalization, private-IP guard, rate limiter
+│   │   │   ├── fetcher.py           # GET-only async fetcher + TLS handshake inspector
+│   │   │   └── passive_auditor.py   # Concurrent per-subdomain orchestration
+│   │   ├── checks/                  # headers, transport_tls, cookies, cors_cache, disclosure, client_forms, metadata
+│   │   ├── compliance/
+│   │   │   ├── owasp_2025_map.json  # Rule → CWE, WSTG v4.2, OWASP 2025, CVSS v3.1 vector, remediation
+│   │   │   └── scorer.py            # CVSS v3.1 calculator, scores, grades, category status
+│   │   └── reporting/
+│   │       ├── exporter.py          # JSON, CSV, SARIF 2.1.0, HTML, PDF (full or single subdomain)
+│   │       └── templates/report.html
+│   ├── sample_data/                 # Demo generator + bundled demo_audit.json
+│   ├── tests/                       # 132 tests (checks, scorer, exporters, API)
+│   ├── pyproject.toml
 │   └── requirements.txt
-├── frontend/                           # React + Vite + Tailwind dark-mode dashboard
+├── frontend/                        # React + Vite + Tailwind dark-mode dashboard
 └── README.md
 ```
 
@@ -58,85 +84,168 @@ waptrix/
 ### Prerequisites
 
 - **Python 3.11+**
-- **Node.js 18+** & `npm`
+- **Node.js 18+** and `npm`
+- *(Optional, for native PDF)* the Pango libraries that WeasyPrint needs:
+  - macOS: `brew install pango`
+  - Debian/Ubuntu: `apt install libpango-1.0-0 libpangoft2-1.0-0`
 
-### 1. Clone & Set Up Backend
+  Without them, PDF exports fall back to a print-ready HTML report.
 
-```
-git clone https://github.com/<your-username>/waptrix.git
-cd waptrix/backend
+### 1. Backend
 
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+```bash
+git clone https://github.com/Kratos-sec/WAPTRIX.git
+cd WAPTRIX/backend
+
+python3 -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+pip install -e .                     # optional: installs the `waptrix` command
 ```
 
-### 2. Run the Backend API
+### 2. Run the API
 
-```
+```bash
 uvicorn app.main:app --reload --port 8000
+# or: waptrix serve --port 8000
 ```
 
-The API will be live at `http://localhost:8000` (Swagger docs at `http://localhost:8000/docs`).
+The API is at `http://localhost:8000`, with Swagger docs at `http://localhost:8000/docs`.
 
-### 3. Set Up & Run the Frontend Dashboard
+### 3. Run the dashboard
 
-In a second terminal:
+Run this in a second terminal:
 
-```
-cd waptrix/frontend
+```bash
+cd WAPTRIX/frontend
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser. You can paste a list of authorized subdomains, upload a `.txt` file, or click **Load Demo Audit** to explore the dashboard immediately.
+Open `http://localhost:5173`. Vite proxies `/api` to `127.0.0.1:8000`; override the target with `WAPTRIX_API=http://host:port npm run dev`. From there you can:
+
+- click **Load demo** to explore the dashboard right away, or
+- click **New audit** to paste subdomains or upload a `.txt` file.
+
+**Single-process deployment:** run `npm run build` in `frontend/`. FastAPI then serves `frontend/dist` at `http://localhost:8000/`.
 
 ## CLI Usage
 
-Run a passive audit directly from the terminal:
+Run these from `backend/` (use `python -m app.cli …`, or `waptrix …` after `pip install -e .`):
 
-```
-# Audit a list of subdomains and export HTML, PDF, JSON, CSV, and SARIF reports
+```bash
+# Passive audit of authorized subdomains, exporting all formats
 python -m app.cli audit \
   --subdomains subdomains.txt \
   --auth-ref "ENG-2026-001" \
+  --scope-domain example.com \
   --out ./reports
 
-# Run against the built-in 5-subdomain offline demo dataset
+# Choose formats, tune politeness, export one host only
+python -m app.cli audit -s subdomains.txt -a ENG-2026-001 -f pdf,sarif --rate 1 --concurrency 3 --only app.example.com
+
+# Built-in offline 5-subdomain demo (no network)
 python -m app.cli demo --out ./demo_reports
+
+# List every rule with its OWASP 2025 / CWE / WSTG / CVSS mapping
+python -m app.cli rules
 ```
 
-Example `subdomains.txt`:
+Example `subdomains.txt` (blank lines and `#` comments are ignored; URLs are normalized to hosts):
 
 ```
 app.example.com
 api.example.com
-admin.example.com
-static.example.com
+https://admin.example.com/login
+static.example.com:8443
 ```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `--auth-ref / -a` | *required* | Engagement or ticket reference (3–64 chars) |
+| `--scope-domain` | — | Rejects targets outside these apex domains (repeatable) |
+| `--format / -f` | `all` | Any of `json,csv,sarif,html,pdf` |
+| `--rate / -r` | `2` | Maximum requests per second per host |
+| `--concurrency / -c` | `5` | Subdomains audited in parallel |
+| `--allow-private` | off | Permits targets that resolve to private or reserved IPs |
+| `--no-metadata` | off | Skips `robots.txt` and `security.txt` |
+| `--only` | — | Exports reports for a single subdomain |
+
+## REST API
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/health` | Version, mode, PDF engine availability |
+| `GET` | `/api/owasp` | OWASP Top 10 (2025) categories with passive coverage |
+| `GET` | `/api/rules` | Rule catalog with mappings and CVSS scores |
+| `POST` | `/api/audits` | Starts an audit (`AuditRequest`). Returns `202` with targets and scope rejections |
+| `GET` | `/api/audits` | Lists audits |
+| `GET` | `/api/audits/{id}` | Full result, plus `progress` while running |
+| `GET` | `/api/audits/{id}/subdomains/{host}` | Result for one subdomain |
+| `GET` | `/api/audits/{id}/export?format=pdf&subdomain=host` | Downloads a report (`json`, `csv`, `sarif`, `html`, `pdf`) |
+| `DELETE` | `/api/audits/{id}` | Deletes an audit |
+| `POST` | `/api/demo` | Loads the bundled demo audit |
+
+Configuration is set through environment variables:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `WAPTRIX_DB` | `backend/waptrix.db` | Path to the SQLite database |
+| `WAPTRIX_CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Allowed CORS origins |
+| `WAPTRIX_LOG_LEVEL` | `INFO` | Log level |
 
 ## OWASP Top 10 (2025) Passive Coverage
 
-WAPTrix maps passive indicators transparently and distinguishes between passively observable controls and areas requiring manual testing:
-
-| OWASP Top 10 (2025) Category | Passive Coverage | Examples Checked |
+| Category | Coverage | Examples checked |
 | --- | --- | --- |
-| **A01: Broken Access Control** | Partial | Permissive CORS headers, exposed sensitive paths in `robots.txt` |
-| **A02: Security Misconfiguration** | High | Missing CSP/HSTS/XCTO/XFO, verbose server banners, debug headers |
-| **A03: Software Supply Chain Failures** | Partial | Passive detection of exposed outdated client-side JS libraries |
-| **A04: Cryptographic Failures** | High | Weak TLS (`< 1.2`), expiring certs, missing HTTPS redirects, mixed content, insecure cookies |
-| **A05: Injection** | Passive Indicators Only | Missing `CSP` / `X-Content-Type-Options` defense-in-depth headers |
-| **A06: Insecure Design** | Partial | Insecure form actions (`http://`), missing anti-CSRF token patterns |
-| **A07: Authentication Failures** | Partial | Session cookies missing `HttpOnly`, `Secure`, `SameSite`, or `Cache-Control: no-store` |
-| **A08: Software or Data Integrity Failures** | High | External `<script>` tags missing Subresource Integrity (`integrity` attribute) |
-| **A09: Logging & Alerting Failures** | Manual Review | Flagged as `Manual Review Required` (not verifiable passively) |
-| **A10: Mishandling of Exceptional Conditions** | Partial | Raw stack traces and framework exception dumps in HTTP responses |
+| **A01: Broken Access Control** | Partial | Permissive CORS, parent-domain cookies, sensitive `robots.txt` paths, missing CSRF tokens |
+| **A02: Security Misconfiguration** | High | Missing or weak security headers, version banners, debug modes, `security.txt` |
+| **A03: Software Supply Chain Failures** | Partial | Vulnerable client-side JS library versions, third-party scripts without SRI |
+| **A04: Cryptographic Failures** | High | TLS < 1.2, weak ciphers, certificate validity, HTTPS redirect, HSTS, mixed content, `Secure` cookies |
+| **A05: Injection** | Indicators only | Missing or weak `CSP` and `X-Content-Type-Options`. A clean result shows as **Manual Review** |
+| **A06: Insecure Design** | Partial | Insecure form actions, missing anti-CSRF patterns, missing `SameSite` |
+| **A07: Authentication Failures** | Partial | Session cookie flags, cleartext password forms, cacheable login pages |
+| **A08: Software or Data Integrity Failures** | High | Third-party scripts and styles without SRI, active mixed content |
+| **A09: Logging & Alerting Failures** | Manual | Always **Manual Review** (cannot be verified passively) |
+| **A10: Mishandling of Exceptional Conditions** | Partial | Stack traces, framework exception dumps, debug error pages |
+
+### Scoring
+
+- **Subdomain score.** Each subdomain starts at **100**. Every unique rule deducts a weight by severity:
+  - critical 30, high 15, medium 8, low 3, info 0
+  - each repeated instance of a rule adds 25% of its weight, up to 4 repeats
+- **Grades:** A ≥ 90, B ≥ 80, C ≥ 70, D ≥ 60, F < 60.
+- **Overall score:** the mean of the reachable subdomains' scores.
+- **Category status:**
+  - `Fail` if the category has any medium or higher finding
+  - `Warning` if it has only low findings
+  - `Pass` if it is clean (or has only informational findings) **and** passive coverage is high or partial
+  - `Manual Review` otherwise, and for unreachable hosts
+- **CVSS v3.1 base scores** are computed from each rule's vector using the specification formulas.
 
 ## Running Tests
 
-```
+```bash
 cd backend
 pytest -v
 ```
 
+The suite uses `httpx.MockTransport`, a mock DNS resolver and a mock TLS inspector, so it needs no network access. It covers:
 
+- scope guard and fetcher behavior: GET-only, redirects on the same host only, body cap, loop protection
+- every check module
+- the end-to-end auditor
+- CVSS reference vectors, grading and category status
+- integrity of the rule mapping
+- SARIF, CSV, HTML and PDF exports
+- the REST API
+
+To regenerate the bundled demo dataset: `python -m sample_data`.
+
+## Safety Model
+
+1. **Authorization first.** Every audit needs an authorization reference, and the dashboard also requires an explicit attestation.
+2. **Read-only traffic.** WAPTrix sends only `GET` requests with a clear `WAPTrix-Passive` User-Agent, reads at most 1.5 MB of each body, and caps redirects at 5. It never follows a redirect to another host.
+3. **Network guardrails.** Targets that resolve to private, loopback, link-local, CGNAT or reserved addresses are skipped unless `allow_private` is set. Wildcards are rejected, and an optional allowlist of scope domains limits the targets.
+4. **Rate limiting.** One shared limiter per host covers both HTTP requests and TLS handshakes.
+5. **Evidence hygiene.** Cookie values are redacted. Paths listed in `robots.txt` are reported but never requested.
