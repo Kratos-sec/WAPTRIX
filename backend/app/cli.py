@@ -1,0 +1,215 @@
+"""WAPTrix command line interface.
+
+    python -m app.cli audit --subdomains subdomains.txt --auth-ref ENG-2026-001 --out ./reports
+    python -m app.cli demo --out ./demo_reports
+"""
+
+from __future__ import annotations
+
+import asyncio
+from pathlib import Path
+from typing import Optional
+
+import typer
+from rich.console import Console
+from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn, TimeElapsedColumn
+from rich.table import Table
+
+from app.compliance import load_mapping
+from app.compliance.scorer import cvss31_base_score
+from app.engine.passive_auditor import PassiveAuditor
+from app.engine.scope_guard import ScopeError, build_scope
+from app.models.audit import AuditRequest, AuditResult
+from app.reporting.exporter import FORMATS, write_reports
+
+app = typer.Typer(
+    name="waptrix",
+    help="WAPTrix — strictly passive web application security auditing & OWASP Top 10 (2025) compliance.",
+    no_args_is_help=True,
+    add_completion=False,
+)
+console = Console()
+
+_GRADE_STYLE = {"A": "bold green", "B": "green", "C": "yellow", "D": "dark_orange", "F": "bold red", "N/A": "dim"}
+_STATUS_STYLE = {"pass": "[green]PASS[/]", "warning": "[yellow]WARN[/]", "fail": "[red]FAIL[/]", "manual_review": "[dim]MANUAL[/]"}
+
+
+def _parse_formats(value: str) -> list[str]:
+    formats = [f.strip().lower() for f in value.split(",") if f.strip()]
+    if "all" in formats:
+        return list(FORMATS)
+    unknown = [f for f in formats if f not in FORMATS]
+    if unknown:
+        raise typer.BadParameter(f"unknown format(s) {', '.join(unknown)}; choose from {', '.join(FORMATS)} or 'all'")
+    return formats
+
+
+def _read_targets(path: Path) -> list[str]:
+    if not path.exists():
+        raise typer.BadParameter(f"{path} does not exist")
+    return [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip() and not line.strip().startswith("#")]
+
+
+def _print_summary(audit: AuditResult) -> None:
+    summary = audit.summary
+    grade_style = _GRADE_STYLE.get(summary.grade, "")
+    console.print()
+    console.rule(f"[bold]WAPTrix passive audit[/] · {audit.authorization_ref}")
+    console.print(
+        f"Overall compliance score: [bold]{summary.overall_score if summary.overall_score is not None else '—'}/100[/] "
+        f"grade [{grade_style}]{summary.grade}[/] · {summary.subdomains_reachable}/{summary.subdomains_total} reachable · "
+        f"{summary.total_findings} findings "
+        f"([red]{summary.severity_counts.get('high', 0)} high[/], [dark_orange]{summary.severity_counts.get('medium', 0)} medium[/], "
+        f"[yellow]{summary.severity_counts.get('low', 0)} low[/], [blue]{summary.severity_counts.get('info', 0)} info[/])"
+    )
+
+    table = Table(show_lines=False, header_style="bold cyan")
+    table.add_column("Subdomain")
+    table.add_column("Grade", justify="center")
+    table.add_column("Score", justify="right")
+    table.add_column("H/M/L/I", justify="center")
+    for cat_id in [c.id for c in summary.categories]:
+        table.add_column(cat_id.split(":")[0], justify="center")
+    for sub in audit.subdomains:
+        counts = sub.severity_counts
+        table.add_row(
+            sub.subdomain + ("" if sub.reachable else f"\n[dim]{(sub.error or '')[:60]}[/]"),
+            f"[{_GRADE_STYLE.get(sub.grade, '')}]{sub.grade}[/]",
+            str(sub.score) if sub.score is not None else "—",
+            f"{counts.get('high', 0) + counts.get('critical', 0)}/{counts.get('medium', 0)}/{counts.get('low', 0)}/{counts.get('info', 0)}",
+            *[_STATUS_STYLE[c.status.value] for c in sub.categories],
+        )
+    console.print(table)
+    if audit.scope_rejections:
+        console.print("[yellow]Rejected by scope guard:[/]")
+        for rejection in audit.scope_rejections:
+            console.print(f"  • {rejection.input} — {rejection.reason}")
+
+
+def _write(audit: AuditResult, out: Path, formats: list[str], subdomain: Optional[str]) -> None:
+    written = write_reports(audit, out, formats, subdomain=subdomain)
+    console.print()
+    console.print("[bold]Reports written:[/]")
+    for path, note in written:
+        console.print(f"  • {path}" + (f"  [yellow]({note})[/]" if note else ""))
+
+
+@app.command()
+def audit(
+    subdomains: Path = typer.Option(..., "--subdomains", "-s", help="Text file with one subdomain per line"),
+    auth_ref: str = typer.Option(..., "--auth-ref", "-a", help="Authorization / engagement reference, e.g. ENG-2026-001"),
+    out: Path = typer.Option(Path("./reports"), "--out", "-o", help="Output directory for reports"),
+    formats: str = typer.Option("all", "--format", "-f", help=f"Comma-separated: {', '.join(FORMATS)} or 'all'"),
+    scope_domain: list[str] = typer.Option([], "--scope-domain", help="Restrict targets to these apex domains (repeatable)"),
+    concurrency: int = typer.Option(5, "--concurrency", "-c", min=1, max=20, help="Subdomains audited in parallel"),
+    rate: float = typer.Option(2.0, "--rate", "-r", min=0.1, max=10.0, help="Max requests per second per host"),
+    timeout: float = typer.Option(10.0, "--timeout", "-t", min=1, max=60, help="Per-request timeout (s)"),
+    allow_private: bool = typer.Option(False, "--allow-private", help="Allow targets resolving to private/reserved IPs"),
+    no_metadata: bool = typer.Option(False, "--no-metadata", help="Skip /robots.txt and /.well-known/security.txt"),
+    subdomain: Optional[str] = typer.Option(None, "--only", help="Export reports for this single subdomain only"),
+    save: bool = typer.Option(True, "--save/--no-save", help="Persist the audit in the local SQLite database"),
+) -> None:
+    """Run a strictly passive audit against authorized subdomains and export reports."""
+    fmt_list = _parse_formats(formats)
+    targets = _read_targets(subdomains)
+    request = AuditRequest(
+        subdomains=targets,
+        authorization_ref=auth_ref,
+        scope_domains=scope_domain,
+        concurrency=concurrency,
+        requests_per_second=rate,
+        timeout=timeout,
+        allow_private=allow_private,
+        include_metadata=not no_metadata,
+    )
+    try:
+        decision = build_scope(targets, auth_ref, scope_domains=scope_domain, allow_private=allow_private)
+    except ScopeError as exc:
+        console.print(f"[bold red]Scope error:[/] {exc}")
+        raise typer.Exit(code=2) from exc
+
+    console.print(
+        f"[bold cyan]WAPTrix[/] passive audit · authorization [bold]{auth_ref}[/] · "
+        f"{len(decision.targets)} target(s) · {rate:g} req/s/host · GET + TLS handshakes only"
+    )
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Auditing", total=len(decision.targets))
+
+        def on_progress(done: int, total: int, current: str) -> None:
+            progress.update(task, completed=done, description=f"Audited {current}")
+
+        result = asyncio.run(PassiveAuditor(request, progress=on_progress).run())
+
+    _print_summary(result)
+    if save:
+        from app.db import AuditStore
+
+        AuditStore().save(result)
+        console.print(f"[dim]Saved audit {result.id} to local database.[/]")
+    _write(result, out, fmt_list, subdomain)
+
+
+@app.command()
+def demo(
+    out: Path = typer.Option(Path("./demo_reports"), "--out", "-o", help="Output directory for reports"),
+    formats: str = typer.Option("all", "--format", "-f", help=f"Comma-separated: {', '.join(FORMATS)} or 'all'"),
+    subdomain: Optional[str] = typer.Option(None, "--only", help="Export reports for this single subdomain only"),
+    regenerate: bool = typer.Option(False, "--regenerate", help="Rebuild the dataset from the engine instead of the bundled JSON"),
+    save: bool = typer.Option(True, "--save/--no-save", help="Persist the demo audit in the local SQLite database"),
+) -> None:
+    """Run the built-in offline 5-subdomain demo audit (no network access)."""
+    from sample_data import build_demo_audit, load_demo_audit, write_demo
+
+    fmt_list = _parse_formats(formats)
+    if regenerate:
+        result = asyncio.run(build_demo_audit())
+        write_demo(result)
+    else:
+        result = load_demo_audit()
+    _print_summary(result)
+    if save:
+        from app.db import AuditStore
+
+        AuditStore().save(result)
+    _write(result, out, fmt_list, subdomain)
+
+
+@app.command("rules")
+def list_rules() -> None:
+    """List every passive rule with its OWASP Top 10 (2025), CWE, WSTG and CVSS mapping."""
+    table = Table(header_style="bold cyan")
+    for column in ("Rule", "Severity", "OWASP 2025", "CWE", "WSTG", "CVSS", "Title"):
+        table.add_column(column)
+    for rule_id, meta in load_mapping()["rules"].items():
+        table.add_row(
+            rule_id,
+            meta["severity"],
+            ", ".join(meta["owasp"]),
+            meta["cwe"],
+            meta.get("wstg") or "—",
+            f"{cvss31_base_score(meta['cvss_vector']):.1f}",
+            meta["title"],
+        )
+    console.print(table)
+
+
+@app.command()
+def serve(
+    host: str = typer.Option("127.0.0.1", help="Bind address"),
+    port: int = typer.Option(8000, help="Port"),
+    reload: bool = typer.Option(False, help="Auto-reload on code changes"),
+) -> None:
+    """Start the REST API (and the built dashboard, if frontend/dist exists)."""
+    import uvicorn
+
+    uvicorn.run("app.main:app", host=host, port=port, reload=reload)
+
+
+if __name__ == "__main__":
+    app()
