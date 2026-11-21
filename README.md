@@ -139,16 +139,4 @@ cd backend
 pytest -v
 ```
 
-## Legal & Ethical Disclaimer
 
-WAPTrix is intended **strictly for authorized security assessments, educational research, and auditing assets you own or have explicit written permission to test**. Even though WAPTrix performs passive, read-only inspection, always ensure you hold proper authorization before auditing any domain.
-
-## Authors
-
-Developed at the **Department of Computer Engineering, Vishwakarma University, Pune**:
-
-- Aryan Raskar
-- Mithilesh Sawant
-- Neev Mittal
-- Niraj Wadkar
-- Sarthak Patankar
