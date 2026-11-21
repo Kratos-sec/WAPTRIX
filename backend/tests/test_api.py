@@ -20,6 +20,8 @@ def test_health_and_metadata(client):
     assert len(client.get("/api/owasp").json()) == 10
     rules = client.get("/api/rules").json()
     assert any(r["id"] == "HDR-CSP-MISSING" and r["cvss_score"] > 0 for r in rules)
+    assert all(r["method"] and r["module_name"] for r in rules)
+    assert all(c["manual_tests"] for c in client.get("/api/owasp").json())
 
 
 def test_demo_roundtrip_and_exports(client):

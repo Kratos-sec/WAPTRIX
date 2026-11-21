@@ -1,8 +1,10 @@
 import { STATUS_META, shortCat } from '../lib/format'
+import { usePanels } from '../lib/panels'
 import { GradeBadge } from './Badges'
 
 export default function ComplianceHeatmap({ audit, onSelectSubdomain }) {
   const cats = audit.summary.categories
+  const { openCategory } = usePanels()
   return (
     <div className="panel overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
@@ -20,9 +22,11 @@ export default function ComplianceHeatmap({ audit, onSelectSubdomain }) {
               <th className="px-2 py-1 text-left font-medium text-slate-400">Subdomain</th>
               <th className="px-2 py-1 font-medium text-slate-400">Grade</th>
               {cats.map((c) => (
-                <th key={c.id} title={c.name} className="px-1 py-1 font-mono font-medium text-slate-400">
-                  {shortCat(c.id)}
-                  <div className="truncate font-sans text-[9px] font-normal text-slate-500">{c.name.split(' ').slice(0, 2).join(' ')}</div>
+                <th key={c.id} className="px-1 py-1 font-mono font-medium text-slate-400">
+                  <button onClick={() => openCategory(c.id)} title={`About ${c.id} ${c.name}`} className="w-full hover:text-cyan-300">
+                    {shortCat(c.id)}
+                    <div className="truncate font-sans text-[9px] font-normal text-slate-500">{c.name.split(' ').slice(0, 2).join(' ')}</div>
+                  </button>
                 </th>
               ))}
             </tr>

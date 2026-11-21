@@ -7,52 +7,242 @@
     "A01:2025": {
       "name": "Broken Access Control",
       "coverage": "partial",
-      "passive_scope": "Permissive CORS response headers and sensitive paths advertised in robots.txt. Authorization logic itself requires authenticated manual testing."
+      "passive_scope": "Permissive CORS response headers and sensitive paths advertised in robots.txt. Authorization logic itself requires authenticated manual testing.",
+      "description": "Users can act outside their intended permissions: reading or changing other users' data, reaching admin functions, or calling APIs without the right authorization.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-ATHZ-02",
+          "title": "Bypassing the authorization schema"
+        },
+        {
+          "wstg": "WSTG-ATHZ-03",
+          "title": "Privilege escalation"
+        },
+        {
+          "wstg": "WSTG-ATHZ-04",
+          "title": "Insecure direct object references"
+        },
+        {
+          "wstg": "WSTG-ATHZ-01",
+          "title": "Directory traversal and file include"
+        },
+        {
+          "wstg": "WSTG-SESS-05",
+          "title": "Confirm cross-site request forgery exposure"
+        }
+      ]
     },
     "A02:2025": {
       "name": "Security Misconfiguration",
       "coverage": "high",
-      "passive_scope": "Missing or weak security headers, verbose banners, debug modes and missing security.txt."
+      "passive_scope": "Missing or weak security headers, verbose banners, debug modes and missing security.txt.",
+      "description": "The application, server or framework runs with insecure defaults, unneeded features, verbose errors or missing hardening.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-CONF-02",
+          "title": "Application platform configuration review"
+        },
+        {
+          "wstg": "WSTG-CONF-04",
+          "title": "Old, backup and unreferenced files"
+        },
+        {
+          "wstg": "WSTG-CONF-05",
+          "title": "Administrative interface enumeration"
+        },
+        {
+          "wstg": "WSTG-CONF-06",
+          "title": "HTTP methods"
+        },
+        {
+          "wstg": "WSTG-CONF-11",
+          "title": "Cloud storage permissions"
+        }
+      ]
     },
     "A03:2025": {
       "name": "Software Supply Chain Failures",
       "coverage": "partial",
-      "passive_scope": "Client-side JavaScript libraries fingerprinted from script URLs and matched against known-vulnerable versions. Server-side dependencies are not observable."
+      "passive_scope": "Client-side JavaScript libraries fingerprinted from script URLs and matched against known-vulnerable versions. Server-side dependencies are not observable.",
+      "description": "Vulnerable, unmaintained or compromised third-party components, dependencies or build pipelines end up in the running application.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-INFO-10",
+          "title": "Map application architecture and components"
+        },
+        {
+          "wstg": null,
+          "title": "Server-side dependency audit (SCA / SBOM)"
+        },
+        {
+          "wstg": null,
+          "title": "CI/CD pipeline and artifact provenance review"
+        }
+      ]
     },
     "A04:2025": {
       "name": "Cryptographic Failures",
       "coverage": "high",
-      "passive_scope": "Negotiated TLS protocol and cipher, certificate validity, HTTPS enforcement, HSTS, mixed content and cookie transport flags."
+      "passive_scope": "Negotiated TLS protocol and cipher, certificate validity, HTTPS enforcement, HSTS, mixed content and cookie transport flags.",
+      "description": "Sensitive data is exposed because encryption is missing, weak, misconfigured or relies on broken algorithms.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-CRYP-04",
+          "title": "Weak encryption in application logic"
+        },
+        {
+          "wstg": "WSTG-CRYP-02",
+          "title": "Padding oracle"
+        },
+        {
+          "wstg": null,
+          "title": "Encryption at rest and key management review"
+        }
+      ]
     },
     "A05:2025": {
       "name": "Injection",
       "coverage": "indicators",
-      "passive_scope": "Only defense-in-depth indicators (CSP, X-Content-Type-Options). Injection flaws cannot be confirmed without active payloads, so a clean result requires manual review."
+      "passive_scope": "Only defense-in-depth indicators (CSP, X-Content-Type-Options). Injection flaws cannot be confirmed without active payloads, so a clean result requires manual review.",
+      "description": "Untrusted input reaches an interpreter (SQL, OS shell, templates, browser DOM) and is executed as code or commands.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-INPV-01",
+          "title": "Reflected cross-site scripting"
+        },
+        {
+          "wstg": "WSTG-INPV-02",
+          "title": "Stored cross-site scripting"
+        },
+        {
+          "wstg": "WSTG-INPV-05",
+          "title": "SQL injection"
+        },
+        {
+          "wstg": "WSTG-INPV-12",
+          "title": "Command injection"
+        },
+        {
+          "wstg": "WSTG-INPV-18",
+          "title": "Server-side template injection"
+        },
+        {
+          "wstg": "WSTG-INPV-19",
+          "title": "Server-side request forgery"
+        }
+      ]
     },
     "A06:2025": {
       "name": "Insecure Design",
       "coverage": "partial",
-      "passive_scope": "Insecure form transport and missing anti-CSRF token patterns visible in HTML."
+      "passive_scope": "Insecure form transport and missing anti-CSRF token patterns visible in HTML.",
+      "description": "Flaws in the design itself, such as missing threat modelling, absent anti-automation or business logic that can be abused even when perfectly implemented.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-BUSL-01",
+          "title": "Business logic data validation"
+        },
+        {
+          "wstg": "WSTG-BUSL-05",
+          "title": "Limits on how often a function can be used"
+        },
+        {
+          "wstg": "WSTG-BUSL-07",
+          "title": "Defenses against application misuse"
+        },
+        {
+          "wstg": null,
+          "title": "Threat model review"
+        }
+      ]
     },
     "A07:2025": {
       "name": "Authentication Failures",
       "coverage": "partial",
-      "passive_scope": "Session cookie hardening, cleartext credential submission and caching of authenticated responses."
+      "passive_scope": "Session cookie hardening, cleartext credential submission and caching of authenticated responses.",
+      "description": "Weak login, session or credential handling lets attackers impersonate users: credential stuffing, weak passwords, session fixation or token theft.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-ATHN-02",
+          "title": "Default credentials"
+        },
+        {
+          "wstg": "WSTG-ATHN-03",
+          "title": "Weak lockout mechanism"
+        },
+        {
+          "wstg": "WSTG-ATHN-07",
+          "title": "Weak password policy"
+        },
+        {
+          "wstg": "WSTG-SESS-03",
+          "title": "Session fixation"
+        },
+        {
+          "wstg": "WSTG-SESS-06",
+          "title": "Logout functionality"
+        }
+      ]
     },
     "A08:2025": {
       "name": "Software or Data Integrity Failures",
       "coverage": "high",
-      "passive_scope": "Third-party scripts and stylesheets loaded without Subresource Integrity."
+      "passive_scope": "Third-party scripts and stylesheets loaded without Subresource Integrity.",
+      "description": "Code or data is trusted without verifying its integrity: unsigned updates, unverified third-party scripts, insecure deserialization.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-BUSL-09",
+          "title": "Upload of malicious files"
+        },
+        {
+          "wstg": null,
+          "title": "Insecure deserialization review"
+        },
+        {
+          "wstg": null,
+          "title": "Update and artifact signing review"
+        }
+      ]
     },
     "A09:2025": {
       "name": "Security Logging and Alerting Failures",
       "coverage": "manual",
-      "passive_scope": "Not verifiable through passive HTTP/TLS inspection. Always flagged as Manual Review Required."
+      "passive_scope": "Not verifiable through passive HTTP/TLS inspection. Always flagged as Manual Review Required.",
+      "description": "Security-relevant events are not logged, monitored or alerted on, so attacks go unnoticed.",
+      "manual_tests": [
+        {
+          "wstg": null,
+          "title": "Verify logins, access-control failures and input validation failures are logged with context"
+        },
+        {
+          "wstg": null,
+          "title": "Verify alert thresholds and incident escalation"
+        },
+        {
+          "wstg": null,
+          "title": "Review log retention and tamper protection"
+        }
+      ]
     },
     "A10:2025": {
       "name": "Mishandling of Exceptional Conditions",
       "coverage": "partial",
-      "passive_scope": "Raw stack traces, framework exception dumps and debug error pages returned in responses."
+      "passive_scope": "Raw stack traces, framework exception dumps and debug error pages returned in responses.",
+      "description": "Errors and unusual conditions are handled unsafely: leaking internals, failing open, or leaving inconsistent state.",
+      "manual_tests": [
+        {
+          "wstg": "WSTG-ERRH-01",
+          "title": "Improper error handling (induced errors)"
+        },
+        {
+          "wstg": null,
+          "title": "Fail-open behaviour under resource exhaustion"
+        },
+        {
+          "wstg": null,
+          "title": "Transaction rollback on partial failure"
+        }
+      ]
     }
   },
   "rules": {
@@ -893,6 +1083,36 @@
       "references": [
         "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/03-Review_Webserver_Metafiles_for_Information_Leakage"
       ]
+    }
+  },
+  "modules": {
+    "headers": {
+      "name": "Security headers",
+      "method": "Reads the security headers (and any CSP meta tag) on the final response to GET /. Parses CSP directives and the HSTS max-age."
+    },
+    "transport_tls": {
+      "name": "Transport & TLS",
+      "method": "Compares GET / over HTTP and HTTPS, including redirect chains. Inspects three TLS handshakes: one to read the certificate, one validated against the certifi CA bundle, and one ClientHello capped at TLS 1.1. Scans the HTML for http:// sub-resources."
+    },
+    "cookies": {
+      "name": "Cookies",
+      "method": "Parses every Set-Cookie header on all responses and redirect hops and flags missing attributes. Cookie values are redacted in evidence."
+    },
+    "cors_cache": {
+      "name": "CORS & caching",
+      "method": "Reviews CORS headers returned to a normal GET (no Origin header is sent), and Cache-Control on responses that set session cookies or contain a password field."
+    },
+    "disclosure": {
+      "name": "Information disclosure",
+      "method": "Matches response headers and bodies against version-banner, stack-trace, debug-page, private-IP and email patterns. Reviews HTML comments for sensitive keywords."
+    },
+    "client_forms": {
+      "name": "Forms & client-side",
+      "method": "Parses HTML forms (action scheme, method, hidden CSRF fields, password inputs) and script/link tags (integrity attribute, third-party origin, versioned library URLs matched against known-vulnerable ranges)."
+    },
+    "metadata": {
+      "name": "Security metadata",
+      "method": "Fetches /robots.txt and /.well-known/security.txt. Validates the RFC 9116 fields and lists sensitive Disallow entries without requesting them."
     }
   }
 }

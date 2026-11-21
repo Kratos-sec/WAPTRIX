@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import { SEVERITIES, SEVERITY_META, allFindings } from '../lib/format'
+import { usePanels } from '../lib/panels'
 import FindingCard from './FindingCard'
 
 const PAGE = 40
@@ -8,6 +9,7 @@ const RANK = { critical: 4, high: 3, medium: 2, low: 1, info: 0 }
 
 export default function FindingsExplorer({ audit }) {
   const findings = useMemo(() => allFindings(audit), [audit])
+  const { openIssue } = usePanels()
   const [severities, setSeverities] = useState(new Set(SEVERITIES))
   const [category, setCategory] = useState('')
   const [subdomain, setSubdomain] = useState('')
@@ -80,7 +82,7 @@ export default function FindingsExplorer({ audit }) {
           {groups.map(([ruleId, items]) => (
             <div key={ruleId} className="panel p-3">
               <div className="mb-2 flex items-center justify-between px-1">
-                <div className="text-sm font-medium text-slate-100">{items[0].title}</div>
+                <button onClick={() => openIssue(ruleId)} className="text-left text-sm font-medium text-slate-100 hover:text-cyan-300">{items[0].title}</button>
                 <div className="font-mono text-xs text-slate-500">{ruleId} · {items.length} on {new Set(items.map((i) => i.subdomain)).size} host(s)</div>
               </div>
               <div className="space-y-2">{items.map((f) => <FindingCard key={f.id} finding={f} showSubdomain />)}</div>

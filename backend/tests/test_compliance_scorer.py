@@ -113,6 +113,18 @@ def test_mapping_entries_are_complete_and_valid():
         assert all(ref.startswith("https://") for ref in rule.get("references", [])), rule_id
 
 
+def test_categories_and_modules_carry_drilldown_content():
+    mapping = load_mapping()
+    for cat_id, cat in mapping["categories"].items():
+        assert cat["description"] and cat["passive_scope"], cat_id
+        assert cat["manual_tests"], cat_id
+        for test in cat["manual_tests"]:
+            assert test["title"], cat_id
+            assert test["wstg"] is None or re.fullmatch(r"WSTG-[A-Z]{4}-\d{2}", test["wstg"]), cat_id
+    for rule_id, rule in mapping["rules"].items():
+        assert mapping["modules"][rule["check"]]["method"], rule_id
+
+
 def test_a09_is_never_marked_passable():
     assert categories()["A09:2025"]["coverage"] == "manual"
 

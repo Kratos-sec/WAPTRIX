@@ -1,45 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, X } from 'lucide-react'
+import { ArrowRight, Info } from 'lucide-react'
 import { COVERAGE_LABEL, SEVERITIES, formatDate, shortCat } from '../lib/format'
+import { usePanels } from '../lib/panels'
 import { GradeBadge, SeverityBadge, StatusBadge } from './Badges'
+import Drawer, { KV, Section } from './Drawer'
 import ExportMenu from './ExportMenu'
 import FindingCard from './FindingCard'
 
-function KV({ label, children }) {
-  return (
-    <div className="grid grid-cols-[9rem_minmax(0,1fr)] gap-3 py-1.5 text-xs">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="break-words font-mono text-slate-200">{children ?? '—'}</dd>
-    </div>
-  )
-}
-
-function Section({ title, children, right }) {
-  return (
-    <section className="rounded-lg border border-slate-800 bg-ink-900/60 p-4">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="panel-title">{title}</h3>
-        {right}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-export default function SubdomainDrawer({ audit, subdomain, initialCategory, onClose, onNotify }) {
+export default function SubdomainDrawer({ audit, subdomain, initialCategory, onClose, onBack, onNotify }) {
   const sub = audit.subdomains.find((s) => s.subdomain === subdomain)
   const [category, setCategory] = useState(initialCategory ?? null)
   const [headerSource, setHeaderSource] = useState(sub?.scheme === 'http' ? 'http' : 'https')
+  const { openCategory } = usePanels()
 
   useEffect(() => {
     setCategory(initialCategory ?? null)
   }, [initialCategory, subdomain])
-
-  useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
 
   const findings = useMemo(
     () => (sub ? sub.findings.filter((f) => !category || f.owasp.includes(category)) : []),
@@ -51,13 +27,12 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
   const observation = headerSource === 'http' ? sub.http : sub.https
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-ink-950/70 backdrop-blur-sm" onClick={onClose}>
-      <aside
-        className="flex h-full w-full max-w-4xl flex-col border-l border-slate-800 bg-ink-950 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-        aria-label={`Details for ${sub.subdomain}`}
-      >
-        <header className="flex flex-wrap items-center gap-4 border-b border-slate-800 px-6 py-4">
+    <Drawer
+      label={`Details for ${sub.subdomain}`}
+      onClose={onClose}
+      onBack={onBack}
+      header={
+        <>
           <GradeBadge grade={sub.grade} size="lg" />
           <div className="min-w-0 flex-1">
             <h2 className="truncate font-mono text-lg font-semibold text-white">{sub.subdomain}</h2>
@@ -66,16 +41,20 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
             </p>
           </div>
           <ExportMenu auditId={audit.id} subdomain={sub.subdomain} label="Export host" onNotify={onNotify} />
-          <button className="btn-ghost p-2" onClick={onClose} aria-label="Close"><X className="h-4 w-4" /></button>
-        </header>
-
-        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
+        </>
+      }
+    >
           <div className="flex flex-wrap gap-1.5">
             {SEVERITIES.map((s) => <SeverityBadge key={s} severity={s} count={sub.severity_counts[s] ?? 0} />)}
           </div>
 
           <Section title="OWASP Top 10 (2025) status" right={category && (
-            <button className="text-xs text-cyan-300 hover:text-cyan-200" onClick={() => setCategory(null)}>Clear filter</button>
+            <div className="flex gap-3 text-xs">
+              <button className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200" onClick={() => openCategory(category)}>
+                <Info className="h-3.5 w-3.5" />About {shortCat(category)}
+              </button>
+              <button className="text-slate-400 hover:text-slate-200" onClick={() => setCategory(null)}>Clear filter</button>
+            </div>
           )}>
             <div className="grid gap-2 sm:grid-cols-2">
               {sub.categories.map((c) => (
@@ -171,8 +150,6 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
               {findings.map((f) => <FindingCard key={f.id} finding={f} />)}
             </div>
           </Section>
-        </div>
-      </aside>
-    </div>
+    </Drawer>
   )
 }

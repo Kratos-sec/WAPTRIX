@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -13,8 +13,11 @@ import {
 } from 'lucide-react'
 import { api } from './lib/api'
 import { formatDate } from './lib/format'
+import { CatalogContext, PanelContext } from './lib/panels'
+import CategoryDrawer from './components/CategoryDrawer'
 import ExportMenu from './components/ExportMenu'
 import FindingsExplorer from './components/FindingsExplorer'
+import IssueDrawer from './components/IssueDrawer'
 import NewAuditPanel from './components/NewAuditPanel'
 import Overview from './components/Overview'
 import RulesCatalog from './components/RulesCatalog'
@@ -78,7 +81,8 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [audit, setAudit] = useState(null)
   const [tab, setTab] = useState('overview')
-  const [drawer, setDrawer] = useState(null)
+  const [panels, setPanels] = useState([])
+  const [catalog, setCatalog] = useState({ rules: {}, categories: {} })
   const [showNew, setShowNew] = useState(false)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(null)
@@ -98,7 +102,15 @@ export default function App() {
       .then((h) => { setHealth(h); return refreshList() })
       .then((list) => { if (list?.length) setSelectedId(list[0].id) })
       .catch(() => setBackendDown(true))
+    Promise.all([api.rules(), api.categories()])
+      .then(([rules, categories]) => setCatalog({
+        rules: Object.fromEntries(rules.map((r) => [r.id, r])),
+        categories: Object.fromEntries(categories.map((c) => [c.id, c])),
+      }))
+      .catch(() => {})
   }, [refreshList])
+
+  useEffect(() => setPanels([]), [selectedId])
 
   useEffect(() => {
     clearTimeout(pollRef.current)
@@ -165,11 +177,22 @@ export default function App() {
     }
   }
 
-  const openSubdomain = useCallback((subdomain, category) => setDrawer({ subdomain, category }), [])
-  const closeDrawer = useCallback(() => setDrawer(null), [])
+  const pushPanel = useCallback((panel) => setPanels((stack) => [...stack, panel]), [])
+  const backPanel = useCallback(() => setPanels((stack) => stack.slice(0, -1)), [])
+  const closePanels = useCallback(() => setPanels([]), [])
+  const panelApi = useMemo(() => ({
+    openSubdomain: (subdomain, category) => pushPanel({ type: 'subdomain', subdomain, category }),
+    openIssue: (ruleId) => pushPanel({ type: 'issue', ruleId }),
+    openCategory: (categoryId) => pushPanel({ type: 'category', categoryId }),
+  }), [pushPanel])
+  const openSubdomain = panelApi.openSubdomain
+  const panel = panels[panels.length - 1]
+  const onBack = panels.length > 1 ? backPanel : undefined
   const completed = audit?.status === 'completed'
 
   return (
+    <CatalogContext.Provider value={catalog}>
+    <PanelContext.Provider value={panelApi}>
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.07),transparent_55%)]">
       <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-ink-950/85 backdrop-blur">
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
@@ -280,11 +303,20 @@ export default function App() {
         WAPTrix performs strictly passive, read-only inspection. Only audit systems you are authorized to test.
       </footer>
 
-      {drawer && completed && (
-        <SubdomainDrawer audit={audit} subdomain={drawer.subdomain} initialCategory={drawer.category} onClose={closeDrawer} onNotify={notify} />
+      {panel && completed && panel.type === 'subdomain' && (
+        <SubdomainDrawer key={panels.length} audit={audit} subdomain={panel.subdomain} initialCategory={panel.category}
+          onClose={closePanels} onBack={onBack} onNotify={notify} />
+      )}
+      {panel && completed && panel.type === 'issue' && (
+        <IssueDrawer key={panels.length} audit={audit} ruleId={panel.ruleId} onClose={closePanels} onBack={onBack} />
+      )}
+      {panel && completed && panel.type === 'category' && (
+        <CategoryDrawer key={panels.length} audit={audit} categoryId={panel.categoryId} onClose={closePanels} onBack={onBack} />
       )}
       {showNew && <NewAuditPanel onSubmit={startAudit} onClose={() => setShowNew(false)} busy={busy} />}
       <Toast toast={toast} onClose={closeToast} />
     </div>
+    </PanelContext.Provider>
+    </CatalogContext.Provider>
   )
 }

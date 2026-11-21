@@ -148,9 +148,17 @@ def owasp_categories() -> list[dict[str, Any]]:
 
 @app.get("/api/rules")
 def rules() -> list[dict[str, Any]]:
+    mapping = load_mapping()
+    modules = mapping["modules"]
     return [
-        {"id": rid, **meta, "cvss_score": cvss31_base_score(meta["cvss_vector"])}
-        for rid, meta in load_mapping()["rules"].items()
+        {
+            "id": rid,
+            **meta,
+            "cvss_score": cvss31_base_score(meta["cvss_vector"]),
+            "module_name": modules[meta["check"]]["name"],
+            "method": modules[meta["check"]]["method"],
+        }
+        for rid, meta in mapping["rules"].items()
     ]
 
 

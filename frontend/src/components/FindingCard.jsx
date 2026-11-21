@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { ChevronDown, ExternalLink } from 'lucide-react'
+import { ChevronDown, ExternalLink, Layers } from 'lucide-react'
+import { cweUrl } from '../lib/cvss'
 import { SEVERITY_META } from '../lib/format'
+import { usePanels } from '../lib/panels'
 import { SeverityBadge } from './Badges'
 
-export default function FindingCard({ finding, showSubdomain = false, defaultOpen = false }) {
+export default function FindingCard({ finding, showSubdomain = false, defaultOpen = false, hideIssueLink = false }) {
   const [open, setOpen] = useState(defaultOpen)
+  const { openIssue } = usePanels()
   const [description, detail] = finding.description.split('\n\n')
   return (
     <div
@@ -30,7 +33,7 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
           <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
             <div className="flex gap-2"><dt className="text-slate-500">URL</dt><dd className="break-all font-mono text-slate-300">{finding.url}</dd></div>
             <div className="flex gap-2"><dt className="text-slate-500">Confidence</dt><dd className="capitalize text-slate-300">{finding.confidence}</dd></div>
-            <div className="flex gap-2"><dt className="text-slate-500">CWE</dt><dd className="text-slate-300">{finding.cwe} {finding.cwe_name}</dd></div>
+            <div className="flex gap-2"><dt className="text-slate-500">CWE</dt><dd><a href={cweUrl(finding.cwe)} target="_blank" rel="noreferrer noopener" className="text-cyan-300 hover:text-cyan-200">{finding.cwe} {finding.cwe_name}</a></dd></div>
             <div className="flex gap-2"><dt className="text-slate-500">WSTG v4.2</dt><dd className="font-mono text-slate-300">{finding.wstg ?? '—'}</dd></div>
             <div className="flex gap-2 sm:col-span-2"><dt className="text-slate-500">CVSS v3.1</dt><dd className="break-all font-mono text-slate-300">{finding.cvss_score.toFixed(1)} · {finding.cvss_vector}</dd></div>
           </dl>
@@ -48,6 +51,11 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
             <div className="panel-title mb-1 text-cyan-300/80">Remediation</div>
             <p className="leading-relaxed text-slate-200">{finding.remediation}</p>
           </div>
+          {!hideIssueLink && (
+            <button onClick={() => openIssue(finding.rule_id)} className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200">
+              <Layers className="h-3.5 w-3.5" />Issue details, CVSS breakdown and every affected host
+            </button>
+          )}
           {finding.references?.length > 0 && (
             <ul className="space-y-1 text-xs">
               {finding.references.map((ref) => (

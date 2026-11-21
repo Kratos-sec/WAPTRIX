@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts'
 import { COVERAGE_LABEL, SEVERITIES, SEVERITY_META, STATUS_META, scoreColor, shortCat } from '../lib/format'
+import { usePanels } from '../lib/panels'
 import { GradeBadge, SeverityBadge, StatusBadge } from './Badges'
 import ComplianceHeatmap from './ComplianceHeatmap'
 
@@ -81,6 +82,7 @@ function ScoreGauge({ score, grade }) {
 
 export default function Overview({ audit, onSelectSubdomain }) {
   const { summary } = audit
+  const { openIssue, openCategory } = usePanels()
   const counts = summary.severity_counts ?? {}
   const highCrit = (counts.high ?? 0) + (counts.critical ?? 0)
 
@@ -92,6 +94,7 @@ export default function Overview({ audit, onSelectSubdomain }) {
 
   const categoryData = summary.categories.map((c) => ({
     name: shortCat(c.id),
+    id: c.id,
     tooltipName: c.name,
     value: c.finding_count,
     fill: STATUS_FILL[c.status],
@@ -140,7 +143,8 @@ export default function Overview({ audit, onSelectSubdomain }) {
                 <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(148,163,184,0.06)' }} />
-                <Bar dataKey="value" name="Findings" radius={[5, 5, 0, 0]} isAnimationActive={false}>
+                <Bar dataKey="value" name="Findings" radius={[5, 5, 0, 0]} isAnimationActive={false}
+                  onClick={(d) => openCategory(d.id)} className="cursor-pointer">
                   {categoryData.map((d) => <Cell key={d.name} fill={d.fill} />)}
                 </Bar>
               </BarChart>
@@ -183,7 +187,7 @@ export default function Overview({ audit, onSelectSubdomain }) {
           <table className="w-full text-sm">
             <tbody className="divide-y divide-slate-800/70">
               {summary.categories.map((c) => (
-                <tr key={c.id} className="hover:bg-ink-800/40">
+                <tr key={c.id} onClick={() => openCategory(c.id)} className="cursor-pointer hover:bg-ink-800/40">
                   <td className="px-4 py-2.5">
                     <div className="font-medium text-slate-100"><span className="font-mono text-cyan-300">{shortCat(c.id)}</span> {c.name}</div>
                     <div className="text-[11px] text-slate-500">Coverage: {COVERAGE_LABEL[c.coverage] ?? c.coverage}</div>
@@ -209,7 +213,7 @@ export default function Overview({ audit, onSelectSubdomain }) {
             <table className="w-full text-sm">
               <tbody className="divide-y divide-slate-800/70">
                 {summary.top_rules.map((r) => (
-                  <tr key={r.rule_id} className="hover:bg-ink-800/40">
+                  <tr key={r.rule_id} onClick={() => openIssue(r.rule_id)} className="cursor-pointer hover:bg-ink-800/40">
                     <td className="px-4 py-2.5"><SeverityBadge severity={r.severity} /></td>
                     <td className="py-2.5 pr-2">
                       <div className="text-slate-100">{r.title}</div>
