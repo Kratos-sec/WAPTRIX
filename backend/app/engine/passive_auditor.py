@@ -26,7 +26,7 @@ from app.engine.scope_guard import (
     system_resolver,
 )
 from app.models.audit import AuditRequest, AuditResult, AuditStatus, SubdomainResult, TLSInfo, ToolRunSummary
-from app.tools.adapters import PASSIVE_ADAPTERS, AdapterContext, AdapterResult, ToolAdapter
+from app.tools.adapters import ACTIVE_ADAPTERS, PASSIVE_ADAPTERS, AdapterContext, AdapterResult, ToolAdapter
 from app.tools.merge import merge_findings
 
 logger = logging.getLogger("waptrix.auditor")
@@ -57,8 +57,15 @@ class PassiveAuditor:
         self.resolver = resolver
         self.checks = checks if checks is not None else default_checks()
         self.progress = progress
-        self.adapters = adapters if adapters is not None else [PASSIVE_ADAPTERS[name]() for name in request.tools]
+        self.adapters = adapters if adapters is not None else self._build_adapters(request)
         self._tool_slots = {a.name: asyncio.Semaphore(TOOL_PARALLELISM) for a in self.adapters}
+
+    @staticmethod
+    def _build_adapters(request: AuditRequest) -> list[ToolAdapter]:
+        adapters: list[ToolAdapter] = [PASSIVE_ADAPTERS[name]() for name in request.tools]
+        if request.active:  # active adapters run only on explicit opt-in (enforced by AuditRequest)
+            adapters += [ACTIVE_ADAPTERS[name]() for name in request.active_tools]
+        return adapters
 
     async def run(self, audit_id: str | None = None) -> AuditResult:
         created = datetime.now(timezone.utc)

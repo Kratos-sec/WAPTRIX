@@ -111,16 +111,23 @@ def audit(
     tool: list[str] = typer.Option(
         [], "--tool", help="External passive tool to add (repeatable): whatweb, sslyze, testssl, retire, zap, or 'all'"
     ),
+    active: bool = typer.Option(
+        False, "--active", help="Opt in to ACTIVE scanning (sends probes/payloads); needs --scope-domain and active tools"
+    ),
+    active_tool: list[str] = typer.Option(
+        [], "--active-tool", help="Active tool to add (repeatable): nmap, nuclei, nikto, wapiti, sqlmap, or 'all'"
+    ),
     tool_timeout: float = typer.Option(600.0, "--tool-timeout", min=10, max=3600, help="Per-tool, per-host limit (s)"),
 ) -> None:
-    """Run a strictly passive audit against authorized subdomains and export reports."""
+    """Run a passive audit (optionally with opt-in active tools) against authorized subdomains."""
     from pydantic import ValidationError
 
-    from app.tools.adapters import PASSIVE_ADAPTERS
+    from app.tools.adapters import ACTIVE_ADAPTERS, PASSIVE_ADAPTERS
 
     fmt_list = _parse_formats(formats)
     targets = _read_targets(subdomains)
     tools = list(PASSIVE_ADAPTERS) if "all" in [t.lower() for t in tool] else tool
+    active_tools = list(ACTIVE_ADAPTERS) if "all" in [t.lower() for t in active_tool] else active_tool
     try:
         request = AuditRequest(
             subdomains=targets,
@@ -132,6 +139,8 @@ def audit(
             allow_private=allow_private,
             include_metadata=not no_metadata,
             tools=tools,
+            active=active,
+            active_tools=active_tools,
             tool_timeout=tool_timeout,
         )
     except ValidationError as exc:
@@ -143,10 +152,13 @@ def audit(
         console.print(f"[bold red]Scope error:[/] {exc}")
         raise typer.Exit(code=2) from exc
 
+    active_on = request.active and bool(request.active_tools)
     console.print(
-        f"[bold cyan]WAPTrix[/] passive audit · authorization [bold]{auth_ref}[/] · "
-        f"{len(decision.targets)} target(s) · {rate:g} req/s/host · GET + TLS handshakes only"
-        + (f" · tools: {', '.join(request.tools)}" if request.tools else "")
+        f"[bold cyan]WAPTrix[/] {'[bold red]ACTIVE[/]' if active_on else 'passive'} audit · "
+        f"authorization [bold]{auth_ref}[/] · {len(decision.targets)} target(s) · {rate:g} req/s/host · "
+        + ("sends probes/payloads" if active_on else "GET + TLS handshakes only")
+        + (f" · passive tools: {', '.join(request.tools)}" if request.tools else "")
+        + (f" · active tools: {', '.join(request.active_tools)}" if active_on else "")
     )
     with Progress(
         TextColumn("[progress.description]{task.description}"),

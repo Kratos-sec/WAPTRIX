@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.models.finding import PassiveFinding, Severity
 
@@ -33,6 +33,15 @@ class AuditRequest(BaseModel):
         default_factory=list,
         description="External passive tools to run in addition to the built-in checks (see GET /api/tools)",
     )
+    active: bool = Field(
+        default=False,
+        description="Opt in to active scanning. Required before any active tool runs; also needs scope_domains set.",
+    )
+    active_tools: list[str] = Field(
+        default_factory=list,
+        description="Active tools (nmap, nuclei, nikto, wapiti, sqlmap) that send probes or payloads; "
+        "ignored unless active=true and scope_domains is non-empty",
+    )
 
     @field_validator("subdomains")
     @classmethod
@@ -54,6 +63,29 @@ class AuditRequest(BaseModel):
                 f"unknown or non-passive tool(s): {', '.join(unknown)}; passive tools: {', '.join(PASSIVE_ADAPTERS)}"
             )
         return wanted
+
+    @field_validator("active_tools")
+    @classmethod
+    def _known_active_tools(cls, value: list[str]) -> list[str]:
+        from app.tools.adapters import ACTIVE_ADAPTERS
+
+        wanted = list(dict.fromkeys(t.strip().lower() for t in value if t and t.strip()))
+        unknown = [t for t in wanted if t not in ACTIVE_ADAPTERS]
+        if unknown:
+            raise ValueError(
+                f"unknown or non-active tool(s): {', '.join(unknown)}; active tools: {', '.join(ACTIVE_ADAPTERS)}"
+            )
+        return wanted
+
+    @model_validator(mode="after")
+    def _gate_active_mode(self) -> "AuditRequest":
+        """Active tools need an explicit opt-in and a declared scope; auth ref is already required."""
+        if self.active_tools:
+            if not self.active:
+                raise ValueError("active_tools requires active=true (explicit opt-in to active scanning)")
+            if not self.scope_domains:
+                raise ValueError("active scanning requires scope_domains to bound the engagement")
+        return self
 
 
 class RedirectHop(BaseModel):

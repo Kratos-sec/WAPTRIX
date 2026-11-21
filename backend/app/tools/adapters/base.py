@@ -1,4 +1,4 @@
-"""Common interface for external passive tool adapters.
+"""Common interface for external tool adapters (passive and active).
 
 An adapter turns one tool invocation against one subdomain into WAPTrix findings. Where a tool reports
 the same issue as a built-in rule, the adapter emits that rule ID, so scoring, CVSS and remediation stay
