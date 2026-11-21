@@ -205,7 +205,8 @@
         <span><b>OWASP</b> {{ f.owasp | join(", ") }}</span>
         <span><b>{{ f.cwe }}</b> {{ f.cwe_name }}</span>
         {% if f.wstg %}<span><b>WSTG</b> {{ f.wstg }}</span>{% endif %}
-        <span><b>CVSS 3.1</b> {{ "%.1f" % f.cvss_score }} <code>{{ f.cvss_vector }}</code></span>
+        {% if f.cvss_score is not none %}<span><b>CVSS 3.1</b> {{ "%.1f" % f.cvss_score }} <code>{{ f.cvss_vector }}</code></span>{% endif %}
+        <span><b>Detected by</b> {{ f.sources | join(", ") }}</span>
         <span><b>Confidence</b> {{ f.confidence.value }}</span>
       </div>
       <div class="muted">URL: {{ f.url }}</div>

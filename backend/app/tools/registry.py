@@ -128,8 +128,9 @@ def _status(spec: ToolSpec, **kwargs) -> ToolStatus:
 async def _detect_zap(spec: ToolSpec) -> ToolStatus:
     url, key = zap_settings()
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(f"{url}/JSON/core/view/version/", params={"apikey": key} if key else None)
+        headers = {"X-ZAP-API-Key": key} if key else {}  # header, never a query param: keeps the key out of logs
+        async with httpx.AsyncClient(timeout=5.0, headers=headers) as client:
+            resp = await client.get(f"{url}/JSON/core/view/version/")
         resp.raise_for_status()
         return _status(spec, available=True, version=resp.json().get("version"), location=url)
     except (httpx.HTTPError, ValueError) as exc:

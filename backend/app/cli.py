@@ -108,20 +108,35 @@ def audit(
     no_metadata: bool = typer.Option(False, "--no-metadata", help="Skip /robots.txt and /.well-known/security.txt"),
     subdomain: Optional[str] = typer.Option(None, "--only", help="Export reports for this single subdomain only"),
     save: bool = typer.Option(True, "--save/--no-save", help="Persist the audit in the local SQLite database"),
+    tool: list[str] = typer.Option(
+        [], "--tool", help="External passive tool to add (repeatable): whatweb, sslyze, testssl, retire, zap, or 'all'"
+    ),
+    tool_timeout: float = typer.Option(600.0, "--tool-timeout", min=10, max=3600, help="Per-tool, per-host limit (s)"),
 ) -> None:
     """Run a strictly passive audit against authorized subdomains and export reports."""
+    from pydantic import ValidationError
+
+    from app.tools.adapters import PASSIVE_ADAPTERS
+
     fmt_list = _parse_formats(formats)
     targets = _read_targets(subdomains)
-    request = AuditRequest(
-        subdomains=targets,
-        authorization_ref=auth_ref,
-        scope_domains=scope_domain,
-        concurrency=concurrency,
-        requests_per_second=rate,
-        timeout=timeout,
-        allow_private=allow_private,
-        include_metadata=not no_metadata,
-    )
+    tools = list(PASSIVE_ADAPTERS) if "all" in [t.lower() for t in tool] else tool
+    try:
+        request = AuditRequest(
+            subdomains=targets,
+            authorization_ref=auth_ref,
+            scope_domains=scope_domain,
+            concurrency=concurrency,
+            requests_per_second=rate,
+            timeout=timeout,
+            allow_private=allow_private,
+            include_metadata=not no_metadata,
+            tools=tools,
+            tool_timeout=tool_timeout,
+        )
+    except ValidationError as exc:
+        console.print(f"[bold red]Invalid options:[/] {exc.errors()[0]['msg']}")
+        raise typer.Exit(code=2) from exc
     try:
         decision = build_scope(targets, auth_ref, scope_domains=scope_domain, allow_private=allow_private)
     except ScopeError as exc:
@@ -131,6 +146,7 @@ def audit(
     console.print(
         f"[bold cyan]WAPTrix[/] passive audit · authorization [bold]{auth_ref}[/] · "
         f"{len(decision.targets)} target(s) · {rate:g} req/s/host · GET + TLS handshakes only"
+        + (f" · tools: {', '.join(request.tools)}" if request.tools else "")
     )
     with Progress(
         TextColumn("[progress.description]{task.description}"),

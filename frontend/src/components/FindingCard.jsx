@@ -23,7 +23,8 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
             {showSubdomain && <span className="text-cyan-300/80">{finding.subdomain}</span>}
             <span>{finding.owasp.join(' · ')}</span>
             <span>{finding.cwe}</span>
-            <span>CVSS {finding.cvss_score.toFixed(1)}</span>
+            {finding.cvss_score != null && <span>CVSS {finding.cvss_score.toFixed(1)}</span>}
+            {finding.sources?.length > 0 && <span className="text-slate-400">via {finding.sources.join(', ')}</span>}
           </div>
         </div>
         <ChevronDown className={`mt-1 h-4 w-4 shrink-0 text-slate-500 transition ${open ? 'rotate-180' : ''}`} />
@@ -33,9 +34,10 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
           <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
             <div className="flex gap-2"><dt className="text-slate-500">URL</dt><dd className="break-all font-mono text-slate-300">{finding.url}</dd></div>
             <div className="flex gap-2"><dt className="text-slate-500">Confidence</dt><dd className="capitalize text-slate-300">{finding.confidence}</dd></div>
-            <div className="flex gap-2"><dt className="text-slate-500">CWE</dt><dd><a href={cweUrl(finding.cwe)} target="_blank" rel="noreferrer noopener" className="text-cyan-300 hover:text-cyan-200">{finding.cwe} {finding.cwe_name}</a></dd></div>
+            {finding.cwe && <div className="flex gap-2"><dt className="text-slate-500">CWE</dt><dd><a href={cweUrl(finding.cwe)} target="_blank" rel="noreferrer noopener" className="text-cyan-300 hover:text-cyan-200">{finding.cwe} {finding.cwe_name}</a></dd></div>}
             <div className="flex gap-2"><dt className="text-slate-500">WSTG v4.2</dt><dd className="font-mono text-slate-300">{finding.wstg ?? '—'}</dd></div>
-            <div className="flex gap-2 sm:col-span-2"><dt className="text-slate-500">CVSS v3.1</dt><dd className="break-all font-mono text-slate-300">{finding.cvss_score.toFixed(1)} · {finding.cvss_vector}</dd></div>
+            {finding.cvss_score != null && <div className="flex gap-2 sm:col-span-2"><dt className="text-slate-500">CVSS v3.1</dt><dd className="break-all font-mono text-slate-300">{finding.cvss_score.toFixed(1)} · {finding.cvss_vector}</dd></div>}
+            {finding.sources?.length > 0 && <div className="flex gap-2 sm:col-span-2"><dt className="text-slate-500">Detected by</dt><dd className="text-slate-300">{finding.sources.join(', ')}{finding.tool_refs?.length > 0 && <span className="ml-2 font-mono text-[11px] text-slate-500">{finding.tool_refs.join(' · ')}</span>}</dd></div>}
           </dl>
           <p className="leading-relaxed text-slate-300">{description}</p>
           {detail && <p className="leading-relaxed text-slate-400">{detail}</p>}

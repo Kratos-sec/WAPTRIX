@@ -54,9 +54,16 @@ class PassiveFinding(BaseModel):
     cwe_name: str = ""
     wstg: str | None = Field(default=None, description="OWASP WSTG v4.2 test identifier")
     owasp: list[str] = Field(default_factory=list, description="OWASP Top 10 (2025) category ids, e.g. A02:2025")
-    cvss_vector: str
-    cvss_score: float
+    cvss_vector: str | None = Field(default=None, description="None for tool alerts with no WAPTrix rule mapping")
+    cvss_score: float | None = None
     references: list[str] = Field(default_factory=list)
+    sources: list[str] = Field(
+        default_factory=lambda: ["waptrix"],
+        description="Engines that observed this issue: 'waptrix' (built-in checks) and/or external tool names",
+    )
+    tool_refs: list[str] = Field(
+        default_factory=list, description="Tool-native identifiers, e.g. zap:10038 or testssl:cert_trust"
+    )
 
     @staticmethod
     def make_id(rule_id: str, subdomain: str, url: str, evidence: str) -> str:

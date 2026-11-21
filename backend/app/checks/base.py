@@ -77,6 +77,43 @@ def truncate(text: str, limit: int = MAX_EVIDENCE_CHARS) -> str:
     return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
+def rule_finding(
+    rule_id: str,
+    subdomain: str,
+    url: str,
+    evidence: str,
+    detail: str | None = None,
+    *,
+    sources: list[str] | None = None,
+    tool_refs: list[str] | None = None,
+) -> PassiveFinding:
+    """Build a finding from a rule in owasp_2025_map.json (shared by built-in checks and tool adapters)."""
+    rule = get_rule(rule_id)
+    evidence = truncate(evidence)
+    description = rule["description"] if not detail else f"{rule['description']}\n\n{detail}"
+    return PassiveFinding(
+        id=PassiveFinding.make_id(rule_id, subdomain, url, evidence),
+        rule_id=rule_id,
+        title=rule["title"],
+        severity=Severity(rule["severity"]),
+        confidence=Confidence(rule["confidence"]),
+        subdomain=subdomain,
+        url=url,
+        description=description,
+        evidence=evidence,
+        remediation=rule["remediation"],
+        cwe=rule["cwe"],
+        cwe_name=rule.get("cwe_name", ""),
+        wstg=rule.get("wstg"),
+        owasp=list(rule["owasp"]),
+        cvss_vector=rule["cvss_vector"],
+        cvss_score=cvss31_base_score(rule["cvss_vector"]),
+        references=list(rule.get("references", [])),
+        sources=sources or ["waptrix"],
+        tool_refs=tool_refs or [],
+    )
+
+
 class PassiveCheck(ABC):
     """A Burp-style passive audit rule group. Implementations must never issue network requests."""
 
@@ -97,26 +134,5 @@ class PassiveCheck(ABC):
     ) -> PassiveFinding:
         if rule_id not in self.rule_ids:
             raise ValueError(f"{self.name} emitted undeclared rule {rule_id}")
-        rule = get_rule(rule_id)
         location = url or (ctx.primary.final_url if ctx.primary else None) or ctx.target.https_url()
-        evidence = truncate(evidence)
-        description = rule["description"] if not detail else f"{rule['description']}\n\n{detail}"
-        return PassiveFinding(
-            id=PassiveFinding.make_id(rule_id, ctx.subdomain, location, evidence),
-            rule_id=rule_id,
-            title=rule["title"],
-            severity=Severity(rule["severity"]),
-            confidence=Confidence(rule["confidence"]),
-            subdomain=ctx.subdomain,
-            url=location,
-            description=description,
-            evidence=evidence,
-            remediation=rule["remediation"],
-            cwe=rule["cwe"],
-            cwe_name=rule.get("cwe_name", ""),
-            wstg=rule.get("wstg"),
-            owasp=list(rule["owasp"]),
-            cvss_vector=rule["cvss_vector"],
-            cvss_score=cvss31_base_score(rule["cvss_vector"]),
-            references=list(rule.get("references", [])),
-        )
+        return rule_finding(rule_id, ctx.subdomain, location, evidence, detail)

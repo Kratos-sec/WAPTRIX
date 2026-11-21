@@ -1,0 +1,58 @@
+[
+ {
+  "target": "https://fixture.test/",
+  "http_status": 200,
+  "request_config": {
+   "headers": {
+    "User-Agent": "WhatWeb/0.6.4"
+   }
+  },
+  "plugins": {
+   "Cookies": {
+    "string": [
+     "sid"
+    ]
+   },
+   "Country": {
+    "string": [
+     "RESERVED"
+    ],
+    "module": [
+     "ZZ"
+    ]
+   },
+   "HTML5": {},
+   "HTTPServer": {
+    "string": [
+     "nginx/1.30.7"
+    ]
+   },
+   "IP": {
+    "string": [
+     "172.19.0.5"
+    ]
+   },
+   "JQuery": {
+    "version": [
+     "1.8.1"
+    ]
+   },
+   "nginx": {
+    "version": [
+     "1.30.7"
+    ]
+   },
+   "PasswordField": {
+    "string": [
+     "p"
+    ]
+   },
+   "Script": {},
+   "Title": {
+    "string": [
+     "Fixture"
+    ]
+   }
+  }
+ }
+]

@@ -64,7 +64,7 @@ export default function IssueDrawer({ audit, ruleId, onClose, onBack }) {
       <div className="grid gap-3 sm:grid-cols-4">
         <Stat label="Instances" value={instances.length} />
         <Stat label="Hosts affected" value={`${hosts.length} of ${reachable}`} />
-        <Stat label="CVSS v3.1 base" value={rule.cvss_score.toFixed(1)} />
+        <Stat label="CVSS v3.1 base" value={rule.cvss_score != null ? rule.cvss_score.toFixed(1) : '—'} />
         <Stat label="Confidence" value={<span className="capitalize">{rule.confidence}</span>} />
       </div>
 
@@ -107,7 +107,7 @@ export default function IssueDrawer({ audit, ruleId, onClose, onBack }) {
             </div>
             <div>
               <div className="mb-1 text-xs text-slate-500">Weakness</div>
-              <Link href={cweUrl(rule.cwe)}>{rule.cwe} {rule.cwe_name}</Link>
+              {rule.cwe ? <Link href={cweUrl(rule.cwe)}>{rule.cwe} {rule.cwe_name}</Link> : <span className="text-xs text-slate-400">No CWE reported</span>}
             </div>
             <div>
               <div className="mb-1 text-xs text-slate-500">OWASP testing guide (WSTG v4.2)</div>
@@ -116,7 +116,7 @@ export default function IssueDrawer({ audit, ruleId, onClose, onBack }) {
           </div>
         </Section>
 
-        <Section title="CVSS v3.1 vector" right={<Link href={calculatorUrl(rule.cvss_vector)}>Open in FIRST calculator</Link>}>
+        {rule.cvss_vector ? <Section title="CVSS v3.1 vector" right={<Link href={calculatorUrl(rule.cvss_vector)}>Open in FIRST calculator</Link>}>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
             {describeVector(rule.cvss_vector).map((m) => (
               <div key={m.key} className="flex justify-between gap-2 border-b border-slate-800/60 py-1">
@@ -126,7 +126,11 @@ export default function IssueDrawer({ audit, ruleId, onClose, onBack }) {
             ))}
           </dl>
           <p className="mt-2 break-all font-mono text-[11px] text-slate-500">{rule.cvss_vector}</p>
-        </Section>
+        </Section> : (
+          <Section title="CVSS v3.1 vector">
+            <p className="text-sm text-slate-400">Reported by an external tool with no WAPTrix rule mapping, so no CVSS vector is assigned. Severity is the tool's own rating.</p>
+          </Section>
+        )}
       </div>
 
       <Section title={`Affected hosts (${hosts.length})`}>

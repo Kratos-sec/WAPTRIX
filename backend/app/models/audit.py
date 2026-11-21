@@ -28,6 +28,11 @@ class AuditRequest(BaseModel):
     timeout: float = Field(default=10.0, ge=1, le=60, description="Per-request timeout in seconds")
     allow_private: bool = Field(default=False, description="Permit targets resolving to private/loopback IPs")
     include_metadata: bool = Field(default=True, description="Fetch /robots.txt and /.well-known/security.txt")
+    tool_timeout: float = Field(default=600.0, ge=10, le=3600, description="Per-tool, per-host time limit in seconds")
+    tools: list[str] = Field(
+        default_factory=list,
+        description="External passive tools to run in addition to the built-in checks (see GET /api/tools)",
+    )
 
     @field_validator("subdomains")
     @classmethod
@@ -36,6 +41,19 @@ class AuditRequest(BaseModel):
         if not cleaned:
             raise ValueError("at least one subdomain is required")
         return cleaned
+
+    @field_validator("tools")
+    @classmethod
+    def _known_passive_tools(cls, value: list[str]) -> list[str]:
+        from app.tools.adapters import PASSIVE_ADAPTERS
+
+        wanted = list(dict.fromkeys(t.strip().lower() for t in value if t and t.strip()))
+        unknown = [t for t in wanted if t not in PASSIVE_ADAPTERS]
+        if unknown:
+            raise ValueError(
+                f"unknown or non-passive tool(s): {', '.join(unknown)}; passive tools: {', '.join(PASSIVE_ADAPTERS)}"
+            )
+        return wanted
 
 
 class RedirectHop(BaseModel):
@@ -79,6 +97,26 @@ class TLSInfo(BaseModel):
     error: str | None = None
 
 
+class ToolRunSummary(BaseModel):
+    """What one external tool did against one subdomain (raw output is not stored here)."""
+
+    tool: str
+    argv: list[str] = Field(default_factory=list)
+    started_at: datetime | None = None
+    duration_s: float = 0.0
+    exit_code: int | None = None
+    timed_out: bool = False
+    error: str | None = None
+    finding_count: int = 0
+    stderr_tail: str = ""
+
+
+class Technology(BaseModel):
+    name: str
+    version: str | None = None
+    source: str
+
+
 class CategoryStatus(str, Enum):
     PASS = "pass"
     WARNING = "warning"
@@ -109,6 +147,8 @@ class SubdomainResult(BaseModel):
     http: HttpObservation | None = None
     tls: TLSInfo | None = None
     findings: list[PassiveFinding] = Field(default_factory=list)
+    technologies: list[Technology] = Field(default_factory=list)
+    tool_runs: list[ToolRunSummary] = Field(default_factory=list)
     score: int | None = None
     grade: str = "N/A"
     categories: list[CategoryResult] = Field(default_factory=list)

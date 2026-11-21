@@ -201,6 +201,27 @@ static.example.com:8443
 | `--allow-private` | off | Permits targets that resolve to private or reserved IPs |
 | `--no-metadata` | off | Skips `robots.txt` and `security.txt` |
 | `--only` | — | Exports reports for a single subdomain |
+| `--tool` | — | Adds an external passive tool (repeatable): `whatweb`, `sslyze`, `testssl`, `retire`, `zap`, or `all`. Needs the Docker stack or local installs |
+| `--tool-timeout` | `600` | Time limit per tool, per host, in seconds |
+
+The API takes the same choice as `"tools": ["sslyze", "zap"]` in the `POST /api/audits` body.
+
+### External passive tools
+
+Each tool runs once per reachable host, after the built-in checks, and only in the ways listed here:
+
+| Tool | What it sends | What WAPTrix takes from it |
+| --- | --- | --- |
+| WhatWeb | One GET of the page URL (aggression level 1, redirects not followed) | Technology inventory; version banners |
+| SSLyze | TLS handshakes for protocol/cipher enumeration, certificate, curves, fallback SCSV, compression. Heartbleed, ROBOT, CCS-injection and renegotiation probes are never scheduled | Deprecated protocols, weak ciphers, trust, expiry, compression, SHA-1 chains |
+| testssl.sh | Protocol, server-defaults, standard cipher categories and forward-secrecy sections only. The vulnerability section (`-U`) is never run | The same TLS issues as a cross-check, plus anything else it rates LOW or worse |
+| Retire.js | Nothing itself. WAPTrix downloads up to 20 same-host scripts the page already loads, through its own rate-limited fetcher; off-host (CDN) scripts are never fetched | Vulnerable JavaScript libraries with CVEs |
+| OWASP ZAP | One GET of the page URL through the ZAP daemon (no spider, no active scan, redirects not followed). The site is removed from ZAP afterwards | ZAP passive-rule alerts |
+
+How results combine:
+- Where a tool reports an issue a built-in rule already covers, it maps onto that rule (same severity, CVSS and remediation). If the host already has that finding, the tool is added to the finding's `sources` instead of creating a second one, so agreement between engines does not lower the score twice.
+- Tool alerts with no matching rule become `<TOOL>-<id>` findings (for example `ZAP-10015`, `TESTSSL-CERT-REVOCATION`). They carry the tool's own severity and CWE, take their OWASP category from the CWE, and have no CVSS score.
+- Every tool run is recorded per subdomain in `tool_runs` (command, exit code, duration, errors). A tool that fails or times out never aborts the audit.
 
 ## REST API
 
@@ -283,3 +304,5 @@ To regenerate the bundled demo dataset: `python -m sample_data`.
 3. **Network guardrails.** Targets that resolve to private, loopback, link-local, CGNAT or reserved addresses are skipped unless `allow_private` is set. Wildcards are rejected, and an optional allowlist of scope domains limits the targets.
 4. **Rate limiting.** One shared limiter per host covers both HTTP requests and TLS handshakes.
 5. **Evidence hygiene.** Cookie values are redacted. Paths listed in `robots.txt` are reported but never requested.
+6. **External tools stay passive.** Only tools whose registry mode is passive can be selected; requests naming an active tool are rejected. Tools are started without a shell, with a hard time limit that kills the tool's whole process group.
+7. **Secrets.** The ZAP API key is read from `.env` (git-ignored) and sent only in the `X-ZAP-API-Key` header, never in a URL, so it cannot appear in error messages, tool-run records or reports.

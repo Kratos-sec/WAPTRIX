@@ -6,7 +6,7 @@ import math
 from collections import Counter, defaultdict
 from collections.abc import Iterable
 
-from app.compliance import categories, load_mapping
+from app.compliance import categories
 from app.models.audit import CategoryResult, CategoryStatus, ComplianceSummary, SubdomainResult
 from app.models.finding import SEVERITY_RANK, PassiveFinding, Severity
 
@@ -238,24 +238,22 @@ def summarize(subdomains: list[SubdomainResult]) -> ComplianceSummary:
             )
         )
 
-    rules = load_mapping()["rules"]
     rule_hosts: dict[str, set[str]] = defaultdict(set)
     rule_counts: Counter[str] = Counter()
+    rule_sample: dict[str, PassiveFinding] = {}
     for f in all_findings:
         rule_hosts[f.rule_id].add(f.subdomain)
         rule_counts[f.rule_id] += 1
+        rule_sample.setdefault(f.rule_id, f)
     top_rules = [
         {
             "rule_id": rule_id,
-            "title": rules.get(rule_id, {}).get("title", rule_id),
-            "severity": rules.get(rule_id, {}).get("severity", "info"),
+            "title": rule_sample[rule_id].title,
+            "severity": rule_sample[rule_id].severity.value,
             "count": count,
             "subdomains": len(rule_hosts[rule_id]),
         }
-        for rule_id, count in sorted(
-            rule_counts.items(),
-            key=lambda kv: (-SEVERITY_RANK[Severity(rules.get(kv[0], {}).get("severity", "info"))], -kv[1]),
-        )[:10]
+        for rule_id, count in sorted(rule_counts.items(), key=lambda kv: (-rule_sample[kv[0]].severity.rank, -kv[1]))[:10]
     ]
 
     return ComplianceSummary(

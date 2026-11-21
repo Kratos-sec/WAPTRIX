@@ -45,6 +45,7 @@ CSV_COLUMNS = [
     "wstg",
     "cvss_score",
     "cvss_vector",
+    "sources",
     "evidence",
     "remediation",
     "finding_id",
@@ -98,8 +99,9 @@ def export_csv(audit: AuditResult) -> bytes:
                 "owasp_2025": ";".join(f.owasp),
                 "cwe": f.cwe,
                 "wstg": f.wstg or "",
-                "cvss_score": f"{f.cvss_score:.1f}",
-                "cvss_vector": f.cvss_vector,
+                "cvss_score": f"{f.cvss_score:.1f}" if f.cvss_score is not None else "",
+                "cvss_vector": f.cvss_vector or "",
+                "sources": ";".join(f.sources),
                 "evidence": _safe_csv(f.evidence),
                 "remediation": _safe_csv(f.remediation),
                 "finding_id": f.id,
@@ -116,6 +118,22 @@ def _rule_name(title: str) -> str:
     return "".join(w[:1].upper() + w[1:] for w in words)
 
 
+def _meta_from_finding(f) -> dict:
+    """Rule metadata for tool-specific rules that have no entry in owasp_2025_map.json."""
+    return {
+        "title": f.title,
+        "description": f.description,
+        "remediation": f.remediation,
+        "references": f.references,
+        "severity": f.severity.value,
+        "confidence": f.confidence.value,
+        "cwe": f.cwe,
+        "owasp": f.owasp,
+        "wstg": f.wstg,
+        "cvss_vector": f.cvss_vector,
+    }
+
+
 def build_sarif(audit: AuditResult) -> dict:
     mapping = load_mapping()["rules"]
     findings = _all_findings(audit)
@@ -124,8 +142,8 @@ def build_sarif(audit: AuditResult) -> dict:
 
     rules = []
     for rule_id in used_rules:
-        meta = mapping[rule_id]
         sample = next(f for f in findings if f.rule_id == rule_id)
+        meta = mapping.get(rule_id) or _meta_from_finding(sample)
         refs = meta.get("references", [])
         rules.append(
             {
@@ -137,10 +155,10 @@ def build_sarif(audit: AuditResult) -> dict:
                 **({"helpUri": refs[0]} if refs else {}),
                 "defaultConfiguration": {"level": _SARIF_LEVEL[Severity(meta["severity"])]},
                 "properties": {
-                    "tags": ["security", meta["cwe"], *meta["owasp"], *([meta["wstg"]] if meta.get("wstg") else [])],
+                    "tags": ["security", *([meta["cwe"]] if meta["cwe"] else []), *meta["owasp"], *([meta["wstg"]] if meta.get("wstg") else [])],
                     "precision": _SARIF_PRECISION[meta["confidence"]],
-                    "security-severity": f"{sample.cvss_score:.1f}",
-                    "cvssV31Vector": meta["cvss_vector"],
+                    **({"security-severity": f"{sample.cvss_score:.1f}", "cvssV31Vector": meta["cvss_vector"]}
+                       if sample.cvss_score is not None else {}),
                     "problem.severity": meta["severity"],
                 },
             }
@@ -170,6 +188,8 @@ def build_sarif(audit: AuditResult) -> dict:
                     "wstg": f.wstg,
                     "cvssScore": f.cvss_score,
                     "cvssVector": f.cvss_vector,
+                    "sources": f.sources,
+                    "toolRefs": f.tool_refs,
                 },
             }
         )

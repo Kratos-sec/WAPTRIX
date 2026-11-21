@@ -1,0 +1,1285 @@
+{
+ "invalid_server_strings": [],
+ "server_scan_results": [
+  {
+   "uuid": "a19b1fc6-0193-4c49-bfd4-02744ebe1324",
+   "server_location": {
+    "hostname": "fixture.test",
+    "port": 443,
+    "connection_type": "DIRECT",
+    "ip_address": "172.19.0.5",
+    "http_proxy_settings": null
+   },
+   "network_configuration": {
+    "tls_server_name_indication": "fixture.test",
+    "tls_opportunistic_encryption": null,
+    "tls_client_auth_credentials": null,
+    "xmpp_to_hostname": null,
+    "network_timeout": 5,
+    "network_max_retries": 3
+   },
+   "connectivity_status": "COMPLETED",
+   "connectivity_error_trace": null,
+   "connectivity_result": null,
+   "scan_status": "COMPLETED",
+   "scan_result": {
+    "certificate_info": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "hostname_used_for_server_name_indication": "fixture.test",
+      "certificate_deployments": [
+       {
+        "received_certificate_chain": [
+         {
+          "hpkp_pin": "QHeqc9lOwVsnpKAzyf8nyUZWAFNyrkim3xx/90AB7+s=",
+          "fingerprint_sha1": "6X8uqYs2SjwspcdVKreSVKC6u6Y=",
+          "fingerprint_sha256": "z58Mt0xI32FaiQCtDbpJhYTg3RllG/aVcL5+tdRvXDU=",
+          "serial_number": 262990438527677328177897623521705598772131441677,
+          "not_valid_before": "2026-11-21T13:22:54Z",
+          "not_valid_after": "2026-12-21T13:22:54Z",
+          "subject_alternative_name": {
+           "dns_names": [],
+           "ip_addresses": []
+          },
+          "signature_hash_algorithm": {
+           "name": "sha256",
+           "digest_size": 32
+          },
+          "signature_algorithm_oid": {
+           "name": "sha256WithRSAEncryption",
+           "dotted_string": "1.2.840.113549.1.1.11"
+          },
+          "subject": {
+           "rfc4514_string": "CN=fixture",
+           "attributes": [
+            {
+             "oid": {
+              "name": "commonName",
+              "dotted_string": "2.5.4.3"
+             },
+             "value": "fixture",
+             "rfc4514_string": "CN=fixture"
+            }
+           ]
+          },
+          "issuer": {
+           "rfc4514_string": "CN=fixture",
+           "attributes": [
+            {
+             "oid": {
+              "name": "commonName",
+              "dotted_string": "2.5.4.3"
+             },
+             "value": "fixture",
+             "rfc4514_string": "CN=fixture"
+            }
+           ]
+          }
+         }
+        ],
+        "leaf_certificate_has_must_staple_extension": false,
+        "leaf_certificate_is_ev": false,
+        "leaf_certificate_signed_certificate_timestamps_count": 0,
+        "received_chain_contains_anchor_certificate": null,
+        "received_chain_has_valid_order": true,
+        "path_validation_results": [
+         {
+          "trust_store": {
+           "path": "(trust store)",
+           "name": "Android",
+           "version": "16.0.0_r4",
+           "ev_oids": null
+          },
+          "verified_certificate_chain": null,
+          "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+          "was_validation_successful": false
+         },
+         {
+          "trust_store": {
+           "path": "(trust store)",
+           "name": "Apple",
+           "version": "iOS 26, iPadOS 26, macOS 26, tvOS 26, visionOS 26 and watchOS 26",
+           "ev_oids": null
+          },
+          "verified_certificate_chain": null,
+          "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+          "was_validation_successful": false
+         },
+         {
+          "trust_store": {
+           "path": "(trust store)",
+           "name": "Java",
+           "version": "jdk-13.0.2",
+           "ev_oids": null
+          },
+          "verified_certificate_chain": null,
+          "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+          "was_validation_successful": false
+         },
+         {
+          "trust_store": {
+           "path": "(trust store)",
+           "name": "Mozilla",
+           "version": "2026-03-28",
+           "ev_oids": [
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.2.276.0.44.1.1.1.4"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.2.392.200091.100.721.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.2.40.0.17.1.22"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.2.616.1.113527.2.5.1.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.159.1.17.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.13177.10.1.3.10"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.14370.1.6"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.14777.6.1.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.14777.6.1.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.17326.10.14.2.1.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.17326.10.14.2.2.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.17326.10.8.12.1.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.17326.10.8.12.2.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.22234.2.5.2.3.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.23223.1.1.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.29836.1.10"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.34697.2.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.34697.2.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.34697.2.3"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.34697.2.4"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.36305.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.40869.1.1.22.3"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.4146.1.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.4788.2.202.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.6334.1.100.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.6449.1.2.1.5.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.782.1.2.1.8.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.7879.13.24.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "1.3.6.1.4.1.8024.0.2.100.1.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.156.112554.3"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.528.1.1003.1.2.7"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.578.1.26.1.3.3"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.756.1.83.21.0"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.756.1.89.1.2.1.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.792.3.0.3.1.1.5"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.792.3.0.4.1.1.4"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.113733.1.7.23.6"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.113733.1.7.48.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.114028.10.1.2"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.114171.500.9"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.114404.1.1.2.4.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.114412.2.1"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.114413.1.7.23.3"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.114414.1.7.23.3"
+            },
+            {
+             "name": "Unknown OID",
+             "dotted_string": "2.16.840.1.114414.1.7.24.3"
+            }
+           ]
+          },
+          "verified_certificate_chain": null,
+          "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+          "was_validation_successful": false
+         },
+         {
+          "trust_store": {
+           "path": "(trust store)",
+           "name": "Windows",
+           "version": "2026-03-28",
+           "ev_oids": null
+          },
+          "verified_certificate_chain": null,
+          "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+          "was_validation_successful": false
+         }
+        ],
+        "verified_chain_has_sha1_signature": null,
+        "verified_chain_has_legacy_symantec_anchor": null,
+        "ocsp_response": null,
+        "ocsp_response_is_trusted": null,
+        "verified_certificate_chain": null
+       }
+      ],
+      "certificate_deployment_with_sni_disabled": {
+       "received_certificate_chain": [
+        {
+         "as_pem": "-----BEGIN CERTIFICATE-----\nMIIDBTCCAe2gAwIBAgIULhDmLQYeb8R4g7uK0/W3wkG8rA0wDQYJKoZIhvcNAQEL\nBQAwEjEQMA4GA1UEAwwHZml4dHVyZTAeFw0yNjExMjExMzIyNTRaFw0yNjEyMjEx\nMzIyNTRaMBIxEDAOBgNVBAMMB2ZpeHR1cmUwggEiMA0GCSqGSIb3DQEBAQUAA4IB\nDwAwggEKAoIBAQDR4kyfdyg/ZkW3R1amgNaWBcbLq7ozcH+9iIDsZag6/vfJ/KkE\n7wMhfQ8AKzVWHhMBGBnYgjfkVaURilIktVnE1m6njfGs5YusTsQ2zpTdo1eRf87s\n9zkfnlfHIucaqHy5wT9NCsSxzdB49XpC50cNuMO9xofr+Gk2jbz0xi4ZoVqUUgRV\ndCMMptRNqquPMKXbj7qqrDQXv4ONUcrfw979HIDU9NAqAgmdm2xWFg2MHACljMa2\njcw/SXH3wbdI8oYwo1BTncEh9bVv6ssbB/B+FcOYI64LiTXQ6Mt+RAvd0xblnHfv\nUsFOhyzs3xRI9MeJD63eoBATQC5tNapbH0JlAgMBAAGjUzBRMB0GA1UdDgQWBBSe\n0Xt+QYeJiEhTUKbONEYPb6vVJTAfBgNVHSMEGDAWgBSe0Xt+QYeJiEhTUKbONEYP\nb6vVJTAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQCXc3HI6CeF\n0C3jNHWl4Wr0lRI5r6hLtCUN7xXxuzYFQrssPkXubFLaTHYpWwxR7X+YJx6aXG8b\nZEvW2qyoeDe46hbkboQL6lr8wNxylCp5Snxh3z1i9zdhMVCl2hExUlU4uAV7ef5g\n6kx2G49Kqd2qhbo/IG1Gd+7z9FP6iMA/3/BAx1Ob6vRDxa126PFVcF12ajVyPoGD\n5F20agoannXPEL3VY87Zm9NvFrbDaftMJuzN4rjq6gFwIe+Lw3mWGYfZDigepg6O\nPyqFh1pFYgPCQDsX3RfgxMqY2N96PPueWywTPpvwy6g27kjkwxlNuVeN2by2U/gF\nN0y0MTyDhMnS\n-----END CERTIFICATE-----\n",
+         "hpkp_pin": "QHeqc9lOwVsnpKAzyf8nyUZWAFNyrkim3xx/90AB7+s=",
+         "fingerprint_sha1": "6X8uqYs2SjwspcdVKreSVKC6u6Y=",
+         "fingerprint_sha256": "z58Mt0xI32FaiQCtDbpJhYTg3RllG/aVcL5+tdRvXDU=",
+         "serial_number": 262990438527677328177897623521705598772131441677,
+         "not_valid_before": "2026-11-21T13:22:54Z",
+         "not_valid_after": "2026-12-21T13:22:54Z",
+         "subject_alternative_name": {
+          "dns_names": [],
+          "ip_addresses": []
+         },
+         "signature_hash_algorithm": {
+          "name": "sha256",
+          "digest_size": 32
+         },
+         "signature_algorithm_oid": {
+          "name": "sha256WithRSAEncryption",
+          "dotted_string": "1.2.840.113549.1.1.11"
+         },
+         "subject": {
+          "rfc4514_string": "CN=fixture",
+          "attributes": [
+           {
+            "oid": {
+             "name": "commonName",
+             "dotted_string": "2.5.4.3"
+            },
+            "value": "fixture",
+            "rfc4514_string": "CN=fixture"
+           }
+          ]
+         },
+         "issuer": {
+          "rfc4514_string": "CN=fixture",
+          "attributes": [
+           {
+            "oid": {
+             "name": "commonName",
+             "dotted_string": "2.5.4.3"
+            },
+            "value": "fixture",
+            "rfc4514_string": "CN=fixture"
+           }
+          ]
+         },
+         "public_key": {
+          "algorithm": "RSAPublicKey",
+          "key_size": 2048,
+          "rsa_e": 65537,
+          "rsa_n": 26495398085907988023973295357919933712461399693853606965409444980206634375372481459964798041658929048613996993541244636198165459881511924786799139801324183597035341307236597382058318514444730229592268932696087617732301120506960800063302997698922097439696468792272956085283395120864872281353336672951630068023230018819307043975613532884281095059065002059190951554134166727105905379142687265714610128734652926319297423744844918589984214905961803242255915096420150105477740825654018942594087714855477863448723317151372178845019742904780928203080988920845869436566594054746357147970817391130488374974523300802468710924901,
+          "ec_curve_name": null,
+          "ec_x": null,
+          "ec_y": null
+         }
+        }
+       ],
+       "leaf_certificate_has_must_staple_extension": false,
+       "leaf_certificate_is_ev": false,
+       "leaf_certificate_signed_certificate_timestamps_count": 0,
+       "received_chain_contains_anchor_certificate": null,
+       "received_chain_has_valid_order": true,
+       "path_validation_results": [
+        {
+         "trust_store": {
+          "path": "/opt/venv/lib/python3.14/site-packages/sslyze/plugins/certificate_info/trust_stores/pem_files/google_aosp.pem",
+          "name": "Android",
+          "version": "16.0.0_r4",
+          "ev_oids": null
+         },
+         "verified_certificate_chain": null,
+         "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+         "was_validation_successful": false
+        },
+        {
+         "trust_store": {
+          "path": "/opt/venv/lib/python3.14/site-packages/sslyze/plugins/certificate_info/trust_stores/pem_files/apple.pem",
+          "name": "Apple",
+          "version": "iOS 26, iPadOS 26, macOS 26, tvOS 26, visionOS 26 and watchOS 26",
+          "ev_oids": null
+         },
+         "verified_certificate_chain": null,
+         "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+         "was_validation_successful": false
+        },
+        {
+         "trust_store": {
+          "path": "/opt/venv/lib/python3.14/site-packages/sslyze/plugins/certificate_info/trust_stores/pem_files/oracle_java.pem",
+          "name": "Java",
+          "version": "jdk-13.0.2",
+          "ev_oids": null
+         },
+         "verified_certificate_chain": null,
+         "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+         "was_validation_successful": false
+        },
+        {
+         "trust_store": {
+          "path": "/opt/venv/lib/python3.14/site-packages/sslyze/plugins/certificate_info/trust_stores/pem_files/mozilla_nss.pem",
+          "name": "Mozilla",
+          "version": "2026-03-28",
+          "ev_oids": [
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.2.276.0.44.1.1.1.4"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.2.392.200091.100.721.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.2.40.0.17.1.22"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.2.616.1.113527.2.5.1.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.159.1.17.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.13177.10.1.3.10"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.14370.1.6"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.14777.6.1.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.14777.6.1.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.17326.10.14.2.1.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.17326.10.14.2.2.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.17326.10.8.12.1.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.17326.10.8.12.2.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.22234.2.5.2.3.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.23223.1.1.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.29836.1.10"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.34697.2.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.34697.2.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.34697.2.3"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.34697.2.4"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.36305.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.40869.1.1.22.3"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.4146.1.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.4788.2.202.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.6334.1.100.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.6449.1.2.1.5.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.782.1.2.1.8.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.7879.13.24.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "1.3.6.1.4.1.8024.0.2.100.1.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.156.112554.3"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.528.1.1003.1.2.7"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.578.1.26.1.3.3"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.756.1.83.21.0"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.756.1.89.1.2.1.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.792.3.0.3.1.1.5"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.792.3.0.4.1.1.4"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.113733.1.7.23.6"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.113733.1.7.48.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.114028.10.1.2"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.114171.500.9"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.114404.1.1.2.4.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.114412.2.1"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.114413.1.7.23.3"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.114414.1.7.23.3"
+           },
+           {
+            "name": "Unknown OID",
+            "dotted_string": "2.16.840.1.114414.1.7.24.3"
+           }
+          ]
+         },
+         "verified_certificate_chain": null,
+         "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+         "was_validation_successful": false
+        },
+        {
+         "trust_store": {
+          "path": "/opt/venv/lib/python3.14/site-packages/sslyze/plugins/certificate_info/trust_stores/pem_files/microsoft_windows.pem",
+          "name": "Windows",
+          "version": "2026-03-28",
+          "ev_oids": null
+         },
+         "verified_certificate_chain": null,
+         "validation_error": "validation failed: missing required extension: leaf server certificate has no subjectAltName (encountered processing <Certificate(subject=<Name(CN=fixture)>, ...)>)",
+         "was_validation_successful": false
+        }
+       ],
+       "verified_chain_has_sha1_signature": null,
+       "verified_chain_has_legacy_symantec_anchor": null,
+       "ocsp_response": null,
+       "ocsp_response_is_trusted": null,
+       "verified_certificate_chain": null
+      }
+     }
+    },
+    "ssl_2_0_cipher_suites": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "tls_version_used": "SSL_2_0",
+      "is_tls_version_supported": false,
+      "accepted_cipher_suites": []
+     }
+    },
+    "ssl_3_0_cipher_suites": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "tls_version_used": "SSL_3_0",
+      "is_tls_version_supported": false,
+      "accepted_cipher_suites": []
+     }
+    },
+    "tls_1_0_cipher_suites": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "tls_version_used": "TLS_1_0",
+      "is_tls_version_supported": false,
+      "accepted_cipher_suites": []
+     }
+    },
+    "tls_1_1_cipher_suites": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "tls_version_used": "TLS_1_1",
+      "is_tls_version_supported": false,
+      "accepted_cipher_suites": []
+     }
+    },
+    "tls_1_2_cipher_suites": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "tls_version_used": "TLS_1_2",
+      "is_tls_version_supported": true,
+      "accepted_cipher_suites": [
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_CAMELLIA_256_CBC_SHA256",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "CAMELLIA256-SHA256"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_CAMELLIA_256_CBC_SHA",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "CAMELLIA256-SHA"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "CAMELLIA128-SHA256"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "CAMELLIA128-SHA"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_ARIA_256_GCM_SHA384",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "ARIA256-GCM-SHA384"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_ARIA_128_GCM_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "ARIA128-GCM-SHA256"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_AES_256_GCM_SHA384",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "AES256-GCM-SHA384"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_AES_256_CCM",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "AES256-CCM"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_AES_256_CBC_SHA256",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "AES256-SHA256"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_AES_256_CBC_SHA",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "AES256-SHA"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_AES_128_GCM_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "AES128-GCM-SHA256"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_AES_128_CCM",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "AES128-CCM"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_AES_128_CBC_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "AES128-SHA256"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_RSA_WITH_AES_128_CBC_SHA",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "AES128-SHA"
+        },
+        "ephemeral_key": null
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "ECDHE-RSA-CHACHA20-POLY1305"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 253,
+         "public_bytes": "DhuWSKcLDmV5S1HHRQ7s2CpRGnMFNmOCJzpGXQzh1n8=",
+         "curve_name": "X25519",
+         "x": null,
+         "y": null,
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_CAMELLIA_256_CBC_SHA384",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "ECDHE-RSA-CAMELLIA256-SHA384"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 253,
+         "public_bytes": "iOr046kYACuCH1NCp62zzhLwcDDVLtNc/7qNvxRW/kI=",
+         "curve_name": "X25519",
+         "x": null,
+         "y": null,
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_CAMELLIA_128_CBC_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "ECDHE-RSA-CAMELLIA128-SHA256"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 253,
+         "public_bytes": "f9WA81vYhnkRuMNuKPbnGGRW8rUFcelpVV5CNutnCkU=",
+         "curve_name": "X25519",
+         "x": null,
+         "y": null,
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_ARIA_256_GCM_SHA384",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "ECDHE-ARIA256-GCM-SHA384"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 253,
+         "public_bytes": "Wjfn6Gs0VNl2j1r5lpaSYxlaH2g8yq77u796snVJ9kI=",
+         "curve_name": "X25519",
+         "x": null,
+         "y": null,
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_ARIA_128_GCM_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "ECDHE-ARIA128-GCM-SHA256"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 253,
+         "public_bytes": "KBsJkBppkxRPDEmgeytMIYOtOvZmBthT3iLghW01sgU=",
+         "curve_name": "X25519",
+         "x": null,
+         "y": null,
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "ECDHE-RSA-AES256-GCM-SHA384"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 256,
+         "public_bytes": "BOhjan/SJf3P61hci9XiGpItBuKGkKA7ae2jfqbcZ+yulD2KQzLUn6hSldiD51ny59kJprJ5gAmBQ4e+A3Vtd2c=",
+         "curve_name": "secp256r1",
+         "x": "6GNqf9Il/c/rWFyL1eIaki0G4oaQoDtp7aN+ptxn7K4=",
+         "y": "lD2KQzLUn6hSldiD51ny59kJprJ5gAmBQ4e+A3Vtd2c=",
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "ECDHE-RSA-AES256-SHA384"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 256,
+         "public_bytes": "BM3K0yYvHcsWq47j3l2aG1Kwly5/bgaTTpxrgnaaUY1ng0ix3Y778EAG6gj1T+wQWnmisvvPW/N8JaQkW42wO80=",
+         "curve_name": "secp256r1",
+         "x": "zcrTJi8dyxarjuPeXZobUrCXLn9uBpNOnGuCdppRjWc=",
+         "y": "g0ix3Y778EAG6gj1T+wQWnmisvvPW/N8JaQkW42wO80=",
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "ECDHE-RSA-AES256-SHA"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 256,
+         "public_bytes": "BByxtsGJh04QM5BQY9jJda/ME4xDJnt3cLeBm6QwMTexPYJwBbVOgZDLTdlB/R3AWUQJOcj1OGAT4SWUnkOg8c8=",
+         "curve_name": "secp256r1",
+         "x": "HLG2wYmHThAzkFBj2Ml1r8wTjEMme3dwt4GbpDAxN7E=",
+         "y": "PYJwBbVOgZDLTdlB/R3AWUQJOcj1OGAT4SWUnkOg8c8=",
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "ECDHE-RSA-AES128-GCM-SHA256"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 256,
+         "public_bytes": "BB3gtQaDCPHRBUypubCx8wva8qdrAuEsG7rFd1Piz7UIVFrZZDZgyUnCGEpQzi125Hq2bniE/WCecALgfPtrRKw=",
+         "curve_name": "secp256r1",
+         "x": "HeC1BoMI8dEFTKm5sLHzC9ryp2sC4SwbusV3U+LPtQg=",
+         "y": "VFrZZDZgyUnCGEpQzi125Hq2bniE/WCecALgfPtrRKw=",
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "ECDHE-RSA-AES128-SHA256"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 256,
+         "public_bytes": "BOouYszCyJSDOMV8JcALftsaXw3wHr1x9YjbJK1jB6enVSMIG7myKmQaqM6SVNOHARfQKXkGYH8xyFTZL6am9uU=",
+         "curve_name": "secp256r1",
+         "x": "6i5izMLIlIM4xXwlwAt+2xpfDfAevXH1iNskrWMHp6c=",
+         "y": "VSMIG7myKmQaqM6SVNOHARfQKXkGYH8xyFTZL6am9uU=",
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "ECDHE-RSA-AES128-SHA"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 256,
+         "public_bytes": "BL5ldSfJmGnwvH2N4Xy7A3phEvg0Z4JFZ+1DwvS/oorIKahlg2D+n4hLNMrWUTXQ9S4dAdExAJk/sOlJMnoXHd8=",
+         "curve_name": "secp256r1",
+         "x": "vmV1J8mYafC8fY3hfLsDemES+DRngkVn7UPC9L+iisg=",
+         "y": "Kahlg2D+n4hLNMrWUTXQ9S4dAdExAJk/sOlJMnoXHd8=",
+         "prime": null,
+         "generator": null
+        }
+       }
+      ]
+     }
+    },
+    "tls_1_3_cipher_suites": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "tls_version_used": "TLS_1_3",
+      "is_tls_version_supported": true,
+      "accepted_cipher_suites": [
+       {
+        "cipher_suite": {
+         "name": "TLS_CHACHA20_POLY1305_SHA256",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "TLS_CHACHA20_POLY1305_SHA256"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 253,
+         "public_bytes": "eIjzm09o7fS5WkCouh2FhSeJB3VFVtHeTaTLjypmxVI=",
+         "curve_name": "X25519",
+         "x": null,
+         "y": null,
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_AES_256_GCM_SHA384",
+         "is_anonymous": false,
+         "key_size": 256,
+         "openssl_name": "TLS_AES_256_GCM_SHA384"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 253,
+         "public_bytes": "611Q4MEWXFWyGOAWPLio3RnUf7lOwYx+PG6CpGsRNB4=",
+         "curve_name": "X25519",
+         "x": null,
+         "y": null,
+         "prime": null,
+         "generator": null
+        }
+       },
+       {
+        "cipher_suite": {
+         "name": "TLS_AES_128_GCM_SHA256",
+         "is_anonymous": false,
+         "key_size": 128,
+         "openssl_name": "TLS_AES_128_GCM_SHA256"
+        },
+        "ephemeral_key": {
+         "type_name": "ECDH",
+         "size": 253,
+         "public_bytes": "bTIkurMEPGmr+/+dsJbctf4YTcYv2tw3lUz2bqdFYVo=",
+         "curve_name": "X25519",
+         "x": null,
+         "y": null,
+         "prime": null,
+         "generator": null
+        }
+       }
+      ]
+     }
+    },
+    "tls_compression": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "supports_compression": false
+     }
+    },
+    "tls_1_3_early_data": {
+     "status": "NOT_SCHEDULED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": null
+    },
+    "openssl_ccs_injection": {
+     "status": "NOT_SCHEDULED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": null
+    },
+    "tls_fallback_scsv": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "supports_fallback_scsv": true
+     }
+    },
+    "heartbleed": {
+     "status": "NOT_SCHEDULED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": null
+    },
+    "robot": {
+     "status": "NOT_SCHEDULED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": null
+    },
+    "session_renegotiation": {
+     "status": "NOT_SCHEDULED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": null
+    },
+    "session_resumption": {
+     "status": "NOT_SCHEDULED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": null
+    },
+    "elliptic_curves": {
+     "status": "COMPLETED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": {
+      "supports_ecdh_key_exchange": true,
+      "supported_curves": [
+       {
+        "name": "X25519",
+        "openssl_nid": 1034
+       },
+       {
+        "name": "X448",
+        "openssl_nid": 1035
+       },
+       {
+        "name": "secp256r1",
+        "openssl_nid": 415
+       },
+       {
+        "name": "secp384r1",
+        "openssl_nid": 715
+       },
+       {
+        "name": "secp521r1",
+        "openssl_nid": 716
+       }
+      ],
+      "rejected_curves": [
+       {
+        "name": "brainpoolP256r1",
+        "openssl_nid": 927
+       },
+       {
+        "name": "brainpoolP384r1",
+        "openssl_nid": 931
+       },
+       {
+        "name": "brainpoolP512r1",
+        "openssl_nid": 933
+       },
+       {
+        "name": "secp160k1",
+        "openssl_nid": 708
+       },
+       {
+        "name": "secp160r1",
+        "openssl_nid": 709
+       },
+       {
+        "name": "secp160r2",
+        "openssl_nid": 710
+       },
+       {
+        "name": "secp192k1",
+        "openssl_nid": 711
+       },
+       {
+        "name": "secp192r1",
+        "openssl_nid": 409
+       },
+       {
+        "name": "secp224k1",
+        "openssl_nid": 712
+       },
+       {
+        "name": "secp224r1",
+        "openssl_nid": 713
+       },
+       {
+        "name": "secp256k1",
+        "openssl_nid": 714
+       },
+       {
+        "name": "sect163k1",
+        "openssl_nid": 721
+       },
+       {
+        "name": "sect163r1",
+        "openssl_nid": 722
+       },
+       {
+        "name": "sect163r2",
+        "openssl_nid": 723
+       },
+       {
+        "name": "sect193r1",
+        "openssl_nid": 724
+       },
+       {
+        "name": "sect193r2",
+        "openssl_nid": 725
+       },
+       {
+        "name": "sect233k1",
+        "openssl_nid": 726
+       },
+       {
+        "name": "sect233r1",
+        "openssl_nid": 727
+       },
+       {
+        "name": "sect239k1",
+        "openssl_nid": 728
+       },
+       {
+        "name": "sect283k1",
+        "openssl_nid": 729
+       },
+       {
+        "name": "sect283r1",
+        "openssl_nid": 730
+       },
+       {
+        "name": "sect409k1",
+        "openssl_nid": 731
+       },
+       {
+        "name": "sect409r1",
+        "openssl_nid": 732
+       },
+       {
+        "name": "sect571k1",
+        "openssl_nid": 733
+       },
+       {
+        "name": "sect571r1",
+        "openssl_nid": 734
+       }
+      ]
+     }
+    },
+    "http_headers": {
+     "status": "NOT_SCHEDULED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": null
+    },
+    "tls_extended_master_secret": {
+     "status": "NOT_SCHEDULED",
+     "error_reason": null,
+     "error_trace": null,
+     "result": null
+    }
+   }
+  }
+ ],
+ "date_scans_started": "2026-11-21T13:23:50.701441Z",
+ "date_scans_completed": "2026-11-21T13:23:51.103379Z",
+ "sslyze_version": "6.3.1",
+ "sslyze_url": "https://github.com/nabla-c0d3/sslyze"
+}
