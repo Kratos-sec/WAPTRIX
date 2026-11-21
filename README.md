@@ -81,7 +81,35 @@ WAPTRIX/
 
 ## Quick Start
 
-### Prerequisites
+### Option A: Docker Compose (recommended, includes the external tools)
+
+Works the same on Linux, macOS and Windows (Docker Desktop with WSL2). Images are built locally, so each machine gets a native build (x86-64 or ARM64).
+
+```bash
+git clone https://github.com/Kratos-sec/WAPTRIX.git
+cd WAPTRIX
+cp .env.example .env                 # set ZAP_API_KEY, e.g. openssl rand -hex 24
+docker compose up --build -d
+```
+
+Open `http://localhost:8080`. The API is proxied at `http://localhost:8080/api`. Only that port is published, and only on `127.0.0.1`.
+
+| Service | Contents |
+| --- | --- |
+| `api` | FastAPI backend plus the tool belt (Kali point-release base): Nmap, WhatWeb, Nikto, Wapiti, sqlmap, testssl.sh, Nuclei, Retire.js, SSLyze. Runs as an unprivileged user |
+| `zap` | OWASP ZAP 2.17 in daemon mode, reachable only inside the stack, protected by `ZAP_API_KEY` |
+| `web` | nginx serving the built dashboard |
+
+Check what is installed: `curl localhost:8080/api/tools` or `docker compose exec api waptrix tools`.
+
+Notes:
+- ZAP needs 2–4 GB of memory. On Docker Desktop, give the VM at least 4 GB.
+- To audit an app running on your own machine, target `host.docker.internal`.
+- Data lives in the `waptrix-data` volume. `docker compose down -v` deletes it.
+
+### Option B: Local install (built-in checks only)
+
+#### Prerequisites
 
 - **Python 3.11+**
 - **Node.js 18+** and `npm`
@@ -91,7 +119,7 @@ WAPTRIX/
 
   Without them, PDF exports fall back to a print-ready HTML report.
 
-### 1. Backend
+#### 1. Backend
 
 ```bash
 git clone https://github.com/Kratos-sec/WAPTRIX.git
@@ -103,7 +131,7 @@ pip install -r requirements.txt
 pip install -e .                     # optional: installs the `waptrix` command
 ```
 
-### 2. Run the API
+#### 2. Run the API
 
 ```bash
 uvicorn app.main:app --reload --port 8000
@@ -112,7 +140,7 @@ uvicorn app.main:app --reload --port 8000
 
 The API is at `http://localhost:8000`, with Swagger docs at `http://localhost:8000/docs`.
 
-### 3. Run the dashboard
+#### 3. Run the dashboard
 
 Run this in a second terminal:
 
@@ -149,6 +177,9 @@ python -m app.cli demo --out ./demo_reports
 
 # List every rule with its OWASP 2025 / CWE / WSTG / CVSS mapping
 python -m app.cli rules
+
+# Show which external tools are installed, with versions
+python -m app.cli tools
 ```
 
 Example `subdomains.txt` (blank lines and `#` comments are ignored; URLs are normalized to hosts):
@@ -178,6 +209,7 @@ static.example.com:8443
 | `GET` | `/api/health` | Version, mode, PDF engine availability |
 | `GET` | `/api/owasp` | OWASP Top 10 (2025) categories with passive coverage |
 | `GET` | `/api/rules` | Rule catalog with mappings and CVSS scores |
+| `GET` | `/api/tools` | External tools: installed or reachable, version, stage, passive/active |
 | `POST` | `/api/audits` | Starts an audit (`AuditRequest`). Returns `202` with targets and scope rejections |
 | `GET` | `/api/audits` | Lists audits |
 | `GET` | `/api/audits/{id}` | Full result, plus `progress` while running |
@@ -193,6 +225,8 @@ Configuration is set through environment variables:
 | `WAPTRIX_DB` | `backend/waptrix.db` | Path to the SQLite database |
 | `WAPTRIX_CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Allowed CORS origins |
 | `WAPTRIX_LOG_LEVEL` | `INFO` | Log level |
+| `WAPTRIX_ZAP_URL` | `http://127.0.0.1:8090` | ZAP daemon API address |
+| `WAPTRIX_ZAP_API_KEY` | — | ZAP API key |
 
 ## OWASP Top 10 (2025) Passive Coverage
 

@@ -199,6 +199,26 @@ def list_rules() -> None:
     console.print(table)
 
 
+@app.command("tools")
+def list_tools() -> None:
+    """Show which external security tools are installed, with versions."""
+    from app.tools import detect_all
+
+    table = Table(header_style="bold cyan")
+    for col in ("Tool", "Stage", "Modes", "Status", "Version", "Location / detail"):
+        table.add_column(col)
+    for status in asyncio.run(detect_all()):
+        table.add_row(
+            status.display,
+            status.stage,
+            ", ".join(m.value for m in status.modes),
+            "[green]available[/]" if status.available else "[red]missing[/]",
+            status.version or "—",
+            status.location if status.available else (status.detail or status.location or ""),
+        )
+    console.print(table)
+
+
 @app.command()
 def serve(
     host: str = typer.Option("127.0.0.1", help="Bind address"),

@@ -64,3 +64,10 @@ def test_api_sets_security_headers(client):
     response = client.get("/api/health")
     assert response.headers["x-content-type-options"] == "nosniff"
     assert response.headers["cache-control"] == "no-store"
+
+
+def test_tools_status_endpoint(client):
+    tools = client.get("/api/tools").json()
+    names = {t["name"] for t in tools}
+    assert {"zap", "nmap", "sqlmap", "sslyze", "whatweb"} <= names
+    assert all(isinstance(t["available"], bool) and t["modes"] for t in tools)

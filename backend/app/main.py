@@ -23,6 +23,7 @@ from app.engine.passive_auditor import PassiveAuditor
 from app.engine.scope_guard import ScopeError, build_scope
 from app.models.audit import ENGINE_VERSION, AuditListItem, AuditRequest, AuditResult, SubdomainResult
 from app.reporting.exporter import FORMATS, ExportError, render, report_basename
+from app.tools import ToolStatus, detect_all
 
 logger = logging.getLogger("waptrix.api")
 logging.basicConfig(level=os.environ.get("WAPTRIX_LOG_LEVEL", "INFO"))
@@ -139,6 +140,12 @@ def pdf_engine_available() -> bool:
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     return {"status": "ok", "version": ENGINE_VERSION, "mode": "passive", "pdf_engine": pdf_engine_available()}
+
+
+@app.get("/api/tools", response_model=list[ToolStatus])
+async def tools() -> list[ToolStatus]:
+    """Which external tools are installed or reachable, with versions."""
+    return await detect_all()
 
 
 @app.get("/api/owasp")
