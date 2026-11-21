@@ -221,3 +221,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# WAPTrix
+node_modules/
+frontend/dist/
+*.db
+*.db-journal
+reports/
+demo_reports/
+.DS_Store
