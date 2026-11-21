@@ -6,6 +6,7 @@ opt-in: these tests pin the gating rules (explicit opt-in + declared scope) that
 
 from __future__ import annotations
 
+import httpx
 import pytest
 from pydantic import ValidationError
 
@@ -19,6 +20,7 @@ from app.tools.adapters.nmap import NmapAdapter
 from app.tools.adapters.nuclei import NucleiAdapter
 from app.tools.adapters.sqlmap import SqlmapAdapter
 from app.tools.adapters.wapiti import WapitiAdapter
+from app.tools.adapters.zap import ZapActiveAdapter
 
 
 @pytest.fixture
@@ -213,4 +215,78 @@ def test_auditor_omits_active_adapters_when_not_opted_in():
 
 def test_registries_are_disjoint():
     assert set(PASSIVE_ADAPTERS) & set(ACTIVE_ADAPTERS) == set()
-    assert set(ACTIVE_ADAPTERS) == {"nmap", "nuclei", "nikto", "wapiti", "sqlmap"}
+    assert set(ACTIVE_ADAPTERS) == {"nmap", "nuclei", "nikto", "wapiti", "sqlmap", "zap-active"}
+
+
+# --------------------------------------------------------------------------- ZAP active scan
+
+ZAP_ACTIVE_ALERTS = [
+    {"pluginId": "10038", "name": "CSP Header Not Set", "risk": "Medium", "confidence": "High",
+     "cweid": "693", "evidence": "", "url": "https://fixture.test/"},
+    {"pluginId": "40018", "name": "SQL Injection", "risk": "High", "confidence": "Medium",
+     "cweid": "89", "evidence": "id=1 AND 1=1", "url": "https://fixture.test/item?id=1",
+     "description": "SQL injection", "solution": "Use prepared statements", "reference": "https://owasp.org/sqli"},
+]
+
+
+def _zap_active_handler(calls: list[httpx.Request]):
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        path = request.url.path
+        if path.endswith("/setOptionMaxScanDurationInMins/"):
+            return httpx.Response(200, json={"Result": "OK"})
+        if path.endswith("/spider/action/scan/"):
+            return httpx.Response(200, json={"scan": "0"})
+        if path.endswith("/spider/view/status/"):
+            return httpx.Response(200, json={"status": "100"})
+        if path.endswith("/ascan/action/scan/"):
+            return httpx.Response(200, json={"scan": "1"})
+        if path.endswith("/ascan/view/status/"):
+            return httpx.Response(200, json={"status": "100"})
+        if path.endswith("/alerts/"):
+            return httpx.Response(200, json={"alerts": ZAP_ACTIVE_ALERTS})
+        if path.endswith("/deleteSiteNode/"):
+            return httpx.Response(200, json={"Result": "OK"})
+        return httpx.Response(404)
+    return handler
+
+
+async def test_zap_active_spiders_scans_and_parses(ctx, monkeypatch):
+    monkeypatch.setenv("WAPTRIX_ZAP_API_KEY", "s3cret-test-key")
+    calls: list[httpx.Request] = []
+    result = await ZapActiveAdapter(transport=httpx.MockTransport(_zap_active_handler(calls))).run(ctx)
+
+    assert result.run.tool == "zap-active" and result.run.exit_code == 0
+    assert {"ZAP-ACTIVE-40018", "HDR-CSP-MISSING"} <= ids(result.findings)  # active SQLi unmapped, CSP mapped to built-in
+    sqli = next(f for f in result.findings if f.rule_id == "ZAP-ACTIVE-40018")
+    assert sqli.severity is Severity.HIGH and sqli.cwe == "CWE-89" and sqli.sources == ["zap-active"]
+    hit = {r.url.path.rsplit("/JSON/", 1)[-1].rstrip("/") for r in calls}
+    assert "spider/action/scan" in hit and "ascan/action/scan" in hit  # it really spidered then attacked
+    assert calls[-1].url.path.endswith("/deleteSiteNode/")  # site node cleaned up last
+
+
+async def test_zap_active_sends_key_in_header_only(ctx, monkeypatch):
+    monkeypatch.setenv("WAPTRIX_ZAP_API_KEY", "s3cret-test-key")
+    calls: list[httpx.Request] = []
+    result = await ZapActiveAdapter(transport=httpx.MockTransport(_zap_active_handler(calls))).run(ctx)
+    assert all(r.headers.get("X-ZAP-API-Key") == "s3cret-test-key" for r in calls)
+    assert not any("s3cret-test-key" in str(r.url) for r in calls)
+    assert "s3cret-test-key" not in result.run.model_dump_json()
+
+
+async def test_zap_active_unreachable_is_recorded_without_leaking_key(ctx, monkeypatch):
+    monkeypatch.setenv("WAPTRIX_ZAP_API_KEY", "s3cret-test-key")
+
+    def handler(request):
+        raise httpx.ConnectError("refused", request=request)
+
+    result = await ZapActiveAdapter(transport=httpx.MockTransport(handler)).run(ctx)
+    assert result.run.error == "ZAP API error: ConnectError" and not result.findings
+    assert "s3cret-test-key" not in result.run.model_dump_json()
+
+
+def test_zap_active_is_an_opt_in_active_tool():
+    assert "zap-active" in ACTIVE_ADAPTERS and "zap-active" not in PASSIVE_ADAPTERS
+    with pytest.raises(ValidationError, match="requires active=true"):
+        AuditRequest(subdomains=["a.example.com"], authorization_ref="ENG-1",
+                     scope_domains=["example.com"], active_tools=["zap-active"])

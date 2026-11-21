@@ -114,3 +114,69 @@ class ZapAdapter(ToolAdapter):
     def _done(self, summary: ToolRunSummary, t0: float, findings: list[PassiveFinding] | None = None) -> AdapterResult:
         summary.duration_s = round(time.monotonic() - t0, 3)
         return AdapterResult(tool=self.name, findings=findings or [], run=summary)
+
+
+SPIDER_MAX_CHILDREN = 10
+
+
+class ZapActiveAdapter(ZapAdapter):
+    """OWASP ZAP active scanning (spider + active scan rules) via the daemon's REST API.
+
+    Active: ZAP spiders the target (held to the host subtree) and then its active rules send attack
+    payloads to the URLs found. The scan is bounded both by an asyncio deadline and by ZAP's own
+    maxScanDurationInMins backstop; polling stops at the deadline and whatever alerts exist so far are
+    collected, so a long scan degrades gracefully instead of hanging. Alerts map through the same parser
+    as passive ZAP (built-in rule where one matches, else ZAP-<pluginId>). The site node is removed after
+    each run so results never leak between audits, and the API key only ever travels in the header.
+    """
+
+    name = "zap-active"
+    default_timeout = 900.0
+
+    async def execute(self, ctx: AdapterContext, workdir: Path) -> AdapterResult:
+        base, key = zap_settings()
+        started, t0 = datetime.now(timezone.utc), time.monotonic()
+        summary = ToolRunSummary(tool=self.name, argv=["zap-api", "ascan/action/scan", ctx.url], started_at=started)
+        headers = {"X-ZAP-API-Key": key} if key else {}
+        budget = min(ctx.timeout, self.default_timeout)
+        try:
+            async with httpx.AsyncClient(base_url=base, headers=headers, timeout=60.0, transport=self.transport) as client:
+                alerts = await asyncio.wait_for(self._active_scan(client, ctx.url, budget), budget + 30)
+                try:
+                    await client.get("/JSON/core/action/deleteSiteNode/", params={"url": ctx.url})
+                except httpx.HTTPError:
+                    pass
+        except asyncio.TimeoutError:
+            summary.timed_out, summary.error = True, "timed out"
+            return self._done(summary, t0)
+        except (httpx.HTTPError, ValueError, KeyError) as exc:
+            summary.error = f"ZAP API error: {type(exc).__name__}"
+            return self._done(summary, t0)
+        findings = parse(alerts, ctx, self)
+        summary.exit_code, summary.finding_count = 0, len(findings)
+        return self._done(summary, t0, findings)
+
+    async def _active_scan(self, client: httpx.AsyncClient, url: str, budget: float) -> list[dict[str, Any]]:
+        deadline = time.monotonic() + budget
+        # Backstop so a crawl-heavy target cannot outrun the asyncio deadline server-side.
+        await client.get("/JSON/ascan/action/setOptionMaxScanDurationInMins/",
+                         params={"Integer": max(1, int(budget // 60))})
+        spider = (await client.get("/JSON/spider/action/scan/", params={
+            "url": url, "recurse": "true", "subtreeOnly": "true", "maxChildren": SPIDER_MAX_CHILDREN}))
+        spider.raise_for_status()
+        await self._poll(client, "/JSON/spider/view/status/", spider.json()["scan"], deadline)
+        ascan = (await client.get("/JSON/ascan/action/scan/", params={
+            "url": url, "recurse": "true", "inScopeOnly": "false", "method": "GET"}))
+        ascan.raise_for_status()
+        await self._poll(client, "/JSON/ascan/view/status/", ascan.json()["scan"], deadline)
+        resp = await client.get("/JSON/alert/view/alerts/", params={"baseurl": url, "start": 0, "count": 1000})
+        resp.raise_for_status()
+        return resp.json()["alerts"]
+
+    async def _poll(self, client: httpx.AsyncClient, path: str, scan_id: str, deadline: float) -> None:
+        while time.monotonic() < deadline:
+            resp = await client.get(path, params={"scanId": scan_id})
+            resp.raise_for_status()
+            if int(resp.json()["status"]) >= 100:
+                return
+            await asyncio.sleep(1.0)
