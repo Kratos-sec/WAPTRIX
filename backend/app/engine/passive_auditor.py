@@ -26,8 +26,8 @@ from app.engine.scope_guard import (
     system_resolver,
 )
 from app.models.audit import AuditRequest, AuditResult, AuditStatus, SubdomainResult, TLSInfo, ToolRunSummary
+from app.correlation import correlate
 from app.tools.adapters import ACTIVE_ADAPTERS, PASSIVE_ADAPTERS, AdapterContext, AdapterResult, ToolAdapter
-from app.tools.merge import merge_findings
 
 logger = logging.getLogger("waptrix.auditor")
 
@@ -158,7 +158,17 @@ class PassiveAuditor:
             result.error = "check errors: " + "; ".join(errors)
         if self.adapters:
             await self._run_tools(ctx, result, fetcher)
+        self._correlate(result)
         return self._finish(result, started)
+
+    def _correlate(self, result: SubdomainResult) -> None:
+        """Vote across every engine that ran, admitting findings at or above τ and queuing the rest."""
+        engines_ran = {"waptrix"} | {
+            run.tool for run in result.tool_runs if not (run.error and run.error.startswith("skipped"))
+        }
+        outcome = correlate(result.findings, engines_ran)
+        result.findings = outcome.admitted
+        result.retest_queue = outcome.queued
 
     async def _run_tools(self, ctx: AuditContext, result: SubdomainResult, fetcher: Fetcher) -> None:
         target = ctx.target
@@ -186,7 +196,8 @@ class PassiveAuditor:
                     return AdapterResult(tool=adapter.name, run=ToolRunSummary(tool=adapter.name, error=f"adapter error: {exc}"))
 
         for outcome in await asyncio.gather(*(one(a) for a in self.adapters)):
-            result.findings = merge_findings(result.findings, outcome.findings)
+            # Keep raw findings; de-duplication and cross-tool voting happen once in _correlate.
+            result.findings.extend(outcome.findings)
             result.technologies.extend(outcome.technologies)
             result.tool_runs.append(
                 outcome.run or ToolRunSummary(tool=outcome.tool, finding_count=len(outcome.findings))

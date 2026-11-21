@@ -37,6 +37,21 @@ class Confidence(str, Enum):
     TENTATIVE = "tentative"
 
 
+class CorrelationInfo(BaseModel):
+    """Cross-tool voting outcome for one finding (paper eq. 1). Explains the confidence score."""
+
+    score: float = Field(description="Weighted agreement score C(f)")
+    threshold: float = Field(description="Admission threshold τ in force for this run")
+    admitted: bool = Field(description="True when C(f) ≥ τ; False findings go to the re-test queue")
+    confirmed: bool = Field(default=False, description="An active confirmation adapter reproduced it (v=1)")
+    tag: str = Field(description="Capability class the finding was voted on, e.g. headers or injection")
+    detectors: list[str] = Field(default_factory=list, description="Engines that reported it (the set T)")
+    applicable: list[str] = Field(
+        default_factory=list, description="Engines capable of the class that ran on the host (the set E)"
+    )
+    silent: list[str] = Field(default_factory=list, description="Applicable engines that did not report it (E∖T)")
+
+
 class PassiveFinding(BaseModel):
     """A single passive audit issue observed on one subdomain."""
 
@@ -64,6 +79,10 @@ class PassiveFinding(BaseModel):
     tool_refs: list[str] = Field(
         default_factory=list, description="Tool-native identifiers, e.g. zap:10038 or testssl:cert_trust"
     )
+    correlation_score: float | None = Field(
+        default=None, description="Cross-tool confidence C(f); None until the correlation engine runs"
+    )
+    correlation: CorrelationInfo | None = Field(default=None, description="Full voting breakdown for this finding")
 
     @staticmethod
     def make_id(rule_id: str, subdomain: str, url: str, evidence: str) -> str:

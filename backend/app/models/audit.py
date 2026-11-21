@@ -179,6 +179,10 @@ class SubdomainResult(BaseModel):
     http: HttpObservation | None = None
     tls: TLSInfo | None = None
     findings: list[PassiveFinding] = Field(default_factory=list)
+    retest_queue: list[PassiveFinding] = Field(
+        default_factory=list,
+        description="Candidates with C(f) < τ, held for Stage S3 re-test rather than discarded",
+    )
     technologies: list[Technology] = Field(default_factory=list)
     tool_runs: list[ToolRunSummary] = Field(default_factory=list)
     score: int | None = None
@@ -201,6 +205,7 @@ class ComplianceSummary(BaseModel):
     subdomains_total: int = 0
     subdomains_reachable: int = 0
     total_findings: int = 0
+    total_retest: int = Field(default=0, description="Candidates below τ awaiting re-test across all hosts")
     severity_counts: dict[str, int] = Field(default_factory=dict)
     grade_distribution: dict[str, int] = Field(default_factory=dict)
     categories: list[CategoryResult] = Field(default_factory=list)

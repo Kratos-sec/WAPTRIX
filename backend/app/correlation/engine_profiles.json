@@ -1,0 +1,27 @@
+{
+  "_comment": "Section III-D cross-tool voting parameters. weight = per-engine reliability w_i (calibrated on a held-out set in the paper; these are the prototype defaults). detects = capability tags the engine authoritatively covers, used to build the applicable-engine set E: an engine counts toward E for a finding only if it RAN on the host and the finding's tag is in its detects. confirms = tags for which this engine is an active confirmation adapter, i.e. v(f)=1 when such an engine is among the detectors. tau = admission threshold, gamma = confirmation bonus. tau/gamma may be overridden per run with WAPTRIX_VOTE_TAU / WAPTRIX_VOTE_GAMMA.",
+  "tau": 0.55,
+  "gamma": 0.15,
+  "certainty": {
+    "certain": 1.0,
+    "firm": 0.72,
+    "tentative": 0.45
+  },
+  "engines": {
+    "waptrix": {
+      "weight": 1.0,
+      "detects": ["headers", "transport_tls", "cookies", "cors_cache", "disclosure", "client_forms", "metadata"]
+    },
+    "whatweb": {"weight": 0.5, "detects": ["tech"]},
+    "sslyze": {"weight": 0.95, "detects": ["transport_tls"]},
+    "testssl": {"weight": 0.9, "detects": ["transport_tls"]},
+    "retire": {"weight": 0.9, "detects": ["libraries"]},
+    "zap": {"weight": 0.7, "detects": ["headers", "cookies", "cors_cache", "client_forms", "disclosure", "misconfig", "injection"]},
+    "nmap": {"weight": 0.55, "detects": ["ports"]},
+    "nuclei": {"weight": 0.85, "detects": ["misconfig", "cve", "disclosure", "injection", "libraries"]},
+    "nikto": {"weight": 0.6, "detects": ["misconfig", "disclosure"]},
+    "wapiti": {"weight": 0.7, "detects": ["injection", "misconfig", "disclosure"]},
+    "sqlmap": {"weight": 0.95, "detects": ["injection"], "confirms": ["injection"]},
+    "zap-active": {"weight": 0.9, "detects": ["injection", "misconfig"], "confirms": ["injection", "misconfig"]}
+  }
+}

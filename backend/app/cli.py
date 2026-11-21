@@ -61,6 +61,7 @@ def _print_summary(audit: AuditResult) -> None:
         f"{summary.total_findings} findings "
         f"([red]{summary.severity_counts.get('high', 0)} high[/], [dark_orange]{summary.severity_counts.get('medium', 0)} medium[/], "
         f"[yellow]{summary.severity_counts.get('low', 0)} low[/], [blue]{summary.severity_counts.get('info', 0)} info[/])"
+        + (f" · [dim]{summary.total_retest} awaiting re-test[/]" if summary.total_retest else "")
     )
 
     table = Table(show_lines=False, header_style="bold cyan")

@@ -181,6 +181,7 @@ def categorize(findings: list[PassiveFinding], reachable: bool = True) -> list[C
 def apply_scores(result: SubdomainResult) -> SubdomainResult:
     """Populate score, grade, severity counts and category results on a subdomain result in place."""
     result.findings.sort(key=lambda f: (-f.severity.rank, f.rule_id, f.url))
+    result.retest_queue.sort(key=lambda f: (-(f.correlation_score or 0.0), -f.severity.rank, f.rule_id))
     result.severity_counts = severity_counts(result.findings)
     result.categories = categorize(result.findings, reachable=result.reachable)
     if result.reachable:
@@ -203,6 +204,7 @@ def summarize(subdomains: list[SubdomainResult]) -> ComplianceSummary:
     """Aggregate per-subdomain results into an engagement-wide compliance summary."""
     reachable = [s for s in subdomains if s.reachable]
     all_findings = [f for s in subdomains for f in s.findings]
+    total_retest = sum(len(s.retest_queue) for s in subdomains)
 
     scores = [s.score for s in reachable if s.score is not None]
     overall = round(sum(scores) / len(scores)) if scores else None
@@ -262,6 +264,7 @@ def summarize(subdomains: list[SubdomainResult]) -> ComplianceSummary:
         subdomains_total=len(subdomains),
         subdomains_reachable=len(reachable),
         total_findings=len(all_findings),
+        total_retest=total_retest,
         severity_counts=severity_counts(all_findings),
         grade_distribution=grade_distribution,
         categories=aggregate,
