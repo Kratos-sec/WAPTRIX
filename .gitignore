@@ -230,3 +230,4 @@ frontend/dist/
 reports/
 demo_reports/
 .DS_Store
+!frontend/src/lib/
