@@ -314,11 +314,14 @@ def lab_collect(
     """Run the full ACTIVE workflow against the lab apps. Only hosts on the private lab network are scanned."""
     from app.evaluation.harness import load_config, run_collect
 
+    from app.db import AuditStore
+
     config = load_config(_lab_dir(lab))
+    store = AuditStore()
     console.print(f"[bold red]ACTIVE[/] benchmark collection · {', '.join(app_id) or 'all apps'} · {reps} repetition(s)")
     try:
         paths = run_collect(config, out, apps=app_id or None, reps=reps, tool_timeout=tool_timeout,
-                            log=lambda m: console.print(f"[dim]{m}[/]"))
+                            log=lambda m: console.print(f"[dim]{m}[/]"), save=store.save)
     except (RuntimeError, KeyError) as exc:
         console.print(f"[bold red]Lab error:[/] {exc}")
         raise typer.Exit(code=2) from exc

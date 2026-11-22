@@ -334,3 +334,30 @@ def test_log_endpoint(tmp_path, monkeypatch):
         body = client.get("/api/audits/live/log", params={"after": 1}).json()
         assert [(e["seq"], e["stage"], e["status"]) for e in body] == [(2, "S2", "completed")]
         assert datetime.fromisoformat(body[0]["at"]).tzinfo == timezone.utc
+
+
+async def test_seed_urls_join_map_and_cookie_reaches_fetcher_and_tools():
+    seen_cookies = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen_cookies.append(request.headers.get("cookie"))
+        if request.url.scheme == "http":
+            return httpx.Response(301, headers={"Location": f"https://{request.url.host}/"})
+        return httpx.Response(200, html=PAGE) if request.url.path == "/" else httpx.Response(404)
+
+    sqlmap = FakeSqlmap()
+    request = _active_request(cookie="PHPSESSID=abc; security=low", seed_urls=[f"https://{HOST}/search?q=1"])
+    audit = await PassiveAuditor(request, transport=httpx.MockTransport(handler), tls_inspector=StaticTLS(good_tls()),
+                                 resolver=_resolver, adapters=[sqlmap]).run()
+    sub = audit.subdomains[0]
+    assert any(e.source == "seed" and e.url.endswith("/search?q=1") for e in sub.app_map.endpoints)
+    assert f"https://{HOST}/search?q=1" in sqlmap.urls  # seed endpoint was tested in S4
+    assert seen_cookies and all(c == "PHPSESSID=abc; security=low" for c in seen_cookies)
+
+
+def test_tool_argv_carries_session_cookie():
+    from app.engine.scope_guard import Target
+    from app.tools.adapters.base import AdapterContext
+
+    ctx = AdapterContext(target=Target(HOST), url=f"https://{HOST}/a?id=1", https_ok=True, cookie="sid=1")
+    assert ctx.cookie == "sid=1"

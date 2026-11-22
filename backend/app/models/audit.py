@@ -42,6 +42,16 @@ class AuditRequest(BaseModel):
         description="Active tools (nmap, nuclei, nikto, wapiti, sqlmap) that send probes or payloads; "
         "ignored unless active=true and scope_domains is non-empty",
     )
+    cookie: str | None = Field(
+        default=None, max_length=4096,
+        description="Session cookie header value (e.g. 'PHPSESSID=abc; security=low') sent by the built-in "
+        "fetcher and by tools that accept one, so authenticated pages can be scanned",
+    )
+    seed_urls: list[str] = Field(
+        default_factory=list, max_length=100,
+        description="Extra same-host URLs (with parameters) added to the S3 application map, so engines "
+        "test endpoints the start page does not link to",
+    )
     retest_rounds: int = Field(
         default=1, ge=0, le=3,
         description="Bounded S5→S3 re-test loop: rounds in which below-τ candidates are re-probed by active "
@@ -154,6 +164,13 @@ class ToolRunSummary(BaseModel):
     error: str | None = None
     finding_count: int = 0
     stderr_tail: str = ""
+
+    @property
+    def succeeded(self) -> bool:
+        """True when the tool actually scanned: not skipped, not broken. Only these count as engines that ran."""
+        if self.finding_count > 0:
+            return True
+        return not self.error and not self.timed_out and self.exit_code in (0, None)
 
 
 class Technology(BaseModel):

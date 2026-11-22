@@ -40,6 +40,7 @@ class AdapterContext:
     fetch: FetchBody | None = None
     timeout: float = 300.0
     app_map: ApplicationMap | None = None  # Stage S3 artefact, available to S4 engines
+    cookie: str | None = None  # session cookie to send, when the audit supplies one
 
     @property
     def subdomain(self) -> str:

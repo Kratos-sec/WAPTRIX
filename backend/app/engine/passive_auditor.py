@@ -43,7 +43,7 @@ from app.models.audit import (
     TLSInfo,
     ToolRunSummary,
 )
-from app.models.finding import PassiveFinding
+from app.models.finding import PassiveFinding, Severity
 from app.correlation import correlate, profiles
 from app.tools.adapters import ACTIVE_ADAPTERS, PASSIVE_ADAPTERS, AdapterContext, AdapterResult, ToolAdapter
 
@@ -51,6 +51,9 @@ logger = logging.getLogger("waptrix.auditor")
 
 ProgressCallback = Callable[[int, int, str], None]
 TOOL_PARALLELISM = 2  # hosts one external tool may scan at the same time
+MAX_RETEST_JOBS = 8  # tool runs per re-test round, per host
+MAX_RETEST_PER_TOOL = 2  # of which at most this many per tool (keeps ZAP from being flooded)
+STATIC_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".css", ".js", ".woff", ".woff2", ".ttf", ".map")
 
 
 class SupportsTLSInspect(Protocol):
@@ -112,7 +115,8 @@ class PassiveAuditor:
         done = 0
         semaphore = asyncio.Semaphore(request.concurrency)
 
-        async with Fetcher(self.rate_limiter, timeout=request.timeout, transport=self.transport) as fetcher:
+        async with Fetcher(self.rate_limiter, timeout=request.timeout, transport=self.transport,
+                           cookie=request.cookie) as fetcher:
 
             async def bounded(target: Target) -> SubdomainResult:
                 nonlocal done
@@ -165,7 +169,8 @@ class PassiveAuditor:
         if ctx is not None:
             page_url = ctx.url
             with log.stage(Stage.S3, host) as s3:
-                ctx.app_map = result.app_map = build_app_map(target.host, page_url, soup)
+                seeds = [Endpoint(url=u, params=_params(u), source="seed") for u in self.request.seed_urls]
+                ctx.app_map = result.app_map = build_app_map(target.host, page_url, soup, seeds)
                 s3.counts = _map_counts(result.app_map)
 
             tried: set[tuple[str, str]] = set()
@@ -190,7 +195,7 @@ class PassiveAuditor:
                     break
                 with log.stage(Stage.S3, host, round=round_no, detail="re-test: refined endpoint hypotheses") as s3:
                     extra = [Endpoint(url=url, params=_params(url), source="retest") for _, url in jobs]
-                    previous = result.app_map.endpoints if result.app_map else []
+                    previous = result.app_map.endpoints if result.app_map else []  # keeps seeds
                     ctx.app_map = result.app_map = build_app_map(
                         target.host, page_url, soup, [*previous, *extra])
                     s3.counts = _map_counts(result.app_map)
@@ -282,7 +287,7 @@ class PassiveAuditor:
                 if urlsplit(url).hostname == target.host and url not in scripts:
                     scripts.append(url)
         return AdapterContext(target=target, url=page_url, https_ok=ctx.https_ok, script_urls=scripts,
-                              fetch=fetch, timeout=self.request.tool_timeout)
+                              fetch=fetch, timeout=self.request.tool_timeout, cookie=self.request.cookie)
 
     def _s4_jobs(self, ctx: AdapterContext) -> list[tuple[ToolAdapter, str]]:
         """Stage S4: resolve active engines onto the S3 map. Per-endpoint engines get each parameterised
@@ -304,8 +309,14 @@ class PassiveAuditor:
         candidate's class at the candidate's exact endpoint, unless that pair has already been tried."""
         jobs: list[tuple[ToolAdapter, str]] = []
         planned: set[tuple[str, str]] = set()
-        for finding in result.retest_queue:
-            if urlsplit(finding.url).hostname != target.host:
+        per_tool: dict[str, int] = {}
+        queue = sorted(result.retest_queue, key=lambda f: -f.severity.rank)
+        for finding in queue:
+            if len(jobs) >= MAX_RETEST_JOBS:
+                break
+            path = urlsplit(finding.url).path.lower()
+            if (urlsplit(finding.url).hostname != target.host or finding.severity == Severity.INFO
+                    or path.endswith(STATIC_SUFFIXES)):
                 continue
             tag = profiles.tag_for(finding.rule_id, finding.cwe or None)
             for adapter in self.adapters:
@@ -314,9 +325,12 @@ class PassiveAuditor:
                 if not (profiles.confirms(adapter.name, tag) or tag in profiles.detects(adapter.name)):
                     continue
                 key = (adapter.name, finding.url)
-                if key in tried or key in planned:
+                if key in tried or key in planned or per_tool.get(adapter.name, 0) >= MAX_RETEST_PER_TOOL:
                     continue
+                if len(jobs) >= MAX_RETEST_JOBS:
+                    break
                 planned.add(key)
+                per_tool[adapter.name] = per_tool.get(adapter.name, 0) + 1
                 jobs.append((adapter, finding.url))
         return jobs
 
@@ -353,9 +367,7 @@ class PassiveAuditor:
         Correlation merges corroborating engines onto a representative in place, so it runs on copies: the
         raw set must stay untouched for the next re-test round to re-vote from scratch.
         """
-        engines_ran = {"waptrix"} | {
-            run.tool for run in result.tool_runs if not (run.error and run.error.startswith("skipped"))
-        }
+        engines_ran = {"waptrix"} | {run.tool for run in result.tool_runs if run.succeeded}
         outcome = correlate([f.model_copy(deep=True) for f in raw], engines_ran)
         result.findings = outcome.admitted
         result.retest_queue = outcome.queued

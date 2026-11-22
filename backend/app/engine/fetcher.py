@@ -121,8 +121,10 @@ class Fetcher:
         rate_limiter: RateLimiter,
         timeout: float = 10.0,
         transport: httpx.AsyncBaseTransport | None = None,
+        cookie: str | None = None,
     ) -> None:
         self.rate_limiter = rate_limiter
+        extra = {"Cookie": cookie} if cookie else {}
         self._client = httpx.AsyncClient(
             timeout=httpx.Timeout(timeout),
             follow_redirects=False,
@@ -133,6 +135,7 @@ class Fetcher:
                 "User-Agent": USER_AGENT,
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 "Accept-Language": "en",
+                **extra,
             },
             transport=transport,
         )

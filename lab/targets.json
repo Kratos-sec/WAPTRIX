@@ -1,5 +1,5 @@
 {
-  "_comment": "Benchmark test bed (paper Table VI). host is the gateway alias on the internal lab network. documented_total is the ground-truth count the paper reports; ground_truth/<app>.json holds the entries actually used for scoring.",
+  "_comment": "Lab targets. host is the gateway alias on the internal lab network. seed_urls are hardcoded paths with parameters added to the application map so injection engines have something to test. Logins are hardcoded in backend/app/evaluation/lab_login.py.",
   "_scoring": "out_of_scope_tags are capability classes left out of scoring for every system alike: the lab serves no TLS, port findings are about the container not the app, and header/cookie/CORS/metadata hygiene is not enumerated by the projects' solution documentation, so counting it would penalise whichever engines report it. Remove a tag to score it.",
   "authorization_ref": "LAB-WAPTRIX-BENCH",
   "scope_domain": "waptrix.lab",
@@ -44,7 +44,14 @@
       "version": "1.10",
       "stack": "PHP / MySQL",
       "host": "dvwa.waptrix.lab",
-      "documented_total": 58
+      "documented_total": 58,
+      "seed_urls": [
+        "/vulnerabilities/sqli/?id=1&Submit=Submit",
+        "/vulnerabilities/sqli_blind/?id=1&Submit=Submit",
+        "/vulnerabilities/xss_r/?name=test",
+        "/vulnerabilities/fi/?page=include.php",
+        "/vulnerabilities/brute/?username=admin&password=test&Login=Login"
+      ]
     },
     {
       "id": "juiceshop",
@@ -52,7 +59,12 @@
       "version": "17.1.1",
       "stack": "Node.js / Angular",
       "host": "juiceshop.waptrix.lab",
-      "documented_total": 51
+      "documented_total": 51,
+      "seed_urls": [
+        "/rest/products/search?q=apple",
+        "/ftp/",
+        "/metrics"
+      ]
     },
     {
       "id": "webgoat",
@@ -60,7 +72,10 @@
       "version": "2023.8",
       "stack": "Java / Spring",
       "host": "webgoat.waptrix.lab",
-      "documented_total": 42
+      "documented_total": 42,
+      "seed_urls": [
+        "/WebGoat/start.mvc"
+      ]
     },
     {
       "id": "bwapp",
@@ -68,7 +83,13 @@
       "version": "2.2",
       "stack": "PHP / MySQL",
       "host": "bwapp.waptrix.lab",
-      "documented_total": 68
+      "documented_total": 68,
+      "seed_urls": [
+        "/sqli_1.php?title=iron&action=search",
+        "/xss_get.php?firstname=a&lastname=b&form=submit",
+        "/rlfi.php?language=lang_en.php&action=go",
+        "/sqli_2.php?movie=1&action=go"
+      ]
     },
     {
       "id": "mutillidae",
@@ -76,7 +97,12 @@
       "version": "webpwnized:www",
       "stack": "PHP / MySQL",
       "host": "mutillidae.waptrix.lab",
-      "documented_total": 63
+      "documented_total": 63,
+      "seed_urls": [
+        "/index.php?page=user-info.php&username=a&password=b&user-info-php-submit-button=View+Account+Details",
+        "/index.php?page=text-file-viewer.php",
+        "/index.php?page=dns-lookup.php"
+      ]
     }
   ]
 }

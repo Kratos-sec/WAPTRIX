@@ -79,7 +79,11 @@ class WapitiAdapter(ToolAdapter):
         out = workdir / "wapiti.json"
         budget = int(min(ctx.timeout, self.default_timeout))
         argv = ["wapiti", "-u", ctx.url, "-f", "json", "-o", str(out), "--scope", "folder",
-                "--flush-session", "--max-scan-time", str(budget), "--color", "never", "-v", "0"]
+                "--flush-session", "--max-scan-time", str(budget), "-v", "0"]
+        if ctx.cookie:  # stay logged in: send the session, never crawl the logout link
+            argv += ["-H", f"Cookie: {ctx.cookie}"]
+            for path in ("/logout.php", "/logout", "/WebGoat/logout"):  # -x wants full URLs
+                argv += ["-x", urljoin(ctx.url, path)]
         run = await self.invoke(argv, ctx)
         data = read_json(out)
         if data is None:

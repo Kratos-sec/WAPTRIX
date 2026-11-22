@@ -128,7 +128,7 @@ def _score(group: list[PassiveFinding], tag: str, engines_ran: set[str],
     return CorrelationInfo(
         score=score,
         threshold=tau,
-        admitted=score >= tau,
+        admitted=score >= tau or confirmed,  # an active confirmation reproduced it: always report
         confirmed=confirmed,
         tag=tag,
         detectors=sorted(detectors),

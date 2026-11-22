@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any
 
 from app.correlation import canonical_key, correlate
+from app.evaluation import lab_login
 from app.evaluation.ground_truth import GroundTruth, load_ground_truth
 from app.evaluation.matching import Score, score
 from app.models.audit import AuditRequest, AuditResult
@@ -50,6 +51,7 @@ class LabApp:
     version: str = ""
     stack: str = ""
     documented_total: int = 0
+    seed_urls: list[str] = field(default_factory=list)  # paths with parameters to test directly
 
 
 @dataclass
@@ -106,8 +108,11 @@ def _resolves_private(host: str) -> bool:
 AuditorFactory = Callable[..., Any]
 
 
-def lab_request(config: LabConfig, app: LabApp, tool_timeout: float = 1800.0) -> AuditRequest:
+def lab_request(config: LabConfig, app: LabApp, tool_timeout: float = 1800.0,
+                cookie: str | None = None) -> AuditRequest:
     return AuditRequest(
+        cookie=cookie,
+        seed_urls=[f"http://{app.host}{path}" for path in app.seed_urls],
         subdomains=[app.host],
         authorization_ref=config.authorization_ref,
         scope_domains=[config.scope_domain],
@@ -122,7 +127,9 @@ def lab_request(config: LabConfig, app: LabApp, tool_timeout: float = 1800.0) ->
 
 async def collect(config: LabConfig, out_dir: Path, apps: Iterable[str] | None = None, reps: int = 3,
                   auditor_factory: AuditorFactory | None = None, require_private: bool = True,
-                  tool_timeout: float = 1800.0, log: Callable[[str], None] = print) -> list[Path]:
+                  tool_timeout: float = 1800.0, log: Callable[[str], None] = print,
+                  login: Callable[[str, str], str | None] | None = None,
+                  save: Callable[[AuditResult], None] | None = None) -> list[Path]:
     """Run every selected app ``reps`` times and write one record per run.
 
     Active engines are pointed only at hosts under the lab scope domain, and (unless a test disables it)
@@ -132,6 +139,7 @@ async def collect(config: LabConfig, out_dir: Path, apps: Iterable[str] | None =
         from app.engine.passive_auditor import PassiveAuditor
 
         auditor_factory = PassiveAuditor
+        login = login or lab_login.login
     selected = [config.app(a) for a in apps] if apps else config.apps
     if require_private:
         public = [a.host for a in selected if not _resolves_private(a.host)]
@@ -145,7 +153,10 @@ async def collect(config: LabConfig, out_dir: Path, apps: Iterable[str] | None =
     for app in selected:
         for rep in range(1, reps + 1):
             log(f"[{app.id}] repetition {rep}/{reps}: scanning {app.host}")
-            auditor = auditor_factory(lab_request(config, app, tool_timeout))
+            cookie = await asyncio.to_thread(login, app.id, app.host) if login else None
+            if login and app.id in lab_login.RECIPES:
+                log(f"[{app.id}] " + ("logged in, scanning with session" if cookie else "login FAILED, scanning unauthenticated"))
+            auditor = auditor_factory(lab_request(config, app, tool_timeout, cookie))
             started = datetime.now(timezone.utc)
             audit: AuditResult = await auditor.run()
             duration = (datetime.now(timezone.utc) - started).total_seconds()
@@ -158,6 +169,8 @@ async def collect(config: LabConfig, out_dir: Path, apps: Iterable[str] | None =
                 "raw": {host: [json.loads(f.model_dump_json()) for f in raw]
                         for host, raw in auditor.raw_findings.items()},
             }
+            if save is not None:
+                save(audit)
             path = out_dir / f"{app.id}-r{rep}.json"
             path.write_text(json.dumps(record, indent=1) + "\n", encoding="utf-8")
             written.append(path)
@@ -179,7 +192,7 @@ class RunRecord:
     def engines_ran(self, host: str) -> set[str]:
         sub = next((s for s in self.audit.subdomains if s.subdomain == host), None)
         runs = sub.tool_runs if sub else []
-        return {BUILTIN} | {r.tool for r in runs if not (r.error and r.error.startswith("skipped"))}
+        return {BUILTIN} | {r.tool for r in runs if r.succeeded}
 
     def tool_seconds(self, tools: Iterable[str]) -> float:
         wanted = set(tools)

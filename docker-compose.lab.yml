@@ -62,12 +62,14 @@ services:
 
   mutillidae:
     image: webpwnized/mutillidae:www
+    platform: linux/amd64
     depends_on: [mutillidae-db]
     networks: [lab]
     restart: unless-stopped
 
   mutillidae-db:
     image: webpwnized/mutillidae:database
+    platform: linux/amd64
     networks:
       lab:
         aliases: [database]  # host name the Mutillidae web image expects

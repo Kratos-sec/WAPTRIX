@@ -49,6 +49,8 @@ class WhatWebAdapter(ToolAdapter):
         out = workdir / "whatweb.json"
         argv = ["whatweb", "--aggression=1", "--follow-redirect=never", "--color=never", "--no-errors",
                 "--quiet", f"--log-json={out}", ctx.url]
+        if ctx.cookie:
+            argv[1:1] = [f"--cookie={ctx.cookie}"]
         run = await self.invoke(argv, ctx)
         data = read_json(out)
         if data is None:

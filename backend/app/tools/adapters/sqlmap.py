@@ -53,6 +53,8 @@ class SqlmapAdapter(ToolAdapter):
     async def execute(self, ctx: AdapterContext, workdir: Path) -> AdapterResult:
         argv = ["sqlmap", "-u", ctx.url, "--batch", "--level", "1", "--risk", "1",
                 "--disable-coloring", "--flush-session", "--output-dir", str(workdir)]
+        if ctx.cookie:
+            argv += [f"--cookie={ctx.cookie}"]
         run = await self.invoke(argv, ctx)
         findings = parse(run.stdout, ctx, self)
         return AdapterResult(tool=self.name, findings=findings, run=summarize_run(run, len(findings)))

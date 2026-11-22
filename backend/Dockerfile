@@ -19,6 +19,14 @@ RUN apt-get update \
  && apt-get purge -y npm && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*
 
+# Unprivileged runtime user. Nmap uses TCP connect scans (-sT), which need no raw-socket rights.
+RUN useradd --create-home --uid 10001 waptrix && mkdir -p /data && chown waptrix /data
+
+# Nuclei ships without templates; fetch them at build time (before the code copy, so the layer is cached).
+USER waptrix
+RUN nuclei -update-templates -silent || echo "WARNING: nuclei template download failed"
+USER root
+
 WORKDIR /app
 COPY pyproject.toml ./
 COPY app ./app
@@ -26,8 +34,6 @@ COPY sample_data ./sample_data
 RUN python3 -m venv /opt/venv \
  && pip install --no-cache-dir ".[pdf]" "sslyze==6.3.1"
 
-# Unprivileged runtime user. Nmap uses TCP connect scans (-sT), which need no raw-socket rights.
-RUN useradd --create-home --uid 10001 waptrix && mkdir -p /data && chown waptrix /data
 USER waptrix
 ENV WAPTRIX_DB=/data/waptrix.db
 

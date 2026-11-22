@@ -60,8 +60,11 @@ class NucleiAdapter(ToolAdapter):
     async def execute(self, ctx: AdapterContext, workdir: Path) -> AdapterResult:
         out = workdir / "nuclei.jsonl"
         argv = ["nuclei", "-u", ctx.url, "-jsonl", "-o", str(out), "-disable-update-check",
-                "-no-interactsh", "-rate-limit", "10", "-timeout", "10", "-retries", "1",
+                "-no-interactsh", "-rate-limit", "50", "-timeout", "10", "-retries", "1",
+                "-as",  # automatic scan: pick templates for the detected tech stack (much faster than all)
                 "-severity", "low,medium,high,critical", "-silent"]
+        if ctx.cookie:
+            argv += ["-H", f"Cookie: {ctx.cookie}"]
         run = await self.invoke(argv, ctx)
         records: list[dict] = []
         if out.exists():
