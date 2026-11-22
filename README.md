@@ -4,7 +4,7 @@
 
 WAPTrix is a strictly passive web application security auditing framework modeled after **Burp Suite's Passive Audit**. Give it a list of authorized subdomains and it performs non-intrusive HTTP/TLS inspection. Every finding is mapped to **CWE**, **OWASP WSTG v4.2**, **CVSS v3.1** and the **OWASP Top 10 (2025)**. You get a compliance dashboard broken down by subdomain, plus reports you can export.
 
-> **Strictly passive by design.** WAPTrix sends only read-only HTTP `GET` requests (to `/`, `/robots.txt` and `/.well-known/security.txt`) and standard TLS handshakes. It does **not** fuzz, inject payloads, forge `Origin` headers, brute-force, authenticate, or request paths it discovers. Only audit systems you are explicitly authorized to test.
+> **Passive by default.** Out of the box WAPTrix sends only read-only HTTP `GET` requests (to `/`, `/robots.txt` and `/.well-known/security.txt`) and standard TLS handshakes — it does **not** fuzz, inject payloads, forge `Origin` headers, brute-force, authenticate, or request paths it discovers. Active engines (Nmap, Nuclei, Nikto, Wapiti, sqlmap, ZAP active) exist as an **explicit opt-in** that additionally requires scope domains and a written-authorization attestation (see [Assessment workflow](#assessment-workflow-s1s6)). Only audit systems you are explicitly authorized to test.
 
 ## Key Features
 
@@ -57,7 +57,7 @@ WAPTRIX/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py                  # FastAPI REST API + CORS (+ serves frontend/dist if built)
-│   │   ├── cli.py                   # Typer CLI: audit, demo, rules, serve
+│   │   ├── cli.py                   # Typer CLI: audit, demo, rules, tools, serve, lab (collect/evaluate)
 │   │   ├── db.py                    # SQLite persistence (audits, subdomain results, findings)
 │   │   ├── models/                  # Pydantic schemas: audit.py, finding.py
 │   │   ├── engine/
@@ -72,7 +72,7 @@ WAPTRIX/
 │   │       ├── exporter.py          # JSON, CSV, SARIF 2.1.0, HTML, PDF (full or single subdomain)
 │   │       └── templates/report.html
 │   ├── sample_data/                 # Demo generator + bundled demo_audit.json
-│   ├── tests/                       # 132 tests (checks, scorer, exporters, API)
+│   ├── tests/                       # 220 tests (checks, scorer, exporters, API, stages, correlation, lab eval)
 │   ├── pyproject.toml
 │   └── requirements.txt
 ├── frontend/                        # React + Vite + Tailwind dark-mode dashboard
@@ -83,16 +83,18 @@ WAPTRIX/
 
 ### Option A: Docker Compose (recommended, includes the external tools)
 
-Works the same on Linux, macOS and Windows (Docker Desktop with WSL2). Images are built locally, so each machine gets a native build (x86-64 or ARM64).
+**This is the only path that ships all ten tools.** Images are built locally, so each machine gets a native build (x86-64 or ARM64). It works identically on macOS, Windows and Linux — the only difference is how you install Docker and generate the key (see [Running on macOS, Windows and Linux](#running-on-macos-windows-and-linux)).
 
 ```bash
 git clone https://github.com/Kratos-sec/WAPTRIX.git
 cd WAPTRIX
-cp .env.example .env                 # set ZAP_API_KEY, e.g. openssl rand -hex 24
+cp .env.example .env                 # then set ZAP_API_KEY (see per-OS commands below)
 docker compose up --build -d
 ```
 
 Open `http://localhost:8080`. The API is proxied at `http://localhost:8080/api`. Only that port is published, and only on `127.0.0.1`.
+
+> **The "not installed" question.** The **New audit** panel reports each tool as available only if the *backend answering `/api/tools`* can find it. The Dockerised `api` (Kali base) has all ten, so on `http://localhost:8080` every tool shows a version. If you instead open the Vite dev server (`http://localhost:5173`) or a hand-run `uvicorn`, the panel reflects whatever is on **that machine's** PATH — usually only what you installed with Homebrew/apt — and everything else reads *not installed*. That is expected: use `http://localhost:8080` for the full tool belt, or point the dev proxy at the container (`WAPTRIX_API=http://127.0.0.1:8080 npm run dev`).
 
 | Service | Contents |
 | --- | --- |
@@ -156,6 +158,85 @@ Open `http://localhost:5173`. Vite proxies `/api` to `127.0.0.1:8000`; override 
 - click **New audit** to paste subdomains or upload a `.txt` file.
 
 **Single-process deployment:** run `npm run build` in `frontend/`. FastAPI then serves `frontend/dist` at `http://localhost:8000/`.
+
+## Running on macOS, Windows and Linux
+
+Docker Compose (Option A) is the same three commands everywhere; only the setup around it differs. Pick your platform.
+
+### Common prerequisites (all platforms)
+
+- **Docker** with the Compose plugin (`docker compose version` ≥ 2.0). Docker Desktop on macOS/Windows, Docker Engine on Linux.
+- **Give the Docker VM ≥ 4 GB RAM.** ZAP and WebGoat are JVM apps; with less, the VM OOM-kills them. Docker Desktop → Settings → Resources → Memory. 8 GB is comfortable if you also run the benchmark lab.
+- **Ports:** only `127.0.0.1:8080` is published. Nothing else is exposed to your network.
+
+### macOS
+
+```bash
+# 1. Docker Desktop: https://www.docker.com/products/docker-desktop  (or: brew install --cask docker)
+# 2. Generate the ZAP key into .env
+cp .env.example .env
+echo "ZAP_API_KEY=$(openssl rand -hex 24)" >> .env     # or edit .env by hand
+# 3. Up
+docker compose up --build -d
+open http://localhost:8080
+```
+
+- **Apple Silicon (M1–M4):** the DVWA, bWAPP and Mutillidae images are amd64-only and run under Rosetta emulation — slower, but they work. The `api`, `web`, `zap`, Juice Shop and WebGoat images are native ARM64.
+- Local-install (Option B) only sees Homebrew tools. `brew install nmap sqlmap nikto` covers a few; the rest (wapiti, nuclei, whatweb, testssl, sslyze, zap) are fiddly on macOS — this is exactly why Docker is recommended.
+
+### Windows
+
+Use **WSL2** (Docker Desktop's default backend). Run the commands from a WSL2 shell (Ubuntu), **not** PowerShell, so paths and line endings behave.
+
+```bash
+# In PowerShell (admin), once:   wsl --install
+# Install Docker Desktop and enable "Use the WSL 2 based engine" + your distro under Settings → Resources → WSL integration.
+# Then, inside the WSL2 (Ubuntu) shell:
+git clone https://github.com/Kratos-sec/WAPTRIX.git
+cd WAPTRIX
+cp .env.example .env
+echo "ZAP_API_KEY=$(openssl rand -hex 24)" >> .env
+docker compose up --build -d
+```
+
+Open `http://localhost:8080` in your Windows browser (WSL2 forwards `localhost`).
+
+- **Clone inside the WSL2 filesystem** (e.g. `~/WAPTRIX`), not under `/mnt/c/...` — the Windows mount is slow and mangles file permissions.
+- Line endings: the repo ships a `.gitattributes` that forces `LF`, so shell scripts (`lab/bootstrap.sh`) stay runnable. Don't re-checkout with `core.autocrlf=true`.
+
+### Linux
+
+```bash
+# Docker Engine + compose plugin (Debian/Ubuntu):
+#   sudo apt install docker.io docker-compose-plugin   (or follow docs.docker.com/engine/install)
+#   sudo usermod -aG docker $USER && newgrp docker      # run docker without sudo
+git clone https://github.com/Kratos-sec/WAPTRIX.git
+cd WAPTRIX
+cp .env.example .env
+echo "ZAP_API_KEY=$(openssl rand -hex 24)" >> .env
+docker compose up --build -d
+xdg-open http://localhost:8080
+```
+
+- Native amd64 host: every image runs natively, no emulation.
+- If `docker` needs `sudo`, either add yourself to the `docker` group (above) or prefix the commands.
+
+### Verify it's up (any platform)
+
+```bash
+docker compose ps                                  # all services "running"/"healthy"
+curl -s http://localhost:8080/api/health           # {"status":"ok",...}
+curl -s http://localhost:8080/api/tools | grep -c '"available": *true'   # expect 10
+```
+
+If `/api/tools` shows fewer than ten, you are hitting a non-Docker backend (see the note under Option A), not a broken install.
+
+### Stopping and cleaning up
+
+```bash
+docker compose down            # stop; keeps the waptrix-data volume (your audits)
+docker compose down -v         # stop and delete all data
+```
 
 ## CLI Usage
 
@@ -286,14 +367,16 @@ Scoring rules:
 - Findings below `min_severity`, and classes listed in `out_of_scope_tags`, are not scored for any system. By default these are TLS, ports, and header, cookie, CORS and metadata hygiene.
 
 **Ground truth** lives in `lab/ground_truth/<app>.json`. The shipped files are seeds, not the paper's full list:
-- DVWA lists its core modules and Juice Shop four well-documented issues. WebGoat, bWAPP and Mutillidae are empty.
+- DVWA lists its core modules, Juice Shop six documented issues, and WebGoat three GET-reachable lessons (SQLi, path traversal, stored XSS). bWAPP and Mutillidae are still empty.
 - Each file carries the paper's `documented_total`, and the report flags apps whose ground truth is partial.
 - Extend the entries from each project's solution documentation. Record findings outside the list in `lab/adjudication/<app>.json`: a finding counts as a true positive only with verdict `tp` and two distinct reviewers.
 
 Until the ground truth is complete, the numbers are not comparable with the paper's Table VII.
 
+**Authenticated scanning.** `lab/targets.json` carries per-app `seed_urls` (parameterised endpoints added to the application map so injection engines have something to test), and `backend/app/evaluation/lab_login.py` logs in with each app's default credentials and threads the session cookie through the fetcher, Nuclei, Wapiti, sqlmap, WhatWeb and ZAP. So login-gated surface on DVWA, bWAPP and WebGoat is reachable. Known gap: DAST engines detect little on Juice Shop's Angular/REST surface (the documented SQLi does not trip sqlmap's heuristics, and exposure endpoints report only header hygiene) — a real scanner blind spot, not a configuration error.
+
 **Not covered yet:**
-- **Authenticated scanning.** No session material reaches the engines yet, so login-gated surface (most of DVWA and WebGoat) stays out of reach.
+- **Seed → active-engine plumbing.** Seeds populate the built-in application map, but ZAP's and Nuclei's own spiders may not visit them, so some seeded endpoints go untested by those engines.
 - **WSTG phase coverage** (Fig. 6b) is not computed.
 
 ## REST API
