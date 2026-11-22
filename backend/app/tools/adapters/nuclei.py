@@ -59,7 +59,12 @@ class NucleiAdapter(ToolAdapter):
 
     async def execute(self, ctx: AdapterContext, workdir: Path) -> AdapterResult:
         out = workdir / "nuclei.jsonl"
-        argv = ["nuclei", "-u", ctx.url, "-jsonl", "-o", str(out), "-disable-update-check",
+        # Scan the S3 map's endpoints (seeds first), not just the root, so templates fire on
+        # /metrics, /ftp, parameterised REST endpoints and the like that the root alone would miss.
+        targets = ctx.scan_urls()
+        targets_file = workdir / "targets.txt"
+        targets_file.write_text("\n".join(targets) + "\n", encoding="utf-8")
+        argv = ["nuclei", "-l", str(targets_file), "-jsonl", "-o", str(out), "-disable-update-check",
                 "-no-interactsh", "-rate-limit", "50", "-timeout", "10", "-retries", "1",
                 "-as",  # automatic scan: pick templates for the detected tech stack (much faster than all)
                 "-severity", "low,medium,high,critical", "-silent"]

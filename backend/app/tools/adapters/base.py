@@ -53,6 +53,24 @@ class AdapterContext:
     def subdomain(self) -> str:
         return self.target.display
 
+    def scan_urls(self, cap: int = 12) -> list[str]:
+        """Targets for an active engine that crawls from a URL (ZAP active, Nuclei, Wapiti).
+
+        The primary page plus the Stage S3 map's endpoints, seeds first — so these engines reach
+        hand-picked and parameterised endpoints (``/rest/products/search``, ``/metrics``) instead of only
+        whatever their own spider finds from the root. Deduplicated, same-host only, capped.
+        """
+        urls: list[str] = [self.url]
+        app_map = self.app_map
+        if app_map is not None:
+            endpoints = app_map.endpoints
+            seeds = [e.url for e in endpoints if e.source == "seed"]
+            params = [e.url for e in endpoints if e.source != "seed" and e.params]
+            for url in (*seeds, *params):
+                if url not in urls:
+                    urls.append(url)
+        return urls[:cap]
+
 
 @dataclass
 class AdapterResult:

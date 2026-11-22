@@ -152,7 +152,8 @@ class ZapActiveAdapter(ZapAdapter):
         try:
             async with httpx.AsyncClient(base_url=base, headers=headers, timeout=60.0, transport=self.transport) as client:
                 async with _active_lock():  # one ZAP active scan at a time, across every audit
-                    alerts = await asyncio.wait_for(self._active_scan(client, ctx.url, budget, ctx.cookie), budget + 30)
+                    alerts = await asyncio.wait_for(
+                        self._active_scan(client, ctx.url, budget, ctx.cookie, ctx.scan_urls()), budget + 30)
                 try:
                     await client.get("/JSON/core/action/deleteSiteNode/", params={"url": ctx.url})
                 except httpx.HTTPError:
@@ -168,7 +169,7 @@ class ZapActiveAdapter(ZapAdapter):
         return self._done(summary, t0, findings)
 
     async def _active_scan(self, client: httpx.AsyncClient, url: str, budget: float,
-                           cookie: str | None = None) -> list[dict[str, Any]]:
+                           cookie: str | None = None, seeds: list[str] | None = None) -> list[dict[str, Any]]:
         deadline = time.monotonic() + budget
         # DOM XSS (40026) drives headless browsers inside ZAP and kept crashing the daemon; skip it.
         try:
@@ -190,7 +191,7 @@ class ZapActiveAdapter(ZapAdapter):
             except httpx.HTTPError:
                 pass
         try:
-            return await self._spider_and_scan(client, url, deadline)
+            return await self._spider_and_scan(client, url, deadline, seeds)
         finally:
             if cookie:
                 try:
@@ -198,11 +199,21 @@ class ZapActiveAdapter(ZapAdapter):
                 except httpx.HTTPError:
                     pass
 
-    async def _spider_and_scan(self, client: httpx.AsyncClient, url: str, deadline: float) -> list[dict[str, Any]]:
+    async def _spider_and_scan(self, client: httpx.AsyncClient, url: str, deadline: float,
+                               seeds: list[str] | None = None) -> list[dict[str, Any]]:
         budget = max(60.0, deadline - time.monotonic())
         # Backstop so a crawl-heavy target cannot outrun the asyncio deadline server-side.
         await client.get("/JSON/ascan/action/setOptionMaxScanDurationInMins/",
                          params={"Integer": max(1, int(budget // 60))})
+        # Pull the S3 map's endpoints into ZAP's site tree before crawling, so the spider and active scan
+        # reach seeded/parameterised endpoints (e.g. /rest/products/search?q=) the root crawl would miss.
+        for seed in seeds or []:
+            if seed == url:
+                continue
+            try:
+                await client.get("/JSON/core/action/accessUrl/", params={"url": seed, "followRedirects": "false"})
+            except httpx.HTTPError:
+                pass
         spider = (await client.get("/JSON/spider/action/scan/", params={
             "url": url, "recurse": "true", "subtreeOnly": "true", "maxChildren": SPIDER_MAX_CHILDREN}))
         spider.raise_for_status()

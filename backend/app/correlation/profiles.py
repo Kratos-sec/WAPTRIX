@@ -41,6 +41,9 @@ CWE_TAG = {
     "CWE-200": "disclosure", "CWE-209": "disclosure", "CWE-532": "disclosure", "CWE-538": "disclosure",
     "CWE-1395": "libraries", "CWE-937": "libraries", "CWE-1104": "libraries",
     "CWE-693": "headers",
+    "CWE-264": "cors_cache", "CWE-942": "cors_cache",  # cross-domain / permissive-CORS misconfiguration
+    "CWE-311": "transport_tls", "CWE-319": "transport_tls",  # cleartext transmission / site served over HTTP
+    "CWE-497": "metadata",  # timestamp / internal-value disclosure: trivial info leakage
 }
 
 # Fallback tag per tool when neither the rule map nor the CWE resolves a class.

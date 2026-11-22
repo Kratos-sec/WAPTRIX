@@ -80,6 +80,11 @@ class WapitiAdapter(ToolAdapter):
         budget = int(min(ctx.timeout, self.default_timeout))
         argv = ["wapiti", "-u", ctx.url, "-f", "json", "-o", str(out), "--scope", "folder",
                 "--flush-session", "--max-scan-time", str(budget), "-v", "0"]
+        # Seed the crawl queue with the S3 map's endpoints (seeds first) so Wapiti reaches known
+        # parameterised endpoints instead of only what it finds by crawling from the root.
+        for url in ctx.scan_urls():
+            if url != ctx.url:
+                argv += ["--start", url]
         if ctx.cookie:  # stay logged in: send the session, never crawl the logout link
             argv += ["-H", f"Cookie: {ctx.cookie}"]
             for path in SESSION_KILLER_PATHS:  # -x wants full URLs
