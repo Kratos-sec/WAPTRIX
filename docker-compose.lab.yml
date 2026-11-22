@@ -51,6 +51,7 @@ services:
     image: webgoat/webgoat:v2023.8
     environment:
       TZ: UTC
+      JAVA_TOOL_OPTIONS: -Xmx512m  # keep the 8 GB Docker VM from running out of memory during scans
     networks: [lab]
     restart: unless-stopped
 

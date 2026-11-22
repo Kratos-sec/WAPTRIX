@@ -25,7 +25,7 @@ services:
   zap:
     image: zaproxy/zap-stable:2.17.0
     command: >
-      zap.sh -daemon -host 0.0.0.0 -port 8090
+      zap.sh -Xmx1g -daemon -host 0.0.0.0 -port 8090
       -config api.key=${ZAP_API_KEY:?set ZAP_API_KEY in .env (see .env.example)}
       -config api.addrs.addr.name=.*
       -config api.addrs.addr.regex=true
