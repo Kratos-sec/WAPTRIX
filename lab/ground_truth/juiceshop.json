@@ -37,6 +37,22 @@
       "path": "/metrics",
       "method": "GET",
       "wstg": "WSTG-CONF-05"
+    },
+    {
+      "id": "js-access-log",
+      "title": "Access log disclosure (accessLogDisclosureChallenge)",
+      "cwe": "CWE-200",
+      "path": "/support/logs",
+      "method": "GET",
+      "wstg": "WSTG-CONF-05"
+    },
+    {
+      "id": "js-snippet-disclosure",
+      "title": "Source-code snippet disclosure (coding challenges API)",
+      "cwe": "CWE-200",
+      "path": "/snippets",
+      "method": "GET",
+      "wstg": "WSTG-CONF-05"
     }
   ]
 }

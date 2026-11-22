@@ -62,8 +62,12 @@
       "documented_total": 51,
       "seed_urls": [
         "/rest/products/search?q=apple",
+        "/api/Products/1",
+        "/rest/products/1/reviews",
         "/ftp/",
-        "/metrics"
+        "/metrics",
+        "/support/logs",
+        "/snippets/"
       ]
     },
     {
@@ -74,7 +78,11 @@
       "host": "webgoat.waptrix.lab",
       "documented_total": 42,
       "seed_urls": [
-        "/WebGoat/start.mvc"
+        "/WebGoat/start.mvc",
+        "/WebGoat/SqlInjectionMitigations/servers?column=id",
+        "/WebGoat/PathTraversal/random-picture?id=1",
+        "/WebGoat/CrossSiteScriptingStored/stored-xss",
+        "/WebGoat/IDOR/profile"
       ]
     },
     {

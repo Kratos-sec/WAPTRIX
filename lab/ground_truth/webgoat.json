@@ -4,5 +4,33 @@
   "complete": false,
   "note": "Seed only: entries the project's own documentation lists unambiguously. Extend from the solution documentation until the count reaches documented_total; until then complete=false and recall is reported against these entries, flagged as partial.",
   "source": "WebGoat lesson catalogue",
-  "entries": []
+  "note_reachability": "WebGoat lessons sit behind a login and most are POST; collect scans with a session cookie (lab_login.webgoat). These entries are the lessons reachable over GET with injectable parameters, so a scanner driven with the session can exercise them. Confirmed injectable live: SqlInjectionMitigations/servers (500 on payload).",
+  "entries": [
+    {
+      "id": "wg-sqli-servers",
+      "title": "SQL injection via unquoted ORDER BY column (SqlInjectionMitigations lesson 10)",
+      "cwe": "CWE-89",
+      "path": "/WebGoat/SqlInjectionMitigations/servers",
+      "method": "GET",
+      "param": "column",
+      "wstg": "WSTG-INPV-05"
+    },
+    {
+      "id": "wg-path-traversal-picture",
+      "title": "Path traversal in profile picture retrieval (PathTraversal lesson)",
+      "cwe": "CWE-22",
+      "path": "/WebGoat/PathTraversal/random-picture",
+      "method": "GET",
+      "param": "id",
+      "wstg": "WSTG-ATHZ-01"
+    },
+    {
+      "id": "wg-stored-xss",
+      "title": "Stored cross-site scripting (CrossSiteScriptingStored lesson)",
+      "cwe": "CWE-79",
+      "path": "/WebGoat/CrossSiteScriptingStored/stored-xss",
+      "method": "GET",
+      "wstg": "WSTG-INPV-02"
+    }
+  ]
 }
