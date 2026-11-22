@@ -80,7 +80,7 @@ class PassiveAuditor:
         self.checks = checks if checks is not None else default_checks()
         self.progress = progress
         self.adapters = adapters if adapters is not None else self._build_adapters(request)
-        self._tool_slots = {a.name: asyncio.Semaphore(TOOL_PARALLELISM) for a in self.adapters}
+        self._tool_slots = {a.name: asyncio.Semaphore(min(a.max_parallel, TOOL_PARALLELISM)) for a in self.adapters}
         self.run_log = run_log if run_log is not None else RunLog()
         # Every raw (pre-correlation) finding per host, including re-test rounds. Not serialised with the
         # result; the evaluation harness reads it to score each engine alone and the naive union.
@@ -292,7 +292,9 @@ class PassiveAuditor:
     def _s4_jobs(self, ctx: AdapterContext) -> list[tuple[ToolAdapter, str]]:
         """Stage S4: resolve active engines onto the S3 map. Per-endpoint engines get each parameterised
         endpoint (capped by max_endpoints); the rest run once from the page."""
-        endpoints = [e.url for e in (ctx.app_map.parameterised() if ctx.app_map else [])]
+        mapped = ctx.app_map.parameterised() if ctx.app_map else []
+        # Seeds are hand-picked known-interesting endpoints: test them before anything crawled.
+        endpoints = [e.url for e in sorted(mapped, key=lambda e: e.source != "seed")]
         jobs: list[tuple[ToolAdapter, str]] = []
         for adapter in self.adapters:
             if not _is_active(adapter):

@@ -117,6 +117,7 @@ class ZapAdapter(ToolAdapter):
 
 
 SPIDER_MAX_CHILDREN = 10
+REPLACER_RULE = "waptrix-session"
 
 
 class ZapActiveAdapter(ZapAdapter):
@@ -131,6 +132,7 @@ class ZapActiveAdapter(ZapAdapter):
     """
 
     name = "zap-active"
+    max_parallel = 1  # one spider + active scan at a time; the daemon is shared
     default_timeout = 900.0
 
     async def execute(self, ctx: AdapterContext, workdir: Path) -> AdapterResult:
@@ -141,7 +143,7 @@ class ZapActiveAdapter(ZapAdapter):
         budget = min(ctx.timeout, self.default_timeout)
         try:
             async with httpx.AsyncClient(base_url=base, headers=headers, timeout=60.0, transport=self.transport) as client:
-                alerts = await asyncio.wait_for(self._active_scan(client, ctx.url, budget), budget + 30)
+                alerts = await asyncio.wait_for(self._active_scan(client, ctx.url, budget, ctx.cookie), budget + 30)
                 try:
                     await client.get("/JSON/core/action/deleteSiteNode/", params={"url": ctx.url})
                 except httpx.HTTPError:
@@ -156,8 +158,33 @@ class ZapActiveAdapter(ZapAdapter):
         summary.exit_code, summary.finding_count = 0, len(findings)
         return self._done(summary, t0, findings)
 
-    async def _active_scan(self, client: httpx.AsyncClient, url: str, budget: float) -> list[dict[str, Any]]:
+    async def _active_scan(self, client: httpx.AsyncClient, url: str, budget: float,
+                           cookie: str | None = None) -> list[dict[str, Any]]:
         deadline = time.monotonic() + budget
+        # DOM XSS (40026) drives headless browsers inside ZAP and kept crashing the daemon; skip it.
+        try:
+            await client.get("/JSON/ascan/action/disableScanners/", params={"ids": "40026"})
+        except httpx.HTTPError:
+            pass
+        if cookie:  # send the session on every ZAP request (replacer add-on), removed again afterwards
+            try:
+                await client.get("/JSON/replacer/action/removeRule/", params={"description": REPLACER_RULE})
+                await client.get("/JSON/replacer/action/addRule/", params={
+                    "description": REPLACER_RULE, "enabled": "true", "matchType": "REQ_HEADER",
+                    "matchRegex": "false", "matchString": "Cookie", "replacement": cookie})
+            except httpx.HTTPError:
+                pass
+        try:
+            return await self._spider_and_scan(client, url, deadline)
+        finally:
+            if cookie:
+                try:
+                    await client.get("/JSON/replacer/action/removeRule/", params={"description": REPLACER_RULE})
+                except httpx.HTTPError:
+                    pass
+
+    async def _spider_and_scan(self, client: httpx.AsyncClient, url: str, deadline: float) -> list[dict[str, Any]]:
+        budget = max(60.0, deadline - time.monotonic())
         # Backstop so a crawl-heavy target cannot outrun the asyncio deadline server-side.
         await client.get("/JSON/ascan/action/setOptionMaxScanDurationInMins/",
                          params={"Integer": max(1, int(budget // 60))})

@@ -61,6 +61,7 @@ class ToolAdapter(ABC):
     # True for engines that test one endpoint's parameters (sqlmap): S4 runs them once per parameterised
     # endpoint of the S3 map, and the re-test loop aims them at a below-τ candidate's exact endpoint.
     per_endpoint: ClassVar[bool] = False
+    max_parallel: ClassVar[int] = 2  # concurrent runs of this tool per audit
 
     def applicable(self, ctx: AdapterContext) -> str | None:
         """Return a reason to skip this host, or None to run."""

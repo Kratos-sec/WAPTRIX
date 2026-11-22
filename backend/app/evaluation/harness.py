@@ -122,6 +122,7 @@ def lab_request(config: LabConfig, app: LabApp, tool_timeout: float = 1800.0,
         active_tools=config.active_tools,
         tool_timeout=tool_timeout,
         requests_per_second=10,
+        max_endpoints=15,
     )
 
 
