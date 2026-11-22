@@ -118,6 +118,13 @@ class ZapAdapter(ToolAdapter):
 
 SPIDER_MAX_CHILDREN = 10
 REPLACER_RULE = "waptrix-session"
+_ACTIVE_LOCKS: dict[int, asyncio.Lock] = {}
+
+
+def _active_lock() -> asyncio.Lock:
+    """Process-wide lock per event loop: the ZAP daemon is shared and crashes under parallel active scans."""
+    loop = asyncio.get_running_loop()
+    return _ACTIVE_LOCKS.setdefault(id(loop), asyncio.Lock())
 
 
 class ZapActiveAdapter(ZapAdapter):
@@ -133,6 +140,7 @@ class ZapActiveAdapter(ZapAdapter):
 
     name = "zap-active"
     max_parallel = 1  # one spider + active scan at a time; the daemon is shared
+    retest = False  # too slow to re-run per finding; it already crawled the whole subtree once
     default_timeout = 900.0
 
     async def execute(self, ctx: AdapterContext, workdir: Path) -> AdapterResult:
@@ -143,7 +151,8 @@ class ZapActiveAdapter(ZapAdapter):
         budget = min(ctx.timeout, self.default_timeout)
         try:
             async with httpx.AsyncClient(base_url=base, headers=headers, timeout=60.0, transport=self.transport) as client:
-                alerts = await asyncio.wait_for(self._active_scan(client, ctx.url, budget, ctx.cookie), budget + 30)
+                async with _active_lock():  # one ZAP active scan at a time, across every audit
+                    alerts = await asyncio.wait_for(self._active_scan(client, ctx.url, budget, ctx.cookie), budget + 30)
                 try:
                     await client.get("/JSON/core/action/deleteSiteNode/", params={"url": ctx.url})
                 except httpx.HTTPError:

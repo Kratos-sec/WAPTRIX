@@ -69,6 +69,7 @@ class ToolAdapter(ABC):
     # endpoint of the S3 map, and the re-test loop aims them at a below-τ candidate's exact endpoint.
     per_endpoint: ClassVar[bool] = False
     max_parallel: ClassVar[int] = 2  # concurrent runs of this tool per audit
+    retest: ClassVar[bool] = True  # may the re-test loop re-run this tool on a queued finding's URL
 
     def applicable(self, ctx: AdapterContext) -> str | None:
         """Return a reason to skip this host, or None to run."""

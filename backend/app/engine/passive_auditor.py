@@ -322,7 +322,7 @@ class PassiveAuditor:
                 continue
             tag = profiles.tag_for(finding.rule_id, finding.cwe or None)
             for adapter in self.adapters:
-                if not _is_active(adapter):
+                if not _is_active(adapter) or not adapter.retest:
                     continue
                 if not (profiles.confirms(adapter.name, tag) or tag in profiles.detects(adapter.name)):
                     continue

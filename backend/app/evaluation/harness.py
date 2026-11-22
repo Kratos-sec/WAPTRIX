@@ -108,7 +108,7 @@ def _resolves_private(host: str) -> bool:
 AuditorFactory = Callable[..., Any]
 
 
-def lab_request(config: LabConfig, app: LabApp, tool_timeout: float = 1800.0,
+def lab_request(config: LabConfig, app: LabApp, tool_timeout: float = 90.0,
                 cookie: str | None = None) -> AuditRequest:
     return AuditRequest(
         cookie=cookie,
@@ -126,11 +126,11 @@ def lab_request(config: LabConfig, app: LabApp, tool_timeout: float = 1800.0,
     )
 
 
-async def collect(config: LabConfig, out_dir: Path, apps: Iterable[str] | None = None, reps: int = 3,
+async def collect(config: LabConfig, out_dir: Path, apps: Iterable[str] | None = None, reps: int = 1,
                   auditor_factory: AuditorFactory | None = None, require_private: bool = True,
-                  tool_timeout: float = 1800.0, log: Callable[[str], None] = print,
+                  tool_timeout: float = 90.0, log: Callable[[str], None] = print,
                   login: Callable[[str, str], str | None] | None = None,
-                  save: Callable[[AuditResult], None] | None = None) -> list[Path]:
+                  save: Callable[[AuditResult], None] | None = None, parallel: bool = True) -> list[Path]:
     """Run every selected app ``reps`` times and write one record per run.
 
     Active engines are pointed only at hosts under the lab scope domain, and (unless a test disables it)
@@ -151,31 +151,42 @@ async def collect(config: LabConfig, out_dir: Path, apps: Iterable[str] | None =
             )
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
-    for app in selected:
-        for rep in range(1, reps + 1):
-            log(f"[{app.id}] repetition {rep}/{reps}: scanning {app.host}")
-            cookie = await asyncio.to_thread(login, app.id, app.host) if login else None
-            if login and app.id in lab_login.RECIPES:
-                log(f"[{app.id}] " + ("logged in, scanning with session" if cookie else "login FAILED, scanning unauthenticated"))
-            auditor = auditor_factory(lab_request(config, app, tool_timeout, cookie))
-            started = datetime.now(timezone.utc)
-            audit: AuditResult = await auditor.run()
-            duration = (datetime.now(timezone.utc) - started).total_seconds()
-            record = {
-                "app": app.id,
-                "rep": rep,
-                "started_at": started.isoformat(),
-                "duration_s": round(duration, 1),
-                "audit": json.loads(audit.model_dump_json()),
-                "raw": {host: [json.loads(f.model_dump_json()) for f in raw]
-                        for host, raw in auditor.raw_findings.items()},
-            }
-            if save is not None:
-                save(audit)
-            path = out_dir / f"{app.id}-r{rep}.json"
-            path.write_text(json.dumps(record, indent=1) + "\n", encoding="utf-8")
-            written.append(path)
-            log(f"[{app.id}] repetition {rep}: {audit.summary.total_findings} findings in {duration / 60:.1f} min -> {path.name}")
+    async def one(app: LabApp, rep: int) -> Path:
+        log(f"[{app.id}] repetition {rep}/{reps}: scanning {app.host}")
+        cookie = await asyncio.to_thread(login, app.id, app.host) if login else None
+        if login and app.id in lab_login.RECIPES:
+            log(f"[{app.id}] " + ("logged in, scanning with session" if cookie else "login FAILED, scanning unauthenticated"))
+        auditor = auditor_factory(lab_request(config, app, tool_timeout, cookie))
+        started = datetime.now(timezone.utc)
+        audit: AuditResult = await auditor.run()
+        duration = (datetime.now(timezone.utc) - started).total_seconds()
+        record = {
+            "app": app.id,
+            "rep": rep,
+            "started_at": started.isoformat(),
+            "duration_s": round(duration, 1),
+            "audit": json.loads(audit.model_dump_json()),
+            "raw": {host: [json.loads(f.model_dump_json()) for f in raw]
+                    for host, raw in auditor.raw_findings.items()},
+        }
+        if save is not None:
+            save(audit)
+        path = out_dir / f"{app.id}-r{rep}.json"
+        path.write_text(json.dumps(record, indent=1) + "\n", encoding="utf-8")
+        log(f"[{app.id}] repetition {rep}: {audit.summary.total_findings} findings in {duration / 60:.1f} min -> {path.name}")
+        return path
+
+    # Apps are independent hosts: scan them all at once. Repetitions of one app stay sequential so
+    # they don't fight over the same session and database.
+    async def app_reps(app: LabApp) -> list[Path]:
+        return [await one(app, rep) for rep in range(1, reps + 1)]
+
+    if parallel:
+        for paths in await asyncio.gather(*(app_reps(a) for a in selected)):
+            written += paths
+    else:
+        for app in selected:
+            written += await app_reps(app)
     return written
 
 

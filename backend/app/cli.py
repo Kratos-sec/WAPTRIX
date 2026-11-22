@@ -307,8 +307,9 @@ def _lab_dir(value: Optional[Path]) -> Path:
 def lab_collect(
     out: Path = typer.Option(..., "--out", "-o", help="Directory for run records (<app>-r<k>.json)"),
     app_id: list[str] = typer.Option([], "--app", help="Lab app id (repeatable); default: every app in targets.json"),
-    reps: int = typer.Option(3, "--reps", min=1, max=10, help="Repetitions per app (the paper keeps the median of 3)"),
-    tool_timeout: float = typer.Option(1800.0, "--tool-timeout", min=10, max=3600, help="Per-tool, per-host limit (s)"),
+    reps: int = typer.Option(1, "--reps", min=1, max=10, help="Repetitions per app"),
+    tool_timeout: float = typer.Option(90.0, "--tool-timeout", min=10, max=3600, help="Per-tool, per-host limit (s)"),
+    sequential: bool = typer.Option(False, "--sequential", help="Scan apps one after another instead of all at once"),
     lab: Optional[Path] = typer.Option(None, "--lab", help="Lab directory holding targets.json and ground truth"),
 ) -> None:
     """Run the full ACTIVE workflow against the lab apps. Only hosts on the private lab network are scanned."""
@@ -321,7 +322,8 @@ def lab_collect(
     console.print(f"[bold red]ACTIVE[/] benchmark collection · {', '.join(app_id) or 'all apps'} · {reps} repetition(s)")
     try:
         paths = run_collect(config, out, apps=app_id or None, reps=reps, tool_timeout=tool_timeout,
-                            log=lambda m: console.print(f"[dim]{m}[/]"), save=store.save)
+                            log=lambda m: console.print(f"[dim]{m}[/]"), save=store.save,
+                            parallel=not sequential)
     except (RuntimeError, KeyError) as exc:
         console.print(f"[bold red]Lab error:[/] {exc}")
         raise typer.Exit(code=2) from exc
