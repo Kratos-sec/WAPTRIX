@@ -13,7 +13,7 @@ from typing import Any
 from urllib.parse import urljoin
 
 from app.models.finding import Confidence, PassiveFinding, Severity
-from app.tools.adapters.base import AdapterContext, AdapterResult, ToolAdapter, read_json, summarize_run
+from app.tools.adapters.base import SESSION_KILLER_PATHS, AdapterContext, AdapterResult, ToolAdapter, read_json, summarize_run
 
 # Wapiti category name -> (CWE, severity). Categories not listed fall back to MEDIUM with no CWE.
 CATEGORY = {
@@ -82,7 +82,7 @@ class WapitiAdapter(ToolAdapter):
                 "--flush-session", "--max-scan-time", str(budget), "-v", "0"]
         if ctx.cookie:  # stay logged in: send the session, never crawl the logout link
             argv += ["-H", f"Cookie: {ctx.cookie}"]
-            for path in ("/logout.php", "/logout", "/WebGoat/logout"):  # -x wants full URLs
+            for path in SESSION_KILLER_PATHS:  # -x wants full URLs
                 argv += ["-x", urljoin(ctx.url, path)]
         run = await self.invoke(argv, ctx)
         data = read_json(out)

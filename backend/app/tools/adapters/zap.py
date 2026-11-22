@@ -18,7 +18,7 @@ import httpx
 
 from app.models.audit import ToolRunSummary
 from app.models.finding import Confidence, PassiveFinding, Severity
-from app.tools.adapters.base import AdapterContext, AdapterResult, ToolAdapter
+from app.tools.adapters.base import SESSION_KILLER_REGEXES, AdapterContext, AdapterResult, ToolAdapter
 from app.tools.registry import zap_settings
 
 # ZAP passive rule (pluginId) -> built-in rule reporting the same issue.
@@ -166,6 +166,12 @@ class ZapActiveAdapter(ZapAdapter):
             await client.get("/JSON/ascan/action/disableScanners/", params={"ids": "40026"})
         except httpx.HTTPError:
             pass
+        for regex in SESSION_KILLER_REGEXES:  # never crawl or attack logout / DB-reset pages
+            for path in ("/JSON/spider/action/excludeFromScan/", "/JSON/ascan/action/excludeFromScan/"):
+                try:
+                    await client.get(path, params={"regex": regex})
+                except httpx.HTTPError:
+                    pass
         if cookie:  # send the session on every ZAP request (replacer add-on), removed again afterwards
             try:
                 await client.get("/JSON/replacer/action/removeRule/", params={"description": REPLACER_RULE})

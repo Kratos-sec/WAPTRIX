@@ -27,6 +27,13 @@ from app.tools.runner import ToolRun, run_tool
 
 STDERR_TAIL = 2000
 
+# Pages a logged-in crawler must never request: they end the session, reset the app database or change the
+# security level, which would silently turn every later scan into a scan of the login page.
+SESSION_KILLER_PATHS = ("/logout.php", "/logout", "/WebGoat/logout", "/setup.php", "/security.php",
+                        "/install.php", "/set-up-database.php")
+SESSION_KILLER_REGEXES = (r".*logout.*", r".*setup\.php.*", r".*security\.php.*", r".*install\.php.*",
+                          r".*set-up-database.*")
+
 # Fetch a same-host URL through WAPTrix's rate-limited, size-capped fetcher. Returns the body or None.
 FetchBody = Callable[[str], Awaitable[bytes | None]]
 
