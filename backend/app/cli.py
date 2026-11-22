@@ -18,8 +18,9 @@ from rich.table import Table
 from app.compliance import load_mapping
 from app.compliance.scorer import cvss31_base_score
 from app.engine.passive_auditor import PassiveAuditor
+from app.engine.stages import RunLog
 from app.engine.scope_guard import ScopeError, build_scope
-from app.models.audit import AuditRequest, AuditResult
+from app.models.audit import AuditRequest, AuditResult, RunEvent
 from app.reporting.exporter import FORMATS, write_reports
 
 app = typer.Typer(
@@ -48,6 +49,9 @@ def _read_targets(path: Path) -> list[str]:
     if not path.exists():
         raise typer.BadParameter(f"{path} does not exist")
     return [line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip() and not line.strip().startswith("#")]
+
+
+_STAGE_STYLE = {"completed": "[green]done[/]", "skipped": "[dim]skipped[/]", "failed": "[red]failed[/]"}
 
 
 def _print_summary(audit: AuditResult) -> None:
@@ -81,6 +85,15 @@ def _print_summary(audit: AuditResult) -> None:
             *[_STATUS_STYLE[c.status.value] for c in sub.categories],
         )
     console.print(table)
+    if audit.stages:
+        stages = Table(title="Workflow stages", show_lines=False, header_style="bold cyan", title_justify="left")
+        for col in ("Stage", "Name", "Status", "Hosts", "Runs", "Time", "Counts"):
+            stages.add_column(col, justify="right" if col in ("Hosts", "Runs", "Time") else "left")
+        for st in audit.stages:
+            stages.add_row(st.stage.value, st.name, _STAGE_STYLE.get(st.status.value, st.status.value),
+                           str(st.hosts or "—"), str(st.runs), f"{st.duration_ms / 1000:.1f}s",
+                           ", ".join(f"{k} {v}" for k, v in st.counts.items()))
+        console.print(stages)
     if audit.scope_rejections:
         console.print("[yellow]Rejected by scope guard:[/]")
         for rejection in audit.scope_rejections:
@@ -119,6 +132,12 @@ def audit(
         [], "--active-tool", help="Active tool to add (repeatable): nmap, nuclei, nikto, wapiti, sqlmap, or 'all'"
     ),
     tool_timeout: float = typer.Option(600.0, "--tool-timeout", min=10, max=3600, help="Per-tool, per-host limit (s)"),
+    retest_rounds: int = typer.Option(
+        1, "--retest-rounds", min=0, max=3, help="Bounded S5→S3 re-test rounds for below-threshold candidates"
+    ),
+    max_endpoints: int = typer.Option(
+        5, "--max-endpoints", min=1, max=50, help="Parameterised endpoints per host for per-endpoint engines (sqlmap)"
+    ),
 ) -> None:
     """Run a passive audit (optionally with opt-in active tools) against authorized subdomains."""
     from pydantic import ValidationError
@@ -143,6 +162,8 @@ def audit(
             active=active,
             active_tools=active_tools,
             tool_timeout=tool_timeout,
+            retest_rounds=retest_rounds,
+            max_endpoints=max_endpoints,
         )
     except ValidationError as exc:
         console.print(f"[bold red]Invalid options:[/] {exc.errors()[0]['msg']}")
@@ -173,7 +194,12 @@ def audit(
         def on_progress(done: int, total: int, current: str) -> None:
             progress.update(task, completed=done, description=f"Audited {current}")
 
-        result = asyncio.run(PassiveAuditor(request, progress=on_progress).run())
+        def on_event(event: RunEvent) -> None:
+            if event.status.value == "started" and event.subdomain:
+                again = f" (re-test {event.round})" if event.round else ""
+                progress.update(task, description=f"{event.stage.value} {event.stage.label}{again} · {event.subdomain}")
+
+        result = asyncio.run(PassiveAuditor(request, progress=on_progress, run_log=RunLog(sink=on_event)).run())
 
     _print_summary(result)
     if save:

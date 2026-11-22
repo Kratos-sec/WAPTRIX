@@ -43,6 +43,7 @@ def parse(stdout: str, ctx: AdapterContext, adapter: ToolAdapter) -> list[Passiv
 class SqlmapAdapter(ToolAdapter):
     name = "sqlmap"
     default_timeout = 900.0
+    per_endpoint = True
 
     def applicable(self, ctx: AdapterContext) -> str | None:
         if not urlsplit(ctx.url).query:

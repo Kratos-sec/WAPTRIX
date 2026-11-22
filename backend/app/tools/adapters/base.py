@@ -21,7 +21,7 @@ from typing import Any, ClassVar
 from app.checks.base import rule_finding, truncate
 from app.compliance import normalize_cwe, owasp_for_cwe
 from app.engine.scope_guard import Target
-from app.models.audit import Technology, ToolRunSummary
+from app.models.audit import ApplicationMap, Technology, ToolRunSummary
 from app.models.finding import Confidence, PassiveFinding, Severity
 from app.tools.runner import ToolRun, run_tool
 
@@ -34,11 +34,12 @@ FetchBody = Callable[[str], Awaitable[bytes | None]]
 @dataclass
 class AdapterContext:
     target: Target
-    url: str  # final URL of the primary GET / (same host as target)
+    url: str  # endpoint to test: the primary page, or an S3 map / re-test endpoint for per-endpoint engines
     https_ok: bool
     script_urls: list[str] = field(default_factory=list)  # same-host <script src> URLs on that page
     fetch: FetchBody | None = None
     timeout: float = 300.0
+    app_map: ApplicationMap | None = None  # Stage S3 artefact, available to S4 engines
 
     @property
     def subdomain(self) -> str:
@@ -56,6 +57,9 @@ class AdapterResult:
 class ToolAdapter(ABC):
     name: ClassVar[str]
     default_timeout: ClassVar[float] = 300.0
+    # True for engines that test one endpoint's parameters (sqlmap): S4 runs them once per parameterised
+    # endpoint of the S3 map, and the re-test loop aims them at a below-τ candidate's exact endpoint.
+    per_endpoint: ClassVar[bool] = False
 
     def applicable(self, ctx: AdapterContext) -> str | None:
         """Return a reason to skip this host, or None to run."""

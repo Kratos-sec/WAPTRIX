@@ -11,7 +11,7 @@ from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app.models.audit import AuditListItem, AuditRequest, AuditResult, AuditStatus
+from app.models.audit import AuditListItem, AuditRequest, AuditResult, AuditStatus, RunEvent, Stage, StageStatus
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "waptrix.db"
 
@@ -49,11 +49,66 @@ CREATE TABLE IF NOT EXISTS findings (
     severity   TEXT NOT NULL,
     owasp      TEXT NOT NULL,
     cvss_score REAL,
+    correlation_score REAL,
+    admitted   INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY (audit_id, finding_id)
 );
+CREATE TABLE IF NOT EXISTS run_events (
+    audit_id    TEXT NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
+    seq         INTEGER NOT NULL,
+    at          TEXT NOT NULL,
+    stage       TEXT NOT NULL,
+    status      TEXT NOT NULL,
+    subdomain   TEXT,
+    round       INTEGER NOT NULL DEFAULT 0,
+    detail      TEXT,
+    counts_json TEXT,
+    duration_ms INTEGER,
+    PRIMARY KEY (audit_id, seq)
+);
+CREATE TABLE IF NOT EXISTS tool_runs (
+    audit_id      TEXT NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
+    subdomain     TEXT NOT NULL,
+    tool          TEXT NOT NULL,
+    stage         TEXT,
+    round         INTEGER NOT NULL DEFAULT 0,
+    target_url    TEXT,
+    started_at    TEXT,
+    duration_s    REAL,
+    exit_code     INTEGER,
+    timed_out     INTEGER NOT NULL DEFAULT 0,
+    error         TEXT,
+    finding_count INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_tool_runs_audit ON tool_runs(audit_id, subdomain);
 CREATE INDEX IF NOT EXISTS idx_findings_rule ON findings(rule_id);
 CREATE INDEX IF NOT EXISTS idx_audits_created ON audits(created_at DESC);
 """
+
+
+# Columns added after the first schema; databases created earlier get them via ALTER TABLE.
+_ADDED_COLUMNS = {
+    "findings": [("correlation_score", "REAL"), ("admitted", "INTEGER NOT NULL DEFAULT 1")],
+}
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    for table, columns in _ADDED_COLUMNS.items():
+        present = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+        for name, decl in columns:
+            if name not in present:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
+
+
+def _event_row(audit_id: str, e: RunEvent) -> tuple:
+    return (audit_id, e.seq, e.at.isoformat(), e.stage.value, e.status.value, e.subdomain, e.round, e.detail,
+            json.dumps(e.counts), e.duration_ms)
+
+
+_EVENT_INSERT = (
+    "INSERT OR REPLACE INTO run_events (audit_id, seq, at, stage, status, subdomain, round, detail, counts_json,"
+    " duration_ms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+)
 
 
 class AuditStore:
@@ -63,6 +118,7 @@ class AuditStore:
         self._lock = threading.Lock()
         with self._connect() as conn:
             conn.executescript(SCHEMA)
+            _migrate(conn)
 
     @contextmanager
     def _connect(self) -> Iterator[sqlite3.Connection]:
@@ -107,6 +163,7 @@ class AuditStore:
         payload = result.model_dump_json()
         with self._lock, self._connect() as conn:
             conn.execute("DELETE FROM findings WHERE audit_id = ?", (result.id,))
+            conn.execute("DELETE FROM tool_runs WHERE audit_id = ?", (result.id,))
             conn.execute("DELETE FROM subdomain_results WHERE audit_id = ?", (result.id,))
             conn.execute(
                 """
@@ -144,14 +201,35 @@ class AuditStore:
                 ],
             )
             conn.executemany(
-                "INSERT OR IGNORE INTO findings (audit_id, finding_id, subdomain, rule_id, severity, owasp, cvss_score)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO findings (audit_id, finding_id, subdomain, rule_id, severity, owasp, cvss_score,"
+                " correlation_score, admitted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
-                    (result.id, f.id, f.subdomain, f.rule_id, f.severity.value, json.dumps(f.owasp), f.cvss_score)
+                    (result.id, f.id, f.subdomain, f.rule_id, f.severity.value, json.dumps(f.owasp), f.cvss_score,
+                     f.correlation_score, int(admitted))
                     for s in result.subdomains
-                    for f in s.findings
+                    for admitted, group in ((True, s.findings), (False, s.retest_queue))
+                    for f in group
                 ],
             )
+            conn.executemany(
+                "INSERT INTO tool_runs (audit_id, subdomain, tool, stage, round, target_url, started_at, duration_s,"
+                " exit_code, timed_out, error, finding_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                [
+                    (result.id, s.subdomain, r.tool, r.stage, r.round, r.target_url,
+                     r.started_at.isoformat() if r.started_at else None, r.duration_s, r.exit_code,
+                     int(r.timed_out), r.error, r.finding_count)
+                    for s in result.subdomains
+                    for r in s.tool_runs
+                ],
+            )
+            if result.run_log:  # the final log is authoritative over events streamed while running
+                conn.execute("DELETE FROM run_events WHERE audit_id = ?", (result.id,))
+                conn.executemany(_EVENT_INSERT, [_event_row(result.id, e) for e in result.run_log])
+
+    def append_event(self, audit_id: str, event: RunEvent) -> None:
+        """Persist one run-log event as it happens, so a running audit's log can be followed live."""
+        with self._lock, self._connect() as conn:
+            conn.execute(_EVENT_INSERT, _event_row(audit_id, event))
 
     def delete(self, audit_id: str) -> bool:
         with self._lock, self._connect() as conn:
@@ -198,6 +276,26 @@ class AuditStore:
                 subdomains_total=r["subdomains_total"] or 0,
                 total_findings=r["total_findings"] or 0,
                 demo=bool(r["demo"]),
+            )
+            for r in rows
+        ]
+
+    def events(self, audit_id: str, after: int = 0) -> list[RunEvent]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM run_events WHERE audit_id = ? AND seq > ? ORDER BY seq", (audit_id, after)
+            ).fetchall()
+        return [
+            RunEvent(
+                seq=r["seq"],
+                at=datetime.fromisoformat(r["at"]),
+                stage=Stage(r["stage"]),
+                status=StageStatus(r["status"]),
+                subdomain=r["subdomain"],
+                round=r["round"],
+                detail=r["detail"] or "",
+                counts=json.loads(r["counts_json"] or "{}"),
+                duration_ms=r["duration_ms"],
             )
             for r in rows
         ]

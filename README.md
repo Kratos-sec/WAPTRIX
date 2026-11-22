@@ -203,6 +203,8 @@ static.example.com:8443
 | `--only` | — | Exports reports for a single subdomain |
 | `--tool` | — | Adds an external passive tool (repeatable): `whatweb`, `sslyze`, `testssl`, `retire`, `zap`, or `all`. Needs the Docker stack or local installs |
 | `--tool-timeout` | `600` | Time limit per tool, per host, in seconds |
+| `--retest-rounds` | `1` | Bounded S5→S3 re-test rounds for candidates below the voting threshold (`0` disables) |
+| `--max-endpoints` | `5` | Parameterised endpoints per host that per-endpoint engines (sqlmap) may target |
 
 The API takes the same choice as `"tools": ["sslyze", "zap"]` in the `POST /api/audits` body.
 
@@ -223,6 +225,21 @@ How results combine:
 - Tool alerts with no matching rule become `<TOOL>-<id>` findings (for example `ZAP-10015`, `TESTSSL-CERT-REVOCATION`). They carry the tool's own severity and CWE, take their OWASP category from the CWE, and have no CVSS score.
 - Every tool run is recorded per subdomain in `tool_runs` (command, exit code, duration, errors). A tool that fails or times out never aborts the audit.
 
+### Assessment workflow (S1–S6)
+
+Every audit runs as the six-stage workflow, and each stage transition is written to a run log:
+
+| Stage | What happens |
+| --- | --- |
+| S1 Scope & authorisation | Validates the authorisation reference, the in-scope host list and the request budget (rate, concurrency, tool timeout). Nothing runs without them |
+| S2 Passive reconnaissance | DNS with private-address guard, read-only GETs, TLS inspection, built-in checks, passive tools |
+| S3 Application map | URL tree and parameter inventory (same-host links, forms, scripts) built from the page S2 already fetched, so no extra requests |
+| S4 Phase controllers | Active engines run against the map, in parallel under the rate governor. Per-endpoint engines (sqlmap) target each parameterised endpoint, up to `--max-endpoints`. Skipped in passive mode |
+| S5 Correlation | Cross-tool voting (eq. 1, τ = 0.55). Candidates below τ go back to S3 with their exact endpoint as a refined hypothesis, and S4 re-runs the active engines that can detect or confirm that class. This repeats for up to `--retest-rounds` rounds and stops early when there is nothing new to try |
+| S6 Risk & report | Per-host scoring and grading, then the engagement summary |
+
+The result carries `stages` (one summary per stage: hosts, runs, duration, counts) and `run_log` (every event). Each subdomain also gets its `app_map` and `retest_rounds_run`, and each tool run records its `stage`, `round` and `target_url`. The SQLite store keeps the run log in `run_events` and writes it as the audit runs. Tool runs go in `tool_runs`, and below-τ candidates are stored in `findings` with `admitted = 0` and their `correlation_score`.
+
 ## REST API
 
 | Method | Path | Description |
@@ -233,7 +250,8 @@ How results combine:
 | `GET` | `/api/tools` | External tools: installed or reachable, version, stage, passive/active |
 | `POST` | `/api/audits` | Starts an audit (`AuditRequest`). Returns `202` with targets and scope rejections |
 | `GET` | `/api/audits` | Lists audits |
-| `GET` | `/api/audits/{id}` | Full result, plus `progress` while running |
+| `GET` | `/api/audits/{id}` | Full result, plus `progress` (including the current `stage`) while running |
+| `GET` | `/api/audits/{id}/log?after=seq` | Stage-by-stage run log (S1–S6). Works while the audit is running: poll with the last `seq` you saw |
 | `GET` | `/api/audits/{id}/subdomains/{host}` | Result for one subdomain |
 | `GET` | `/api/audits/{id}/export?format=pdf&subdomain=host` | Downloads a report (`json`, `csv`, `sarif`, `html`, `pdf`) |
 | `DELETE` | `/api/audits/{id}` | Deletes an audit |
@@ -289,7 +307,7 @@ The suite uses `httpx.MockTransport`, a mock DNS resolver and a mock TLS inspect
 
 - scope guard and fetcher behavior: GET-only, redirects on the same host only, body cap, loop protection
 - every check module
-- the end-to-end auditor
+- the end-to-end auditor, the S1–S6 stage scheduler, the S3 application map and the re-test loop
 - CVSS reference vectors, grading and category status
 - integrity of the rule mapping
 - SARIF, CSV, HTML and PDF exports

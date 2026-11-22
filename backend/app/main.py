@@ -21,7 +21,16 @@ from app.compliance.scorer import cvss31_base_score
 from app.db import AuditStore
 from app.engine.passive_auditor import PassiveAuditor
 from app.engine.scope_guard import ScopeError, build_scope
-from app.models.audit import ENGINE_VERSION, AuditListItem, AuditRequest, AuditResult, SubdomainResult
+from app.engine.stages import RunLog
+from app.models.audit import (
+    ENGINE_VERSION,
+    AuditListItem,
+    AuditRequest,
+    AuditResult,
+    RunEvent,
+    StageStatus,
+    SubdomainResult,
+)
 from app.reporting.exporter import FORMATS, ExportError, render, report_basename
 from app.tools import ToolStatus, detect_all
 
@@ -42,7 +51,7 @@ class AuditRunner:
     def start(self, request: AuditRequest, total: int) -> str:
         audit_id = uuid.uuid4().hex
         self.store.create_running(audit_id, request)
-        self.progress[audit_id] = {"done": 0, "total": total, "current": None}
+        self.progress[audit_id] = {"done": 0, "total": total, "current": None, "stage": None, "stage_host": None}
         task = asyncio.create_task(self._run(audit_id, request))
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)
@@ -50,10 +59,16 @@ class AuditRunner:
 
     async def _run(self, audit_id: str, request: AuditRequest) -> None:
         def on_progress(done: int, total: int, current: str) -> None:
-            self.progress[audit_id] = {"done": done, "total": total, "current": current}
+            self.progress[audit_id].update(done=done, total=total, current=current)
+
+        def on_event(event: RunEvent) -> None:
+            self.store.append_event(audit_id, event)
+            if event.status == StageStatus.STARTED:
+                self.progress[audit_id].update(stage=event.stage.value, stage_host=event.subdomain)
 
         try:
-            result = await PassiveAuditor(request, progress=on_progress).run(audit_id=audit_id)
+            auditor = PassiveAuditor(request, progress=on_progress, run_log=RunLog(sink=on_event))
+            result = await auditor.run(audit_id=audit_id)
             self.store.save(result)
         except Exception as exc:  # surface failure to the client instead of leaving it 'running'
             logger.exception("audit %s failed", audit_id)
@@ -209,6 +224,17 @@ def get_subdomain(request: Request, audit_id: str, subdomain: str) -> SubdomainR
         if item.subdomain == subdomain.lower():
             return item
     raise HTTPException(status_code=404, detail="subdomain not part of this audit")
+
+
+@app.get("/api/audits/{audit_id}/log", response_model=list[RunEvent])
+def audit_log(
+    request: Request,
+    audit_id: str,
+    after: int = Query(0, ge=0, description="Return only events with seq greater than this (for live polling)"),
+) -> list[RunEvent]:
+    """Stage-by-stage run log (S1–S6), available while the audit is still running."""
+    _get_audit(request, audit_id)
+    return _store(request).events(audit_id, after=after)
 
 
 @app.delete("/api/audits/{audit_id}", status_code=204)

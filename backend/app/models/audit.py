@@ -42,6 +42,16 @@ class AuditRequest(BaseModel):
         description="Active tools (nmap, nuclei, nikto, wapiti, sqlmap) that send probes or payloads; "
         "ignored unless active=true and scope_domains is non-empty",
     )
+    retest_rounds: int = Field(
+        default=1, ge=0, le=3,
+        description="Bounded S5→S3 re-test loop: rounds in which below-τ candidates are re-probed by active "
+        "engines at their exact endpoint (0 disables the loop)",
+    )
+    max_endpoints: int = Field(
+        default=5, ge=1, le=50,
+        description="Per host, how many parameterised endpoints from the S3 application map per-endpoint "
+        "active engines (sqlmap) may target",
+    )
 
     @field_validator("subdomains")
     @classmethod
@@ -133,6 +143,9 @@ class ToolRunSummary(BaseModel):
     """What one external tool did against one subdomain (raw output is not stored here)."""
 
     tool: str
+    stage: str | None = Field(default=None, description="Workflow stage the run belonged to (S2 or S4)")
+    target_url: str | None = Field(default=None, description="Endpoint the run targeted")
+    round: int = Field(default=0, description="Re-test round; 0 is the first pass")
     argv: list[str] = Field(default_factory=list)
     started_at: datetime | None = None
     duration_s: float = 0.0
@@ -167,6 +180,86 @@ class CategoryResult(BaseModel):
     pass_rate: float | None = Field(default=None, description="Share of audited subdomains passing (aggregate only)")
 
 
+class Stage(str, Enum):
+    """The six-stage assessment workflow (paper Section III-C, Fig. 3)."""
+
+    S1 = "S1"  # scope & authorisation
+    S2 = "S2"  # passive reconnaissance
+    S3 = "S3"  # application map
+    S4 = "S4"  # phase controllers / active engines
+    S5 = "S5"  # correlation, scoring and confirmation
+    S6 = "S6"  # risk assignment & report
+
+    @property
+    def label(self) -> str:
+        return STAGE_TITLES[self]
+
+
+STAGE_TITLES = {
+    Stage.S1: "Scope & authorisation",
+    Stage.S2: "Passive reconnaissance",
+    Stage.S3: "Application map",
+    Stage.S4: "Phase controllers",
+    Stage.S5: "Correlation & confirmation",
+    Stage.S6: "Risk & report",
+}
+
+
+class StageStatus(str, Enum):
+    STARTED = "started"
+    COMPLETED = "completed"
+    SKIPPED = "skipped"
+    FAILED = "failed"
+    INFO = "info"
+
+
+class RunEvent(BaseModel):
+    """One entry of the run log: a stage starting, finishing or reporting progress, per host or global."""
+
+    seq: int
+    at: datetime
+    stage: Stage
+    status: StageStatus
+    subdomain: str | None = Field(default=None, description="None for engagement-wide events (S1, final S6)")
+    round: int = Field(default=0, description="Re-test round; 0 is the first pass")
+    detail: str = ""
+    counts: dict[str, int] = Field(default_factory=dict)
+    duration_ms: int | None = None
+
+
+class StageSummary(BaseModel):
+    """Aggregate of one stage across every host of the run."""
+
+    stage: Stage
+    name: str
+    status: StageStatus
+    hosts: int = 0
+    runs: int = Field(default=0, description="Times the stage completed (re-test rounds re-enter S3–S5)")
+    duration_ms: int = Field(default=0, description="Summed wall time of every completed run of the stage")
+    counts: dict[str, int] = Field(default_factory=dict)
+
+
+class Endpoint(BaseModel):
+    url: str
+    method: str = "GET"
+    params: list[str] = Field(default_factory=list)
+    source: str = Field(description="link | form | script | page | retest")
+
+
+class ApplicationMap(BaseModel):
+    """Stage S3 artefact: URL tree and parameter inventory of the host, built from observed content."""
+
+    endpoints: list[Endpoint] = Field(default_factory=list)
+    truncated: bool = False
+
+    @property
+    def parameters(self) -> list[str]:
+        return sorted({p for e in self.endpoints for p in e.params})
+
+    def parameterised(self, method: str = "GET") -> list[Endpoint]:
+        return [e for e in self.endpoints if e.params and e.method == method]
+
+
 class SubdomainResult(BaseModel):
     subdomain: str
     reachable: bool
@@ -185,6 +278,8 @@ class SubdomainResult(BaseModel):
     )
     technologies: list[Technology] = Field(default_factory=list)
     tool_runs: list[ToolRunSummary] = Field(default_factory=list)
+    app_map: ApplicationMap | None = Field(default=None, description="Stage S3 application map")
+    retest_rounds_run: int = Field(default=0, description="S5→S3 re-test rounds actually executed")
     score: int | None = None
     grade: str = "N/A"
     categories: list[CategoryResult] = Field(default_factory=list)
@@ -229,6 +324,8 @@ class AuditResult(BaseModel):
     subdomains: list[SubdomainResult] = Field(default_factory=list)
     scope_rejections: list[ScopeRejection] = Field(default_factory=list)
     summary: ComplianceSummary = Field(default_factory=ComplianceSummary)
+    stages: list[StageSummary] = Field(default_factory=list)
+    run_log: list[RunEvent] = Field(default_factory=list)
     error: str | None = None
     demo: bool = False
 
