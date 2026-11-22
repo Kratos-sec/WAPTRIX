@@ -1,0 +1,82 @@
+{
+  "_comment": "Benchmark test bed (paper Table VI). host is the gateway alias on the internal lab network. documented_total is the ground-truth count the paper reports; ground_truth/<app>.json holds the entries actually used for scoring.",
+  "_scoring": "out_of_scope_tags are capability classes left out of scoring for every system alike: the lab serves no TLS, port findings are about the container not the app, and header/cookie/CORS/metadata hygiene is not enumerated by the projects' solution documentation, so counting it would penalise whichever engines report it. Remove a tag to score it.",
+  "authorization_ref": "LAB-WAPTRIX-BENCH",
+  "scope_domain": "waptrix.lab",
+  "engines": {
+    "Nikto": [
+      "nikto"
+    ],
+    "Nuclei": [
+      "nuclei"
+    ],
+    "Wapiti": [
+      "wapiti"
+    ],
+    "OWASP ZAP": [
+      "zap",
+      "zap-active"
+    ]
+  },
+  "passive_tools": [
+    "zap"
+  ],
+  "active_tools": [
+    "nikto",
+    "nuclei",
+    "wapiti",
+    "sqlmap",
+    "zap-active"
+  ],
+  "out_of_scope_tags": [
+    "transport_tls",
+    "ports",
+    "headers",
+    "cookies",
+    "cors_cache",
+    "metadata"
+  ],
+  "min_severity": "low",
+  "apps": [
+    {
+      "id": "dvwa",
+      "name": "DVWA",
+      "version": "1.10",
+      "stack": "PHP / MySQL",
+      "host": "dvwa.waptrix.lab",
+      "documented_total": 58
+    },
+    {
+      "id": "juiceshop",
+      "name": "OWASP Juice Shop",
+      "version": "17.1.1",
+      "stack": "Node.js / Angular",
+      "host": "juiceshop.waptrix.lab",
+      "documented_total": 51
+    },
+    {
+      "id": "webgoat",
+      "name": "WebGoat",
+      "version": "2023.8",
+      "stack": "Java / Spring",
+      "host": "webgoat.waptrix.lab",
+      "documented_total": 42
+    },
+    {
+      "id": "bwapp",
+      "name": "bWAPP",
+      "version": "2.2",
+      "stack": "PHP / MySQL",
+      "host": "bwapp.waptrix.lab",
+      "documented_total": 68
+    },
+    {
+      "id": "mutillidae",
+      "name": "Mutillidae II",
+      "version": "webpwnized:www",
+      "stack": "PHP / MySQL",
+      "host": "mutillidae.waptrix.lab",
+      "documented_total": 63
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "app": "dvwa",
+  "documented_total": 58,
+  "complete": false,
+  "note": "Seed only: entries the project's own documentation lists unambiguously. Extend from the solution documentation until the count reaches documented_total; until then complete=false and recall is reported against these entries, flagged as partial.",
+  "source": "DVWA module list (setup docs and per-module help pages)",
+  "entries": [
+    {
+      "id": "dvwa-brute",
+      "title": "Brute force login",
+      "cwe": "CWE-307",
+      "path": "/vulnerabilities/brute/",
+      "method": "GET",
+      "param": "username",
+      "wstg": "WSTG-ATHN-03"
+    },
+    {
+      "id": "dvwa-exec",
+      "title": "Command injection",
+      "cwe": "CWE-78",
+      "path": "/vulnerabilities/exec/",
+      "method": "POST",
+      "param": "ip",
+      "wstg": "WSTG-INPV-12"
+    },
+    {
+      "id": "dvwa-csrf",
+      "title": "Cross-site request forgery",
+      "cwe": "CWE-352",
+      "path": "/vulnerabilities/csrf/",
+      "method": "GET",
+      "param": "password_new",
+      "wstg": "WSTG-SESS-05"
+    },
+    {
+      "id": "dvwa-fi",
+      "title": "File inclusion",
+      "cwe": "CWE-98",
+      "path": "/vulnerabilities/fi/",
+      "method": "GET",
+      "param": "page",
+      "wstg": "WSTG-INPV-11"
+    },
+    {
+      "id": "dvwa-upload",
+      "title": "Unrestricted file upload",
+      "cwe": "CWE-434",
+      "path": "/vulnerabilities/upload/",
+      "method": "POST",
+      "wstg": "WSTG-BUSL-09"
+    },
+    {
+      "id": "dvwa-captcha",
+      "title": "Insecure CAPTCHA",
+      "cwe": "CWE-804",
+      "path": "/vulnerabilities/captcha/",
+      "method": "POST",
+      "wstg": "WSTG-BUSL-01"
+    },
+    {
+      "id": "dvwa-sqli",
+      "title": "SQL injection",
+      "cwe": "CWE-89",
+      "path": "/vulnerabilities/sqli/",
+      "method": "GET",
+      "param": "id",
+      "wstg": "WSTG-INPV-05"
+    },
+    {
+      "id": "dvwa-sqli-blind",
+      "title": "Blind SQL injection",
+      "cwe": "CWE-89",
+      "path": "/vulnerabilities/sqli_blind/",
+      "method": "GET",
+      "param": "id",
+      "wstg": "WSTG-INPV-05"
+    },
+    {
+      "id": "dvwa-xss-r",
+      "title": "Reflected XSS",
+      "cwe": "CWE-79",
+      "path": "/vulnerabilities/xss_r/",
+      "method": "GET",
+      "param": "name",
+      "wstg": "WSTG-INPV-01"
+    },
+    {
+      "id": "dvwa-xss-s",
+      "title": "Stored XSS",
+      "cwe": "CWE-79",
+      "path": "/vulnerabilities/xss_s/",
+      "method": "POST",
+      "wstg": "WSTG-INPV-02"
+    }
+  ]
+}

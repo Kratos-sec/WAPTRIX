@@ -1,0 +1,5 @@
+{
+  "app": "bwapp",
+  "note": "Findings outside the ground truth, adjudicated by two reviewers (paper III-E). Only entries with verdict 'tp' and two distinct reviewers count; 'fp' entries are recorded for audit only.",
+  "entries": []
+}

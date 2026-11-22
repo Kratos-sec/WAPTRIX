@@ -286,5 +286,74 @@ def serve(
     uvicorn.run("app.main:app", host=host, port=port, reload=reload)
 
 
+lab_app = typer.Typer(help="Benchmark lab: collect runs against the vulnerable apps and score them (Table VII).",
+                      no_args_is_help=True)
+app.add_typer(lab_app, name="lab")
+
+
+def _lab_dir(value: Optional[Path]) -> Path:
+    import os
+
+    if value is not None:
+        return value
+    if os.environ.get("WAPTRIX_LAB_DIR"):
+        return Path(os.environ["WAPTRIX_LAB_DIR"])
+    if Path("/lab/targets.json").exists():  # mounted by docker-compose.lab.yml
+        return Path("/lab")
+    return Path(__file__).resolve().parents[2] / "lab"
+
+
+@lab_app.command("collect")
+def lab_collect(
+    out: Path = typer.Option(..., "--out", "-o", help="Directory for run records (<app>-r<k>.json)"),
+    app_id: list[str] = typer.Option([], "--app", help="Lab app id (repeatable); default: every app in targets.json"),
+    reps: int = typer.Option(3, "--reps", min=1, max=10, help="Repetitions per app (the paper keeps the median of 3)"),
+    tool_timeout: float = typer.Option(1800.0, "--tool-timeout", min=10, max=3600, help="Per-tool, per-host limit (s)"),
+    lab: Optional[Path] = typer.Option(None, "--lab", help="Lab directory holding targets.json and ground truth"),
+) -> None:
+    """Run the full ACTIVE workflow against the lab apps. Only hosts on the private lab network are scanned."""
+    from app.evaluation.harness import load_config, run_collect
+
+    config = load_config(_lab_dir(lab))
+    console.print(f"[bold red]ACTIVE[/] benchmark collection · {', '.join(app_id) or 'all apps'} · {reps} repetition(s)")
+    try:
+        paths = run_collect(config, out, apps=app_id or None, reps=reps, tool_timeout=tool_timeout,
+                            log=lambda m: console.print(f"[dim]{m}[/]"))
+    except (RuntimeError, KeyError) as exc:
+        console.print(f"[bold red]Lab error:[/] {exc}")
+        raise typer.Exit(code=2) from exc
+    console.print(f"Wrote {len(paths)} run record(s) to {out}")
+
+
+@lab_app.command("evaluate")
+def lab_evaluate(
+    runs: Path = typer.Option(..., "--runs", "-r", help="Directory of run records from 'lab collect'"),
+    out: Path = typer.Option(..., "--out", "-o", help="Directory for results.json, table.md and table.csv"),
+    lab: Optional[Path] = typer.Option(None, "--lab", help="Lab directory holding targets.json and ground truth"),
+) -> None:
+    """Score collected runs against ground truth: per engine, naive union, WAPTrix, and leave-one-app-out."""
+    from app.evaluation.harness import evaluate, load_config, load_runs, write_results
+
+    config = load_config(_lab_dir(lab))
+    records = load_runs(runs)
+    if not records:
+        console.print(f"[bold red]No run records in {runs}[/]")
+        raise typer.Exit(code=2)
+    results = evaluate(config, records)
+    table = Table(title="Consolidated detection performance", header_style="bold cyan", title_justify="left")
+    for col in ("Engine", "TP", "FP", "FN", "Precision", "Recall", "F1", "Min"):
+        table.add_column(col, justify="left" if col == "Engine" else "right")
+    for row in results["table"]:
+        table.add_row(row["system"] + ("" if row["ran"] else " [dim](did not run)[/]"), str(row["tp"]), str(row["fp"]),
+                      str(row["fn"]), f"{row['precision']:.3f}", f"{row['recall']:.3f}", f"{row['f1']:.3f}",
+                      "—" if row["mean_scan_minutes"] is None else f"{row['mean_scan_minutes']:.1f}")
+    console.print(table)
+    partial = [a for a, g in results["ground_truth"].items() if g["partial"]]
+    if partial:
+        console.print(f"[yellow]Ground truth is partial for: {', '.join(partial)} — not yet comparable with Table VII.[/]")
+    for path in write_results(results, out):
+        console.print(f"  • {path}")
+
+
 if __name__ == "__main__":
     app()

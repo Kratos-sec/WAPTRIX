@@ -1,0 +1,8 @@
+{
+  "app": "mutillidae",
+  "documented_total": 63,
+  "complete": false,
+  "note": "Seed only: entries the project's own documentation lists unambiguously. Extend from the solution documentation until the count reaches documented_total; until then complete=false and recall is reported against these entries, flagged as partial.",
+  "source": "Mutillidae II vulnerability list",
+  "entries": []
+}

@@ -242,6 +242,60 @@ The dashboard's **Workflow** tab shows the stage timeline, the voting outcome, t
 
 The result carries `stages` (one summary per stage: hosts, runs, duration, counts) and `run_log` (every event). Each subdomain also gets its `app_map` and `retest_rounds_run`, and each tool run records its `stage`, `round` and `target_url`. The SQLite store keeps the run log in `run_events` and writes it as the audit runs. Tool runs go in `tool_runs`, and below-τ candidates are stored in `findings` with `admitted = 0` and their `correlation_score`.
 
+## Benchmark Lab and Evaluation
+
+The lab reproduces the paper's test bed (Table VI) and scores runs into its Table VII format.
+
+**Test bed.** `docker-compose.lab.yml` adds five vulnerable apps:
+
+| App | Image | Hostname |
+| --- | --- | --- |
+| DVWA | `vulnerables/web-dvwa` | `dvwa.waptrix.lab` |
+| OWASP Juice Shop 17.1.1 | `bkimminich/juice-shop:v17.1.1` | `juiceshop.waptrix.lab` |
+| WebGoat 2023.8 | `webgoat/webgoat:v2023.8` | `webgoat.waptrix.lab` |
+| bWAPP | `raesene/bwapp` | `bwapp.waptrix.lab` |
+| Mutillidae II | `webpwnized/mutillidae` | `mutillidae.waptrix.lab` |
+
+- The apps sit on an `internal` Docker network with no egress and no published ports. Only the `api` and `zap` containers join it.
+- An nginx gateway gives every app its own hostname on port 80, so engines start from the application root.
+- The older PHP images only ship for amd64. On Apple silicon they run under emulation.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.lab.yml up -d --build
+./lab/bootstrap.sh            # one-time database setup for DVWA, bWAPP and Mutillidae
+docker compose -f docker-compose.yml -f docker-compose.lab.yml exec api \
+  python -m app.cli lab collect --reps 3 --out /lab/runs/latest
+docker compose -f docker-compose.yml -f docker-compose.lab.yml exec api \
+  python -m app.cli lab evaluate --runs /lab/runs/latest --out /lab/results/latest
+```
+
+**collect** runs the full active workflow (built-in checks, ZAP passive, Nikto, Nuclei, Wapiti, sqlmap, ZAP active) against each app, three times by default.
+- Each run record keeps the audit result and every raw pre-correlation finding.
+- It refuses to scan unless every lab host resolves to a private address. In practice, that means it only runs inside the lab network.
+
+**evaluate** rebuilds and scores several report sets from the records:
+- each engine on its own
+- the naive union of the four compared engines
+- WAPTrix as run
+- WAPTrix re-voted with leave-one-app-out weights: each engine's w_i is its smoothed precision (TP+1)/(TP+FP+2) on the other four apps
+
+Scoring rules:
+- It takes the median over repetitions.
+- It writes `results.json`, `table.md` (Table VII layout, per-app tables, false-positive suppression) and `table.csv`.
+- A finding matches a ground-truth entry by CWE family, URL path and, when given, parameter. Each entry counts once.
+- Findings below `min_severity`, and classes listed in `out_of_scope_tags`, are not scored for any system. By default these are TLS, ports, and header, cookie, CORS and metadata hygiene.
+
+**Ground truth** lives in `lab/ground_truth/<app>.json`. The shipped files are seeds, not the paper's full list:
+- DVWA lists its core modules and Juice Shop four well-documented issues. WebGoat, bWAPP and Mutillidae are empty.
+- Each file carries the paper's `documented_total`, and the report flags apps whose ground truth is partial.
+- Extend the entries from each project's solution documentation. Record findings outside the list in `lab/adjudication/<app>.json`: a finding counts as a true positive only with verdict `tp` and two distinct reviewers.
+
+Until the ground truth is complete, the numbers are not comparable with the paper's Table VII.
+
+**Not covered yet:**
+- **Authenticated scanning.** No session material reaches the engines yet, so login-gated surface (most of DVWA and WebGoat) stays out of reach.
+- **WSTG phase coverage** (Fig. 6b) is not computed.
+
 ## REST API
 
 | Method | Path | Description |

@@ -104,7 +104,9 @@ def _merge_into(rep: PassiveFinding, group: list[PassiveFinding]) -> PassiveFind
 
 
 def _score(group: list[PassiveFinding], tag: str, engines_ran: set[str],
-           tau: float, gamma: float) -> CorrelationInfo:
+           tau: float, gamma: float, weights: dict[str, float] | None = None) -> CorrelationInfo:
+    def w(engine: str) -> float:
+        return weights[engine] if weights and engine in weights else profiles.weight(engine)
 
     # s_i per detecting engine: strongest certainty that engine reported anywhere in the group.
     detector_certainty: dict[str, float] = {}
@@ -117,8 +119,8 @@ def _score(group: list[PassiveFinding], tag: str, engines_ran: set[str],
     # E: engines that ran and are capable of this class, plus any engine that actually detected it.
     applicable = {e for e in engines_ran if tag in profiles.detects(e)} | detectors
 
-    numerator = sum(profiles.weight(e) * detector_certainty[e] for e in detectors)
-    denominator = sum(profiles.weight(e) for e in applicable) or 1.0
+    numerator = sum(w(e) * detector_certainty[e] for e in detectors)
+    denominator = sum(w(e) for e in applicable) or 1.0
     confirmed = any(profiles.confirms(e, tag) for e in detectors)
     score = numerator / denominator + (gamma if confirmed else 0.0)
     score = round(min(score, 1.0), 4)
@@ -135,9 +137,15 @@ def _score(group: list[PassiveFinding], tag: str, engines_ran: set[str],
     )
 
 
-def correlate(findings: list[PassiveFinding], engines_ran: set[str]) -> CorrelationOutcome:
-    """De-duplicate, vote and enrich. ``engines_ran`` is every engine that executed on the host."""
-    tau, gamma = profiles.tau(), profiles.gamma()
+def correlate(findings: list[PassiveFinding], engines_ran: set[str], *,
+              weights: dict[str, float] | None = None, tau: float | None = None) -> CorrelationOutcome:
+    """De-duplicate, vote and enrich. ``engines_ran`` is every engine that executed on the host.
+
+    ``weights`` overrides individual engine reliabilities w_i (the evaluation harness passes weights
+    calibrated on held-out applications); ``tau`` overrides the admission threshold.
+    """
+    tau = profiles.tau() if tau is None else tau
+    gamma = profiles.gamma()
 
     groups: dict[CanonicalKey, list[PassiveFinding]] = {}
     for finding in findings:
@@ -147,7 +155,7 @@ def correlate(findings: list[PassiveFinding], engines_ran: set[str]) -> Correlat
     for group in groups.values():
         rep = _pick_representative(group)
         tag = profiles.tag_for(rep.rule_id, rep.cwe or None)
-        info = _score(group, tag, engines_ran, tau, gamma)  # reads per-engine certainty before any merge
+        info = _score(group, tag, engines_ran, tau, gamma, weights)  # reads per-engine certainty before any merge
         _merge_into(rep, group)
         rep.correlation = info
         rep.correlation_score = info.score

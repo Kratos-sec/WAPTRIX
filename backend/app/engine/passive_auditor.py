@@ -79,6 +79,9 @@ class PassiveAuditor:
         self.adapters = adapters if adapters is not None else self._build_adapters(request)
         self._tool_slots = {a.name: asyncio.Semaphore(TOOL_PARALLELISM) for a in self.adapters}
         self.run_log = run_log if run_log is not None else RunLog()
+        # Every raw (pre-correlation) finding per host, including re-test rounds. Not serialised with the
+        # result; the evaluation harness reads it to score each engine alone and the naive union.
+        self.raw_findings: dict[str, list[PassiveFinding]] = {}
 
     @staticmethod
     def _build_adapters(request: AuditRequest) -> list[ToolAdapter]:
@@ -151,6 +154,7 @@ class PassiveAuditor:
         log = self.run_log
         result = SubdomainResult(subdomain=host, reachable=False, scanned_at=datetime.now(timezone.utc))
         raw: list[PassiveFinding] = []
+        self.raw_findings[host] = raw
 
         with log.stage(Stage.S2, host) as s2:
             ctx, soup = await self._recon(target, fetcher, result, raw)

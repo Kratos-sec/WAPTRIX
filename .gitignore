@@ -231,3 +231,7 @@ reports/
 demo_reports/
 .DS_Store
 !frontend/src/lib/
+
+# Benchmark lab outputs
+lab/runs/
+lab/results/

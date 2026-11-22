@@ -1,0 +1,42 @@
+{
+  "app": "juiceshop",
+  "documented_total": 51,
+  "complete": false,
+  "note": "Seed only: entries the project's own documentation lists unambiguously. Extend from the solution documentation until the count reaches documented_total; until then complete=false and recall is reported against these entries, flagged as partial.",
+  "source": "OWASP Juice Shop challenge list (Pwning OWASP Juice Shop)",
+  "entries": [
+    {
+      "id": "js-search-sqli",
+      "title": "SQL injection in product search",
+      "cwe": "CWE-89",
+      "path": "/rest/products/search",
+      "method": "GET",
+      "param": "q",
+      "wstg": "WSTG-INPV-05"
+    },
+    {
+      "id": "js-login-sqli",
+      "title": "SQL injection in login",
+      "cwe": "CWE-89",
+      "path": "/rest/user/login",
+      "method": "POST",
+      "wstg": "WSTG-INPV-05"
+    },
+    {
+      "id": "js-ftp-listing",
+      "title": "Exposed FTP directory listing",
+      "cwe": "CWE-548",
+      "path": "/ftp",
+      "method": "GET",
+      "wstg": "WSTG-CONF-04"
+    },
+    {
+      "id": "js-metrics",
+      "title": "Exposed Prometheus metrics",
+      "cwe": "CWE-200",
+      "path": "/metrics",
+      "method": "GET",
+      "wstg": "WSTG-CONF-05"
+    }
+  ]
+}
