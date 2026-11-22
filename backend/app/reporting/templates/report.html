@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WAPTrix Passive Audit — {{ audit.authorization_ref }}{% if single %} — {{ audit.subdomains[0].subdomain }}{% endif %}</title>
+<title>WAPTrix {% if active_mode %}Active + Passive{% else %}Passive{% endif %} Audit — {{ audit.authorization_ref }}{% if single %} — {{ audit.subdomains[0].subdomain }}{% endif %}</title>
 <style>
   :root {
     --ink: #0f172a; --muted: #475569; --line: #e2e8f0; --bg: #ffffff; --panel: #f8fafc;
@@ -66,7 +66,7 @@
   {% set sev_color = {"critical": "#7f1d1d", "high": "#dc2626", "medium": "#ea580c", "low": "#ca8a04", "info": "#2563eb"} %}
 
   <section class="cover">
-    <div class="brand">WAPTrix · Passive Web Application Security Audit</div>
+    <div class="brand">WAPTrix · {% if active_mode %}Active + Passive{% else %}Passive{% endif %} Web Application Security Audit</div>
     <h1>OWASP Top 10 (2025) Compliance Report{% if single %}: {{ audit.subdomains[0].subdomain }}{% endif %}</h1>
     <div class="muted">
       Authorization reference <b>{{ audit.authorization_ref }}</b> · Audit ID <code>{{ audit.id }}</code><br>
@@ -75,12 +75,21 @@
     </div>
   </section>
 
+  {% if active_mode %}
+  <div class="notice">
+    <b>Active + passive assessment.</b> Alongside read-only passive inspection, the authorized active engines
+    (<b>{{ active_engines | join(', ') }}</b>) were run against the mapped endpoints: they send probes and injection
+    payloads to confirm issues passive inspection can only indicate. Active scanning was an explicit, scoped opt-in.
+    Categories that remain unverifiable are reported as <span class="st st-manual_review">MANUAL</span> rather than as passes.
+  </div>
+  {% else %}
   <div class="notice">
     <b>Strictly passive assessment.</b> Results are based solely on read-only HTTP <code>GET</code> requests to
     <code>/</code>, <code>/robots.txt</code> and <code>/.well-known/security.txt</code>, and standard TLS handshakes.
     No fuzzing, injection, authentication or brute-forcing was performed. Categories that cannot be verified passively
     are reported as <span class="st st-manual_review">MANUAL</span> rather than as passes.
   </div>
+  {% endif %}
 
   <h2>1. Executive Summary</h2>
   <div class="grid">

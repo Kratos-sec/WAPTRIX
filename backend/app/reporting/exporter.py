@@ -202,7 +202,7 @@ def build_sarif(audit: AuditResult) -> dict:
                 "tool": {
                     "driver": {
                         "name": "WAPTrix",
-                        "fullName": "WAPTrix Passive Web Application Auditor",
+                        "fullName": "WAPTrix Web Application Security Auditor",
                         "version": ENGINE_VERSION,
                         "semanticVersion": ENGINE_VERSION,
                         "informationUri": INFORMATION_URI,
@@ -221,7 +221,7 @@ def build_sarif(audit: AuditResult) -> dict:
                         ),
                         "properties": {
                             "authorizationRef": audit.authorization_ref,
-                            "mode": "passive",
+                            "mode": "active" if _active_engines(audit) else "passive",
                             "targets": [s.subdomain for s in audit.subdomains],
                         },
                     }
@@ -259,9 +259,18 @@ def _fmt_dt(value: datetime | None) -> str:
 _env.filters["dt"] = _fmt_dt
 
 
+def _active_engines(audit: AuditResult) -> list[str]:
+    """Active engines that actually ran (S4 tool runs). Empty means a strictly passive assessment."""
+    from app.tools.adapters import ACTIVE_ADAPTERS
+
+    return sorted({r.tool for s in audit.subdomains for r in s.tool_runs
+                   if r.tool in ACTIVE_ADAPTERS or r.stage == "S4"})
+
+
 def export_html(audit: AuditResult, for_pdf: bool = False) -> bytes:
     template = _env.get_template("report.html")
     severities = [s.value for s in sorted(Severity, key=lambda s: -SEVERITY_RANK[s])]
+    active_engines = _active_engines(audit)
     html = template.render(
         audit=audit,
         summary=audit.summary,
@@ -272,6 +281,8 @@ def export_html(audit: AuditResult, for_pdf: bool = False) -> bytes:
         engine_version=ENGINE_VERSION,
         for_pdf=for_pdf,
         single=len(audit.subdomains) == 1,
+        active_engines=active_engines,
+        active_mode=bool(active_engines),
     )
     return html.encode("utf-8")
 
