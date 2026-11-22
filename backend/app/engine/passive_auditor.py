@@ -124,7 +124,9 @@ class PassiveAuditor:
 
         with self.run_log.stage(Stage.S6) as s6:
             summary = summarize(results)
-            s6.counts = {"findings": summary.total_findings, "retest": summary.total_retest}
+            # Per-host S6 events already carry "findings"; summaries add counts across events, so the
+            # engagement-wide event uses its own keys to avoid double-counting.
+            s6.counts = {"retest": summary.total_retest, "reachable": summary.subdomains_reachable}
             s6.detail = f"overall grade {summary.grade}"
 
         events = list(self.run_log.events)

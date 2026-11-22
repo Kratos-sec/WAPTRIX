@@ -2,8 +2,8 @@
   "id": "demo-acme-corp",
   "authorization_ref": "DEMO-ACME-2026-001",
   "status": "completed",
-  "created_at": "2026-11-21T11:53:53.757893Z",
-  "completed_at": "2026-11-21T11:53:54.168828Z",
+  "created_at": "2026-11-22T12:30:53.843616Z",
+  "completed_at": "2026-11-22T12:30:54.259809Z",
   "engine_version": "1.0.0",
   "request": {
     "subdomains": [
@@ -24,7 +24,13 @@
     "requests_per_second": 10.0,
     "timeout": 10.0,
     "allow_private": true,
-    "include_metadata": true
+    "include_metadata": true,
+    "tool_timeout": 600.0,
+    "tools": [],
+    "active": false,
+    "active_tools": [],
+    "retest_rounds": 1,
+    "max_endpoints": 5
   },
   "subdomains": [
     {
@@ -96,8 +102,8 @@
         "cert_subject": "commonName=*.acme-corp.example",
         "cert_issuer": "countryName=US, organizationName=Let's Encrypt, commonName=R11",
         "cert_serial": "4a1f9be20c3d7e",
-        "cert_not_before": "2026-10-12T11:53:53.757695Z",
-        "cert_not_after": "2027-01-10T11:53:53.757695Z",
+        "cert_not_before": "2026-10-13T12:30:53.843438Z",
+        "cert_not_after": "2027-01-11T12:30:53.843438Z",
         "days_to_expiry": 50,
         "san": [
           "*.acme-corp.example",
@@ -135,7 +141,26 @@
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html",
             "https://csp-evaluator.withgoogle.com/"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "SRI-MISSING-SCRIPT-2d54f985ba1a",
@@ -160,7 +185,26 @@
           "references": [
             "https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity",
             "https://cheatsheetseries.owasp.org/cheatsheets/Third_Party_Javascript_Management_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-EMAIL-1da9f66b8a3d",
@@ -183,7 +227,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "SRI-MISSING-STYLESHEET-c796ebb36f70",
@@ -206,9 +269,70 @@
           "cvss_score": 0.0,
           "references": [
             "https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         }
       ],
+      "retest_queue": [],
+      "technologies": [],
+      "tool_runs": [],
+      "app_map": {
+        "endpoints": [
+          {
+            "url": "https://www.acme-corp.example/",
+            "method": "GET",
+            "params": [],
+            "source": "page"
+          },
+          {
+            "url": "https://www.acme-corp.example/products",
+            "method": "GET",
+            "params": [],
+            "source": "link"
+          },
+          {
+            "url": "https://www.acme-corp.example/careers",
+            "method": "GET",
+            "params": [],
+            "source": "link"
+          },
+          {
+            "url": "https://www.acme-corp.example/newsletter",
+            "method": "POST",
+            "params": [
+              "csrf_token",
+              "email"
+            ],
+            "source": "form"
+          },
+          {
+            "url": "https://www.acme-corp.example/assets/app.8d2e1.js",
+            "method": "GET",
+            "params": [],
+            "source": "script"
+          }
+        ],
+        "truncated": false
+      },
+      "retest_rounds_run": 0,
       "score": 94,
       "grade": "A",
       "categories": [
@@ -331,8 +455,8 @@
         "info": 2
       },
       "error": null,
-      "scanned_at": "2026-11-21T11:53:53.758807Z",
-      "duration_ms": 405
+      "scanned_at": "2026-11-22T12:30:53.844577Z",
+      "duration_ms": 409
     },
     {
       "subdomain": "app.acme-corp.example",
@@ -395,8 +519,8 @@
         "cert_subject": "commonName=*.acme-corp.example",
         "cert_issuer": "countryName=US, organizationName=Let's Encrypt, commonName=R11",
         "cert_serial": "4a1f9be20c3d7e",
-        "cert_not_before": "2026-10-12T11:53:53.757695Z",
-        "cert_not_after": "2026-12-03T11:53:53.757695Z",
+        "cert_not_before": "2026-10-13T12:30:53.843438Z",
+        "cert_not_after": "2026-12-04T12:30:53.843438Z",
         "days_to_expiry": 12,
         "san": [
           "*.acme-corp.example",
@@ -433,7 +557,26 @@
           "cvss_score": 4.8,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-SESSION-NO-HTTPONLY-f72402c10384",
@@ -456,7 +599,26 @@
           "cvss_score": 5.3,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-CSP-MISSING-a02c627cd7a3",
@@ -481,79 +643,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/12-Test_for_Content_Security_Policy",
             "https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html"
-          ]
-        },
-        {
-          "id": "JS-VULNERABLE-LIBRARY-32bb7ac349a7",
-          "rule_id": "JS-VULNERABLE-LIBRARY",
-          "title": "Vulnerable JavaScript library version",
-          "severity": "medium",
-          "confidence": "tentative",
-          "subdomain": "app.acme-corp.example",
-          "url": "https://app.acme-corp.example/",
-          "description": "A client-side library version inferred from the script URL is affected by publicly known vulnerabilities. Version is fingerprinted passively from the filename/path and should be confirmed.\n\nAdvisory: CVE-2020-11022 / CVE-2020-11023: XSS via htmlPrefilter (fixed in 3.5.0)",
-          "evidence": "jQuery 1.12.4 loaded from https://code.jquery.com/jquery-1.12.4.min.js",
-          "remediation": "Upgrade the library to a supported, patched release and track client-side dependencies with an SCA tool (npm audit, Retire.js, Dependabot).",
-          "cwe": "CWE-1395",
-          "cwe_name": "Dependency on Vulnerable Third-Party Component",
-          "wstg": "WSTG-INFO-08",
-          "owasp": [
-            "A03:2025"
           ],
-          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
-          "cvss_score": 6.1,
-          "references": [
-            "https://owasp.org/Top10/2025/A03_2025-Software_Supply_Chain_Failures/",
-            "https://retirejs.github.io/retire.js/"
-          ]
-        },
-        {
-          "id": "JS-VULNERABLE-LIBRARY-7ba66fc975ad",
-          "rule_id": "JS-VULNERABLE-LIBRARY",
-          "title": "Vulnerable JavaScript library version",
-          "severity": "medium",
-          "confidence": "tentative",
-          "subdomain": "app.acme-corp.example",
-          "url": "https://app.acme-corp.example/",
-          "description": "A client-side library version inferred from the script URL is affected by publicly known vulnerabilities. Version is fingerprinted passively from the filename/path and should be confirmed.\n\nAdvisory: CVE-2019-8331 / CVE-2018-14041: XSS in tooltip/data-target (fixed in 3.4.1)",
-          "evidence": "Bootstrap 3.3.7 loaded from https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js",
-          "remediation": "Upgrade the library to a supported, patched release and track client-side dependencies with an SCA tool (npm audit, Retire.js, Dependabot).",
-          "cwe": "CWE-1395",
-          "cwe_name": "Dependency on Vulnerable Third-Party Component",
-          "wstg": "WSTG-INFO-08",
-          "owasp": [
-            "A03:2025"
+          "sources": [
+            "waptrix"
           ],
-          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
-          "cvss_score": 6.1,
-          "references": [
-            "https://owasp.org/Top10/2025/A03_2025-Software_Supply_Chain_Failures/",
-            "https://retirejs.github.io/retire.js/"
-          ]
-        },
-        {
-          "id": "JS-VULNERABLE-LIBRARY-f8509baa286c",
-          "rule_id": "JS-VULNERABLE-LIBRARY",
-          "title": "Vulnerable JavaScript library version",
-          "severity": "medium",
-          "confidence": "tentative",
-          "subdomain": "app.acme-corp.example",
-          "url": "https://app.acme-corp.example/",
-          "description": "A client-side library version inferred from the script URL is affected by publicly known vulnerabilities. Version is fingerprinted passively from the filename/path and should be confirmed.\n\nAdvisory: CVE-2022-31129: ReDoS in RFC 2822 parsing (fixed in 2.29.4)",
-          "evidence": "Moment.js 2.24.0 loaded from https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js",
-          "remediation": "Upgrade the library to a supported, patched release and track client-side dependencies with an SCA tool (npm audit, Retire.js, Dependabot).",
-          "cwe": "CWE-1395",
-          "cwe_name": "Dependency on Vulnerable Third-Party Component",
-          "wstg": "WSTG-INFO-08",
-          "owasp": [
-            "A03:2025"
-          ],
-          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
-          "cvss_score": 6.1,
-          "references": [
-            "https://owasp.org/Top10/2025/A03_2025-Software_Supply_Chain_Failures/",
-            "https://retirejs.github.io/retire.js/"
-          ]
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CACHE-SENSITIVE-NO-STORE-c7508ee5060b",
@@ -577,7 +686,26 @@
           "cvss_score": 4.0,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/06-Testing_for_Browser_Cache_Weaknesses"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cors_cache",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-BROAD-DOMAIN-5408ae9ebd41",
@@ -601,30 +729,26 @@
           "cvss_score": 4.2,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
-        },
-        {
-          "id": "CKE-NO-HTTPONLY-2bee07f1e930",
-          "rule_id": "CKE-NO-HTTPONLY",
-          "title": "Cookie without HttpOnly flag",
-          "severity": "low",
-          "confidence": "certain",
-          "subdomain": "app.acme-corp.example",
-          "url": "https://app.acme-corp.example/",
-          "description": "A cookie is issued without the HttpOnly attribute and is readable from JavaScript. If it carries sensitive state it can be stolen through XSS.",
-          "evidence": "Set-Cookie: tracking_id=a1b2\u2026[redacted]; Path=/; Secure; SameSite=None",
-          "remediation": "Set HttpOnly on every cookie that does not need to be read by client-side script.",
-          "cwe": "CWE-1004",
-          "cwe_name": "Sensitive Cookie Without 'HttpOnly' Flag",
-          "wstg": "WSTG-SESS-02",
-          "owasp": [
-            "A07:2025"
           ],
-          "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N",
-          "cvss_score": 3.1,
-          "references": [
-            "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-NO-SAMESITE-8c3506924a04",
@@ -648,7 +772,26 @@
           "cvss_score": 3.1,
           "references": [
             "https://owasp.org/www-community/SameSite"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-SERVER-VERSION-d746d518fd54",
@@ -671,7 +814,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/02-Fingerprint_Web_Server"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-VERSION-HEADER-92ef14f99277",
@@ -694,32 +856,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/08-Fingerprint_Web_Application_Framework"
-          ]
-        },
-        {
-          "id": "FORM-NO-CSRF-TOKEN-44dc14be91d2",
-          "rule_id": "FORM-NO-CSRF-TOKEN",
-          "title": "State-changing form without anti-CSRF token",
-          "severity": "low",
-          "confidence": "tentative",
-          "subdomain": "app.acme-corp.example",
-          "url": "https://app.acme-corp.example/",
-          "description": "A POST form does not contain a hidden field matching common anti-CSRF token names. Unless protected by SameSite cookies or custom headers, it may be vulnerable to cross-site request forgery. Requires manual confirmation.\n\n1 POST form(s) without a recognizable anti-CSRF hidden field.",
-          "evidence": "<form method=\"POST\" action=\"/session\"> fields: username, password",
-          "remediation": "Add a per-session or per-request synchronizer token to all state-changing forms and validate it server-side; also set SameSite on session cookies.",
-          "cwe": "CWE-352",
-          "cwe_name": "Cross-Site Request Forgery (CSRF)",
-          "wstg": "WSTG-SESS-05",
-          "owasp": [
-            "A06:2025",
-            "A01:2025"
           ],
-          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N",
-          "cvss_score": 4.3,
-          "references": [
-            "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery",
-            "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html"
-          ]
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-HSTS-WEAK-60f99fa8b4ed",
@@ -742,7 +898,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-XCTO-MISSING-79b6463fa104",
@@ -766,7 +941,26 @@
           "cvss_score": 3.1,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#x-content-type-options"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-XFO-MISSING-5a5547f8a9a0",
@@ -790,7 +984,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/09-Testing_for_Clickjacking",
             "https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "SRI-MISSING-SCRIPT-f82a76049e0c",
@@ -815,10 +1028,29 @@
           "references": [
             "https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity",
             "https://cheatsheetseries.owasp.org/cheatsheets/Third_Party_Javascript_Management_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
-          "id": "TLS-CERT-EXPIRING-4ad859d88639",
+          "id": "TLS-CERT-EXPIRING-d0f292976bb4",
           "rule_id": "TLS-CERT-EXPIRING",
           "title": "TLS certificate expires within 30 days",
           "severity": "low",
@@ -826,7 +1058,7 @@
           "subdomain": "app.acme-corp.example",
           "url": "https://app.acme-corp.example/",
           "description": "The server certificate will expire soon. Unless renewed, users will receive certificate errors and service availability will be impacted.",
-          "evidence": "Certificate expires 2026-12-03T11:53:53.757695+00:00 (12 days)",
+          "evidence": "Certificate expires 2026-12-04T12:30:53.843438+00:00 (12 days)",
           "remediation": "Renew the certificate and ensure automated renewal with alerting at least 30 days before expiry.",
           "cwe": "CWE-298",
           "cwe_name": "Improper Validation of Certificate Expiration",
@@ -838,7 +1070,26 @@
           "cvss_score": 3.1,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html#certificates"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "TLS-MIXED-CONTENT-PASSIVE-d3037e04d2c8",
@@ -861,30 +1112,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content"
-          ]
-        },
-        {
-          "id": "DISC-HTML-COMMENTS-e1c8c3002eb1",
-          "rule_id": "DISC-HTML-COMMENTS",
-          "title": "Sensitive developer comments in HTML",
-          "severity": "info",
-          "confidence": "tentative",
-          "subdomain": "app.acme-corp.example",
-          "url": "https://app.acme-corp.example/",
-          "description": "HTML comments contain developer notes mentioning credentials, internal hosts, debugging or unfinished security work.\n\n1 comment(s) contain sensitive keywords.",
-          "evidence": "<!-- TODO: re-enable CSRF middleware after the SSO migration (ticket PORTAL-412) -->",
-          "remediation": "Strip comments from production HTML in the build pipeline and never place secrets or internal notes in client-delivered markup.",
-          "cwe": "CWE-615",
-          "cwe_name": "Inclusion of Sensitive Information in Source Code Comments",
-          "wstg": "WSTG-INFO-05",
-          "owasp": [
-            "A02:2025"
           ],
-          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
-          "cvss_score": 0.0,
-          "references": [
-            "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
-          ]
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "FORM-PASSWORD-AUTOCOMPLETE-ed83b295a5bf",
@@ -907,7 +1154,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/05-Testing_for_Vulnerable_Remember_Password"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-PERMISSIONS-MISSING-6e4726cebde0",
@@ -930,7 +1196,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#permissions-policy-formerly-feature-policy"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-REFERRER-MISSING-d7d136ed0acd",
@@ -953,7 +1238,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#referrer-policy"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "META-SECURITY-TXT-MISSING-d18cf47154d6",
@@ -977,7 +1281,26 @@
           "references": [
             "https://www.rfc-editor.org/rfc/rfc9116",
             "https://securitytxt.org/"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "metadata",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "SRI-MISSING-STYLESHEET-4a1ec3a65d7c",
@@ -1000,10 +1323,275 @@
           "cvss_score": 0.0,
           "references": [
             "https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         }
       ],
-      "score": 25,
+      "retest_queue": [
+        {
+          "id": "JS-VULNERABLE-LIBRARY-32bb7ac349a7",
+          "rule_id": "JS-VULNERABLE-LIBRARY",
+          "title": "Vulnerable JavaScript library version",
+          "severity": "medium",
+          "confidence": "tentative",
+          "subdomain": "app.acme-corp.example",
+          "url": "https://app.acme-corp.example/",
+          "description": "A client-side library version inferred from the script URL is affected by publicly known vulnerabilities. Version is fingerprinted passively from the filename/path and should be confirmed.\n\nAdvisory: CVE-2020-11022 / CVE-2020-11023: XSS via htmlPrefilter (fixed in 3.5.0)",
+          "evidence": "jQuery 1.12.4 loaded from https://code.jquery.com/jquery-1.12.4.min.js",
+          "remediation": "Upgrade the library to a supported, patched release and track client-side dependencies with an SCA tool (npm audit, Retire.js, Dependabot).",
+          "cwe": "CWE-1395",
+          "cwe_name": "Dependency on Vulnerable Third-Party Component",
+          "wstg": "WSTG-INFO-08",
+          "owasp": [
+            "A03:2025"
+          ],
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+          "cvss_score": 6.1,
+          "references": [
+            "https://owasp.org/Top10/2025/A03_2025-Software_Supply_Chain_Failures/",
+            "https://retirejs.github.io/retire.js/"
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.45,
+          "correlation": {
+            "score": 0.45,
+            "threshold": 0.55,
+            "admitted": false,
+            "confirmed": false,
+            "tag": "libraries",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
+        },
+        {
+          "id": "JS-VULNERABLE-LIBRARY-7ba66fc975ad",
+          "rule_id": "JS-VULNERABLE-LIBRARY",
+          "title": "Vulnerable JavaScript library version",
+          "severity": "medium",
+          "confidence": "tentative",
+          "subdomain": "app.acme-corp.example",
+          "url": "https://app.acme-corp.example/",
+          "description": "A client-side library version inferred from the script URL is affected by publicly known vulnerabilities. Version is fingerprinted passively from the filename/path and should be confirmed.\n\nAdvisory: CVE-2019-8331 / CVE-2018-14041: XSS in tooltip/data-target (fixed in 3.4.1)",
+          "evidence": "Bootstrap 3.3.7 loaded from https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js",
+          "remediation": "Upgrade the library to a supported, patched release and track client-side dependencies with an SCA tool (npm audit, Retire.js, Dependabot).",
+          "cwe": "CWE-1395",
+          "cwe_name": "Dependency on Vulnerable Third-Party Component",
+          "wstg": "WSTG-INFO-08",
+          "owasp": [
+            "A03:2025"
+          ],
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+          "cvss_score": 6.1,
+          "references": [
+            "https://owasp.org/Top10/2025/A03_2025-Software_Supply_Chain_Failures/",
+            "https://retirejs.github.io/retire.js/"
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.45,
+          "correlation": {
+            "score": 0.45,
+            "threshold": 0.55,
+            "admitted": false,
+            "confirmed": false,
+            "tag": "libraries",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
+        },
+        {
+          "id": "JS-VULNERABLE-LIBRARY-f8509baa286c",
+          "rule_id": "JS-VULNERABLE-LIBRARY",
+          "title": "Vulnerable JavaScript library version",
+          "severity": "medium",
+          "confidence": "tentative",
+          "subdomain": "app.acme-corp.example",
+          "url": "https://app.acme-corp.example/",
+          "description": "A client-side library version inferred from the script URL is affected by publicly known vulnerabilities. Version is fingerprinted passively from the filename/path and should be confirmed.\n\nAdvisory: CVE-2022-31129: ReDoS in RFC 2822 parsing (fixed in 2.29.4)",
+          "evidence": "Moment.js 2.24.0 loaded from https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js",
+          "remediation": "Upgrade the library to a supported, patched release and track client-side dependencies with an SCA tool (npm audit, Retire.js, Dependabot).",
+          "cwe": "CWE-1395",
+          "cwe_name": "Dependency on Vulnerable Third-Party Component",
+          "wstg": "WSTG-INFO-08",
+          "owasp": [
+            "A03:2025"
+          ],
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+          "cvss_score": 6.1,
+          "references": [
+            "https://owasp.org/Top10/2025/A03_2025-Software_Supply_Chain_Failures/",
+            "https://retirejs.github.io/retire.js/"
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.45,
+          "correlation": {
+            "score": 0.45,
+            "threshold": 0.55,
+            "admitted": false,
+            "confirmed": false,
+            "tag": "libraries",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
+        },
+        {
+          "id": "FORM-NO-CSRF-TOKEN-44dc14be91d2",
+          "rule_id": "FORM-NO-CSRF-TOKEN",
+          "title": "State-changing form without anti-CSRF token",
+          "severity": "low",
+          "confidence": "tentative",
+          "subdomain": "app.acme-corp.example",
+          "url": "https://app.acme-corp.example/",
+          "description": "A POST form does not contain a hidden field matching common anti-CSRF token names. Unless protected by SameSite cookies or custom headers, it may be vulnerable to cross-site request forgery. Requires manual confirmation.\n\n1 POST form(s) without a recognizable anti-CSRF hidden field.",
+          "evidence": "<form method=\"POST\" action=\"/session\"> fields: username, password",
+          "remediation": "Add a per-session or per-request synchronizer token to all state-changing forms and validate it server-side; also set SameSite on session cookies.",
+          "cwe": "CWE-352",
+          "cwe_name": "Cross-Site Request Forgery (CSRF)",
+          "wstg": "WSTG-SESS-05",
+          "owasp": [
+            "A06:2025",
+            "A01:2025"
+          ],
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N",
+          "cvss_score": 4.3,
+          "references": [
+            "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery",
+            "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html"
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.45,
+          "correlation": {
+            "score": 0.45,
+            "threshold": 0.55,
+            "admitted": false,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
+        },
+        {
+          "id": "DISC-HTML-COMMENTS-e1c8c3002eb1",
+          "rule_id": "DISC-HTML-COMMENTS",
+          "title": "Sensitive developer comments in HTML",
+          "severity": "info",
+          "confidence": "tentative",
+          "subdomain": "app.acme-corp.example",
+          "url": "https://app.acme-corp.example/",
+          "description": "HTML comments contain developer notes mentioning credentials, internal hosts, debugging or unfinished security work.\n\n1 comment(s) contain sensitive keywords.",
+          "evidence": "<!-- TODO: re-enable CSRF middleware after the SSO migration (ticket PORTAL-412) -->",
+          "remediation": "Strip comments from production HTML in the build pipeline and never place secrets or internal notes in client-delivered markup.",
+          "cwe": "CWE-615",
+          "cwe_name": "Inclusion of Sensitive Information in Source Code Comments",
+          "wstg": "WSTG-INFO-05",
+          "owasp": [
+            "A02:2025"
+          ],
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+          "cvss_score": 0.0,
+          "references": [
+            "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.45,
+          "correlation": {
+            "score": 0.45,
+            "threshold": 0.55,
+            "admitted": false,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
+        }
+      ],
+      "technologies": [],
+      "tool_runs": [],
+      "app_map": {
+        "endpoints": [
+          {
+            "url": "https://app.acme-corp.example/",
+            "method": "GET",
+            "params": [],
+            "source": "page"
+          },
+          {
+            "url": "https://app.acme-corp.example/forgot",
+            "method": "GET",
+            "params": [],
+            "source": "link"
+          },
+          {
+            "url": "https://app.acme-corp.example/session",
+            "method": "POST",
+            "params": [
+              "password",
+              "username"
+            ],
+            "source": "form"
+          }
+        ],
+        "truncated": false
+      },
+      "retest_rounds_run": 0,
+      "score": 43,
       "grade": "F",
       "categories": [
         {
@@ -1011,11 +1599,10 @@
           "name": "Broken Access Control",
           "status": "warning",
           "coverage": "partial",
-          "finding_count": 2,
+          "finding_count": 1,
           "max_severity": "low",
           "rule_ids": [
-            "CKE-BROAD-DOMAIN",
-            "FORM-NO-CSRF-TOKEN"
+            "CKE-BROAD-DOMAIN"
           ],
           "pass_rate": null
         },
@@ -1024,11 +1611,10 @@
           "name": "Security Misconfiguration",
           "status": "fail",
           "coverage": "high",
-          "finding_count": 10,
+          "finding_count": 9,
           "max_severity": "medium",
           "rule_ids": [
             "CACHE-SENSITIVE-NO-STORE",
-            "DISC-HTML-COMMENTS",
             "DISC-SERVER-VERSION",
             "DISC-VERSION-HEADER",
             "HDR-CSP-MISSING",
@@ -1043,12 +1629,11 @@
         {
           "id": "A03:2025",
           "name": "Software Supply Chain Failures",
-          "status": "fail",
+          "status": "warning",
           "coverage": "partial",
-          "finding_count": 4,
-          "max_severity": "medium",
+          "finding_count": 1,
+          "max_severity": "low",
           "rule_ids": [
-            "JS-VULNERABLE-LIBRARY",
             "SRI-MISSING-SCRIPT"
           ],
           "pass_rate": null
@@ -1086,11 +1671,10 @@
           "name": "Insecure Design",
           "status": "warning",
           "coverage": "partial",
-          "finding_count": 2,
+          "finding_count": 1,
           "max_severity": "low",
           "rule_ids": [
-            "CKE-NO-SAMESITE",
-            "FORM-NO-CSRF-TOKEN"
+            "CKE-NO-SAMESITE"
           ],
           "pass_rate": null
         },
@@ -1099,12 +1683,11 @@
           "name": "Authentication Failures",
           "status": "fail",
           "coverage": "partial",
-          "finding_count": 7,
+          "finding_count": 6,
           "max_severity": "medium",
           "rule_ids": [
             "CACHE-SENSITIVE-NO-STORE",
             "CKE-BROAD-DOMAIN",
-            "CKE-NO-HTTPONLY",
             "CKE-NO-SAMESITE",
             "CKE-NO-SECURE",
             "CKE-SESSION-NO-HTTPONLY",
@@ -1149,13 +1732,13 @@
       "severity_counts": {
         "critical": 0,
         "high": 0,
-        "medium": 6,
-        "low": 13,
-        "info": 6
+        "medium": 3,
+        "low": 11,
+        "info": 5
       },
       "error": null,
-      "scanned_at": "2026-11-21T11:53:53.758847Z",
-      "duration_ms": 407
+      "scanned_at": "2026-11-22T12:30:53.844621Z",
+      "duration_ms": 413
     },
     {
       "subdomain": "api.acme-corp.example",
@@ -1209,8 +1792,8 @@
         "cert_subject": "commonName=*.acme-corp.example",
         "cert_issuer": "countryName=US, organizationName=Let's Encrypt, commonName=R11",
         "cert_serial": "4a1f9be20c3d7e",
-        "cert_not_before": "2026-10-12T11:53:53.757695Z",
-        "cert_not_after": "2027-01-10T11:53:53.757695Z",
+        "cert_not_before": "2026-10-13T12:30:53.843438Z",
+        "cert_not_after": "2027-01-11T12:30:53.843438Z",
         "days_to_expiry": 50,
         "san": [
           "*.acme-corp.example",
@@ -1247,7 +1830,26 @@
           "cvss_score": 4.8,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CORS-WILDCARD-CREDENTIALS-f663c58dac45",
@@ -1271,7 +1873,26 @@
           "cvss_score": 5.3,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cors_cache",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-STACK-TRACE-87b8ecabea1c",
@@ -1296,7 +1917,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/08-Testing_for_Error_Handling/02-Testing_for_Stack_Traces",
             "https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "TLS-NO-REDIRECT-fb5b12d8557a",
@@ -1319,7 +1959,26 @@
           "cvss_score": 5.4,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CACHE-SENSITIVE-NO-STORE-178d730f67e6",
@@ -1343,7 +2002,26 @@
           "cvss_score": 4.0,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/06-Testing_for_Browser_Cache_Weaknesses"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cors_cache",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-NO-SAMESITE-3067e2e31cd2",
@@ -1367,7 +2045,26 @@
           "cvss_score": 3.1,
           "references": [
             "https://owasp.org/www-community/SameSite"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-PRIVATE-IP-e497a26da583",
@@ -1390,7 +2087,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-VERSION-HEADER-b744c42afa6c",
@@ -1413,7 +2129,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/08-Fingerprint_Web_Application_Framework"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-XCTO-MISSING-e83c688b79e9",
@@ -1437,9 +2172,43 @@
           "cvss_score": 3.1,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#x-content-type-options"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         }
       ],
+      "retest_queue": [],
+      "technologies": [],
+      "tool_runs": [],
+      "app_map": {
+        "endpoints": [
+          {
+            "url": "https://api.acme-corp.example/",
+            "method": "GET",
+            "params": [],
+            "source": "page"
+          }
+        ],
+        "truncated": false
+      },
+      "retest_rounds_run": 0,
       "score": 53,
       "grade": "F",
       "categories": [
@@ -1574,8 +2343,8 @@
         "info": 0
       },
       "error": null,
-      "scanned_at": "2026-11-21T11:53:53.758863Z",
-      "duration_ms": 309
+      "scanned_at": "2026-11-22T12:30:53.844643Z",
+      "duration_ms": 308
     },
     {
       "subdomain": "admin.acme-corp.example",
@@ -1621,7 +2390,7 @@
             "location": "https://admin.acme-corp.example/"
           }
         ],
-        "elapsed_ms": 203,
+        "elapsed_ms": 201,
         "body_bytes": 755,
         "error": null
       },
@@ -1634,8 +2403,8 @@
         "cert_subject": "commonName=acme-admin-internal",
         "cert_issuer": "commonName=acme-admin-internal",
         "cert_serial": "4a1f9be20c3d7e",
-        "cert_not_before": "2024-09-12T11:53:53.757695Z",
-        "cert_not_after": "2026-10-17T11:53:53.757695Z",
+        "cert_not_before": "2024-09-13T12:30:53.843438Z",
+        "cert_not_after": "2026-10-18T12:30:53.843438Z",
         "days_to_expiry": -35,
         "san": [
           "acme-admin-internal",
@@ -1653,7 +2422,7 @@
       },
       "findings": [
         {
-          "id": "TLS-CERT-EXPIRED-dbe09401a722",
+          "id": "TLS-CERT-EXPIRED-122dca2cad60",
           "rule_id": "TLS-CERT-EXPIRED",
           "title": "TLS certificate expired or not yet valid",
           "severity": "high",
@@ -1661,7 +2430,7 @@
           "subdomain": "admin.acme-corp.example",
           "url": "https://admin.acme-corp.example/",
           "description": "The certificate presented by the server is outside its validity window. Browsers show interstitial warnings, training users to click through certificate errors.",
-          "evidence": "Valid 2024-09-12T11:53:53.757695+00:00 to 2026-10-17T11:53:53.757695+00:00; observed 2026-11-21T11:53:53+00:00",
+          "evidence": "Valid 2024-09-13T12:30:53.843438+00:00 to 2026-10-18T12:30:53.843438+00:00; observed 2026-11-22T12:30:54+00:00",
           "remediation": "Renew the certificate immediately and automate renewal (e.g. ACME) with expiry monitoring.",
           "cwe": "CWE-298",
           "cwe_name": "Improper Validation of Certificate Expiration",
@@ -1673,7 +2442,26 @@
           "cvss_score": 6.8,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html#certificates"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "TLS-CERT-HOSTNAME-MISMATCH-c835d97e0756",
@@ -1696,7 +2484,26 @@
           "cvss_score": 6.8,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html#certificates"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "TLS-CERT-UNTRUSTED-c825f6c474e3",
@@ -1719,7 +2526,26 @@
           "cvss_score": 6.8,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html#certificates"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "TLS-DEPRECATED-PROTOCOL-2b899c721d68",
@@ -1743,7 +2569,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/09-Testing_for_Weak_Cryptography/01-Testing_for_Weak_Transport_Layer_Security",
             "https://datatracker.ietf.org/doc/html/rfc8996"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-NO-SECURE-5ceb95e65e01",
@@ -1767,31 +2612,26 @@
           "cvss_score": 4.8,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
-        },
-        {
-          "id": "CKE-NO-SECURE-4a743ffc7ac6",
-          "rule_id": "CKE-NO-SECURE",
-          "title": "Cookie without Secure flag",
-          "severity": "medium",
-          "confidence": "certain",
-          "subdomain": "admin.acme-corp.example",
-          "url": "https://admin.acme-corp.example/",
-          "description": "A cookie is issued without the Secure attribute, so the browser will also transmit it over unencrypted HTTP connections where it can be intercepted.",
-          "evidence": "Set-Cookie: sessionid=8xk2\u2026[redacted]; Path=/; HttpOnly",
-          "remediation": "Set the Secure attribute on all cookies, and use the __Host- prefix for session cookies.",
-          "cwe": "CWE-614",
-          "cwe_name": "Sensitive Cookie in HTTPS Session Without 'Secure' Attribute",
-          "wstg": "WSTG-SESS-02",
-          "owasp": [
-            "A04:2025",
-            "A07:2025"
           ],
-          "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N",
-          "cvss_score": 4.8,
-          "references": [
-            "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-DEBUG-MODE-f9d1f48ae8c1",
@@ -1815,7 +2655,26 @@
           "cvss_score": 5.3,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/08-Testing_for_Error_Handling/01-Testing_For_Improper_Error_Handling"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-CSP-MISSING-8d5b012343d6",
@@ -1840,7 +2699,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/12-Test_for_Content_Security_Policy",
             "https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-HSTS-MISSING-ddc446821ccd",
@@ -1865,7 +2743,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/07-Test_HTTP_Strict_Transport_Security",
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "TLS-WEAK-CIPHER-1e7565467e9f",
@@ -1888,7 +2785,26 @@
           "cvss_score": 5.9,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CACHE-SENSITIVE-NO-STORE-2f2bf1caae21",
@@ -1912,7 +2828,26 @@
           "cvss_score": 4.0,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/06-Testing_for_Browser_Cache_Weaknesses"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cors_cache",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-NO-SAMESITE-248b9e986972",
@@ -1936,7 +2871,26 @@
           "cvss_score": 3.1,
           "references": [
             "https://owasp.org/www-community/SameSite"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-PRIVATE-IP-df3e091361a5",
@@ -1959,7 +2913,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-SERVER-VERSION-d94dbec73e5b",
@@ -1982,7 +2955,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/02-Fingerprint_Web_Server"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-XCTO-MISSING-0b9eb41a7728",
@@ -2006,7 +2998,26 @@
           "cvss_score": 3.1,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#x-content-type-options"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "META-SECURITY-TXT-INVALID-cd069493566e",
@@ -2029,7 +3040,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://www.rfc-editor.org/rfc/rfc9116"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "metadata",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-PERMISSIONS-MISSING-69289a799316",
@@ -2052,7 +3082,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#permissions-policy-formerly-feature-policy"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-REFERRER-MISSING-781a079ab899",
@@ -2075,8 +3124,29 @@
           "cvss_score": 0.0,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#referrer-policy"
-          ]
-        },
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
+        }
+      ],
+      "retest_queue": [
         {
           "id": "META-ROBOTS-SENSITIVE-82eecdd49eaa",
           "rule_id": "META-ROBOTS-SENSITIVE",
@@ -2099,9 +3169,42 @@
           "cvss_score": 0.0,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/03-Review_Webserver_Metafiles_for_Information_Leakage"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.45,
+          "correlation": {
+            "score": 0.45,
+            "threshold": 0.55,
+            "admitted": false,
+            "confirmed": false,
+            "tag": "metadata",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         }
       ],
+      "technologies": [],
+      "tool_runs": [],
+      "app_map": {
+        "endpoints": [
+          {
+            "url": "https://admin.acme-corp.example/",
+            "method": "GET",
+            "params": [],
+            "source": "page"
+          }
+        ],
+        "truncated": false
+      },
+      "retest_rounds_run": 0,
       "score": 0,
       "grade": "F",
       "categories": [
@@ -2110,11 +3213,9 @@
           "name": "Broken Access Control",
           "status": "pass",
           "coverage": "partial",
-          "finding_count": 1,
-          "max_severity": "info",
-          "rule_ids": [
-            "META-ROBOTS-SENSITIVE"
-          ],
+          "finding_count": 0,
+          "max_severity": null,
+          "rule_ids": [],
           "pass_rate": null
         },
         {
@@ -2122,7 +3223,7 @@
           "name": "Security Misconfiguration",
           "status": "fail",
           "coverage": "high",
-          "finding_count": 11,
+          "finding_count": 10,
           "max_severity": "medium",
           "rule_ids": [
             "CACHE-SENSITIVE-NO-STORE",
@@ -2134,7 +3235,6 @@
             "HDR-PERMISSIONS-MISSING",
             "HDR-REFERRER-MISSING",
             "HDR-XCTO-MISSING",
-            "META-ROBOTS-SENSITIVE",
             "META-SECURITY-TXT-INVALID"
           ],
           "pass_rate": null
@@ -2154,7 +3254,7 @@
           "name": "Cryptographic Failures",
           "status": "fail",
           "coverage": "high",
-          "finding_count": 8,
+          "finding_count": 7,
           "max_severity": "high",
           "rule_ids": [
             "CKE-NO-SECURE",
@@ -2197,7 +3297,7 @@
           "name": "Authentication Failures",
           "status": "fail",
           "coverage": "partial",
-          "finding_count": 4,
+          "finding_count": 3,
           "max_severity": "medium",
           "rule_ids": [
             "CACHE-SENSITIVE-NO-STORE",
@@ -2242,13 +3342,13 @@
       "severity_counts": {
         "critical": 0,
         "high": 4,
-        "medium": 6,
+        "medium": 5,
         "low": 6,
-        "info": 3
+        "info": 2
       },
       "error": null,
-      "scanned_at": "2026-11-21T11:53:53.758875Z",
-      "duration_ms": 409
+      "scanned_at": "2026-11-22T12:30:53.844660Z",
+      "duration_ms": 414
     },
     {
       "subdomain": "legacy.acme-corp.example",
@@ -2331,7 +3431,26 @@
           "cvss_score": 5.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/01-Testing_for_Credentials_Transported_over_an_Encrypted_Channel"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "TLS-NO-HTTPS-434b586028a7",
@@ -2354,7 +3473,26 @@
           "cvss_score": 7.1,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/09-Testing_for_Weak_Cryptography/03-Testing_for_Sensitive_Information_Sent_via_Unencrypted_Channels"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "transport_tls",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-NO-SECURE-6458acd5b0e4",
@@ -2378,7 +3516,26 @@
           "cvss_score": 4.8,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-SESSION-NO-HTTPONLY-607652747272",
@@ -2401,7 +3558,26 @@
           "cvss_score": 5.3,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-STACK-TRACE-edc214e49d0b",
@@ -2426,7 +3602,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/08-Testing_for_Error_Handling/02-Testing_for_Stack_Traces",
             "https://cheatsheetseries.owasp.org/cheatsheets/Error_Handling_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-CSP-MISSING-372fd3c51823",
@@ -2451,7 +3646,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/12-Test_for_Content_Security_Policy",
             "https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CACHE-SENSITIVE-NO-STORE-cbe931cbcdba",
@@ -2475,7 +3689,26 @@
           "cvss_score": 4.0,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/06-Testing_for_Browser_Cache_Weaknesses"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cors_cache",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "CKE-NO-SAMESITE-67f186d1f3b6",
@@ -2499,7 +3732,26 @@
           "cvss_score": 3.1,
           "references": [
             "https://owasp.org/www-community/SameSite"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "cookies",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-SERVER-VERSION-cefa5497e3ac",
@@ -2522,7 +3774,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/02-Fingerprint_Web_Server"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "DISC-VERSION-HEADER-e13c4056a8cc",
@@ -2545,32 +3816,26 @@
           "cvss_score": 3.7,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/08-Fingerprint_Web_Application_Framework"
-          ]
-        },
-        {
-          "id": "FORM-NO-CSRF-TOKEN-f162084bdf27",
-          "rule_id": "FORM-NO-CSRF-TOKEN",
-          "title": "State-changing form without anti-CSRF token",
-          "severity": "low",
-          "confidence": "tentative",
-          "subdomain": "legacy.acme-corp.example",
-          "url": "http://legacy.acme-corp.example/",
-          "description": "A POST form does not contain a hidden field matching common anti-CSRF token names. Unless protected by SameSite cookies or custom headers, it may be vulnerable to cross-site request forgery. Requires manual confirmation.\n\n1 POST form(s) without a recognizable anti-CSRF hidden field.",
-          "evidence": "<form method=\"POST\" action=\"login.php\"> fields: user, pass",
-          "remediation": "Add a per-session or per-request synchronizer token to all state-changing forms and validate it server-side; also set SameSite on session cookies.",
-          "cwe": "CWE-352",
-          "cwe_name": "Cross-Site Request Forgery (CSRF)",
-          "wstg": "WSTG-SESS-05",
-          "owasp": [
-            "A06:2025",
-            "A01:2025"
           ],
-          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N",
-          "cvss_score": 4.3,
-          "references": [
-            "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery",
-            "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html"
-          ]
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "disclosure",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-XCTO-MISSING-f26bdef92404",
@@ -2594,7 +3859,26 @@
           "cvss_score": 3.1,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#x-content-type-options"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-XFO-MISSING-e8759cdeb8b5",
@@ -2618,7 +3902,26 @@
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/09-Testing_for_Clickjacking",
             "https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.72,
+          "correlation": {
+            "score": 0.72,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "FORM-PASSWORD-AUTOCOMPLETE-861e016f5e7e",
@@ -2641,7 +3944,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/05-Testing_for_Vulnerable_Remember_Password"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-PERMISSIONS-MISSING-d84c829ff861",
@@ -2664,7 +3986,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#permissions-policy-formerly-feature-policy"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "HDR-REFERRER-MISSING-ca2a1649159f",
@@ -2687,7 +4028,26 @@
           "cvss_score": 0.0,
           "references": [
             "https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html#referrer-policy"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "headers",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         },
         {
           "id": "META-SECURITY-TXT-MISSING-bfb58b79dfef",
@@ -2711,22 +4071,114 @@
           "references": [
             "https://www.rfc-editor.org/rfc/rfc9116",
             "https://securitytxt.org/"
-          ]
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 1.0,
+          "correlation": {
+            "score": 1.0,
+            "threshold": 0.55,
+            "admitted": true,
+            "confirmed": false,
+            "tag": "metadata",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
         }
       ],
-      "score": 17,
+      "retest_queue": [
+        {
+          "id": "FORM-NO-CSRF-TOKEN-f162084bdf27",
+          "rule_id": "FORM-NO-CSRF-TOKEN",
+          "title": "State-changing form without anti-CSRF token",
+          "severity": "low",
+          "confidence": "tentative",
+          "subdomain": "legacy.acme-corp.example",
+          "url": "http://legacy.acme-corp.example/",
+          "description": "A POST form does not contain a hidden field matching common anti-CSRF token names. Unless protected by SameSite cookies or custom headers, it may be vulnerable to cross-site request forgery. Requires manual confirmation.\n\n1 POST form(s) without a recognizable anti-CSRF hidden field.",
+          "evidence": "<form method=\"POST\" action=\"login.php\"> fields: user, pass",
+          "remediation": "Add a per-session or per-request synchronizer token to all state-changing forms and validate it server-side; also set SameSite on session cookies.",
+          "cwe": "CWE-352",
+          "cwe_name": "Cross-Site Request Forgery (CSRF)",
+          "wstg": "WSTG-SESS-05",
+          "owasp": [
+            "A06:2025",
+            "A01:2025"
+          ],
+          "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:L/A:N",
+          "cvss_score": 4.3,
+          "references": [
+            "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery",
+            "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html"
+          ],
+          "sources": [
+            "waptrix"
+          ],
+          "tool_refs": [],
+          "correlation_score": 0.45,
+          "correlation": {
+            "score": 0.45,
+            "threshold": 0.55,
+            "admitted": false,
+            "confirmed": false,
+            "tag": "client_forms",
+            "detectors": [
+              "waptrix"
+            ],
+            "applicable": [
+              "waptrix"
+            ],
+            "silent": []
+          }
+        }
+      ],
+      "technologies": [],
+      "tool_runs": [],
+      "app_map": {
+        "endpoints": [
+          {
+            "url": "http://legacy.acme-corp.example/",
+            "method": "GET",
+            "params": [],
+            "source": "page"
+          },
+          {
+            "url": "http://legacy.acme-corp.example/login.php",
+            "method": "POST",
+            "params": [
+              "pass",
+              "user"
+            ],
+            "source": "form"
+          },
+          {
+            "url": "http://legacy.acme-corp.example/js/prototype.js",
+            "method": "GET",
+            "params": [],
+            "source": "script"
+          }
+        ],
+        "truncated": false
+      },
+      "retest_rounds_run": 0,
+      "score": 20,
       "grade": "F",
       "categories": [
         {
           "id": "A01:2025",
           "name": "Broken Access Control",
-          "status": "warning",
+          "status": "pass",
           "coverage": "partial",
-          "finding_count": 1,
-          "max_severity": "low",
-          "rule_ids": [
-            "FORM-NO-CSRF-TOKEN"
-          ],
+          "finding_count": 0,
+          "max_severity": null,
+          "rule_ids": [],
           "pass_rate": null
         },
         {
@@ -2792,11 +4244,10 @@
           "name": "Insecure Design",
           "status": "warning",
           "coverage": "partial",
-          "finding_count": 2,
+          "finding_count": 1,
           "max_severity": "low",
           "rule_ids": [
-            "CKE-NO-SAMESITE",
-            "FORM-NO-CSRF-TOKEN"
+            "CKE-NO-SAMESITE"
           ],
           "pass_rate": null
         },
@@ -2854,12 +4305,12 @@
         "critical": 0,
         "high": 2,
         "medium": 4,
-        "low": 7,
+        "low": 6,
         "info": 4
       },
       "error": null,
-      "scanned_at": "2026-11-21T11:53:53.758886Z",
-      "duration_ms": 322
+      "scanned_at": "2026-11-22T12:30:53.844675Z",
+      "duration_ms": 318
     }
   ],
   "scope_rejections": [
@@ -2873,17 +4324,18 @@
     }
   ],
   "summary": {
-    "overall_score": 38,
+    "overall_score": 42,
     "grade": "F",
     "subdomains_total": 5,
     "subdomains_reachable": 5,
-    "total_findings": 74,
+    "total_findings": 65,
+    "total_retest": 7,
     "severity_counts": {
       "critical": 0,
       "high": 6,
-      "medium": 20,
-      "low": 33,
-      "info": 15
+      "medium": 16,
+      "low": 30,
+      "info": 13
     },
     "grade_distribution": {
       "A": 1,
@@ -2899,29 +4351,26 @@
         "name": "Broken Access Control",
         "status": "fail",
         "coverage": "partial",
-        "finding_count": 5,
+        "finding_count": 2,
         "max_severity": "medium",
         "rule_ids": [
           "CKE-BROAD-DOMAIN",
-          "CORS-WILDCARD-CREDENTIALS",
-          "FORM-NO-CSRF-TOKEN",
-          "META-ROBOTS-SENSITIVE"
+          "CORS-WILDCARD-CREDENTIALS"
         ],
-        "pass_rate": 0.4
+        "pass_rate": 0.6
       },
       {
         "id": "A02:2025",
         "name": "Security Misconfiguration",
         "status": "fail",
         "coverage": "high",
-        "finding_count": 39,
+        "finding_count": 37,
         "max_severity": "medium",
         "rule_ids": [
           "CACHE-SENSITIVE-NO-STORE",
           "CORS-WILDCARD-CREDENTIALS",
           "DISC-DEBUG-MODE",
           "DISC-EMAIL",
-          "DISC-HTML-COMMENTS",
           "DISC-PRIVATE-IP",
           "DISC-SERVER-VERSION",
           "DISC-STACK-TRACE",
@@ -2933,7 +4382,6 @@
           "HDR-REFERRER-MISSING",
           "HDR-XCTO-MISSING",
           "HDR-XFO-MISSING",
-          "META-ROBOTS-SENSITIVE",
           "META-SECURITY-TXT-INVALID",
           "META-SECURITY-TXT-MISSING"
         ],
@@ -2942,12 +4390,11 @@
       {
         "id": "A03:2025",
         "name": "Software Supply Chain Failures",
-        "status": "fail",
+        "status": "warning",
         "coverage": "partial",
-        "finding_count": 5,
-        "max_severity": "medium",
+        "finding_count": 2,
+        "max_severity": "low",
         "rule_ids": [
-          "JS-VULNERABLE-LIBRARY",
           "SRI-MISSING-SCRIPT"
         ],
         "pass_rate": 0.6
@@ -2957,7 +4404,7 @@
         "name": "Cryptographic Failures",
         "status": "fail",
         "coverage": "high",
-        "finding_count": 17,
+        "finding_count": 16,
         "max_severity": "high",
         "rule_ids": [
           "CKE-NO-SECURE",
@@ -2995,11 +4442,10 @@
         "name": "Insecure Design",
         "status": "warning",
         "coverage": "partial",
-        "finding_count": 6,
+        "finding_count": 4,
         "max_severity": "low",
         "rule_ids": [
-          "CKE-NO-SAMESITE",
-          "FORM-NO-CSRF-TOKEN"
+          "CKE-NO-SAMESITE"
         ],
         "pass_rate": 0.2
       },
@@ -3008,12 +4454,11 @@
         "name": "Authentication Failures",
         "status": "fail",
         "coverage": "partial",
-        "finding_count": 20,
+        "finding_count": 18,
         "max_severity": "high",
         "rule_ids": [
           "CACHE-SENSITIVE-NO-STORE",
           "CKE-BROAD-DOMAIN",
-          "CKE-NO-HTTPONLY",
           "CKE-NO-SAMESITE",
           "CKE-NO-SECURE",
           "CKE-SESSION-NO-HTTPONLY",
@@ -3106,7 +4551,7 @@
         "rule_id": "CKE-NO-SECURE",
         "title": "Cookie without Secure flag",
         "severity": "medium",
-        "count": 5,
+        "count": 4,
         "subdomains": 4
       },
       {
@@ -3117,21 +4562,801 @@
         "subdomains": 3
       },
       {
-        "rule_id": "JS-VULNERABLE-LIBRARY",
-        "title": "Vulnerable JavaScript library version",
-        "severity": "medium",
-        "count": 3,
-        "subdomains": 1
-      },
-      {
         "rule_id": "CKE-SESSION-NO-HTTPONLY",
         "title": "Session cookie without HttpOnly flag",
+        "severity": "medium",
+        "count": 2,
+        "subdomains": 2
+      },
+      {
+        "rule_id": "DISC-STACK-TRACE",
+        "title": "Stack trace or exception dump disclosed",
         "severity": "medium",
         "count": 2,
         "subdomains": 2
       }
     ]
   },
+  "stages": [
+    {
+      "stage": "S1",
+      "name": "Scope & authorisation",
+      "status": "completed",
+      "hosts": 0,
+      "runs": 1,
+      "duration_ms": 0,
+      "counts": {
+        "targets": 5,
+        "rejected": 2
+      }
+    },
+    {
+      "stage": "S2",
+      "name": "Passive reconnaissance",
+      "status": "completed",
+      "hosts": 5,
+      "runs": 5,
+      "duration_ms": 1857,
+      "counts": {
+        "findings": 74,
+        "tools": 0
+      }
+    },
+    {
+      "stage": "S3",
+      "name": "Application map",
+      "status": "completed",
+      "hosts": 5,
+      "runs": 5,
+      "duration_ms": 0,
+      "counts": {
+        "endpoints": 13,
+        "parameterised": 0,
+        "parameters": 6
+      }
+    },
+    {
+      "stage": "S4",
+      "name": "Phase controllers",
+      "status": "skipped",
+      "hosts": 5,
+      "runs": 0,
+      "duration_ms": 0,
+      "counts": {}
+    },
+    {
+      "stage": "S5",
+      "name": "Correlation & confirmation",
+      "status": "completed",
+      "hosts": 5,
+      "runs": 5,
+      "duration_ms": 1,
+      "counts": {
+        "raw": 74,
+        "admitted": 65,
+        "queued": 7,
+        "confirmed": 0
+      }
+    },
+    {
+      "stage": "S6",
+      "name": "Risk & report",
+      "status": "completed",
+      "hosts": 5,
+      "runs": 6,
+      "duration_ms": 0,
+      "counts": {
+        "findings": 65,
+        "retest": 7,
+        "reachable": 5
+      }
+    }
+  ],
+  "run_log": [
+    {
+      "seq": 1,
+      "at": "2026-11-22T12:30:53.843625Z",
+      "stage": "S1",
+      "status": "started",
+      "subdomain": null,
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 2,
+      "at": "2026-11-22T12:30:53.844437Z",
+      "stage": "S1",
+      "status": "completed",
+      "subdomain": null,
+      "round": 0,
+      "detail": "authorisation DEMO-ACME-2026-001; budget 10 req/s per host, 5 hosts in parallel, 600s per tool; passive mode",
+      "counts": {
+        "targets": 5,
+        "rejected": 2
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 3,
+      "at": "2026-11-22T12:30:53.844587Z",
+      "stage": "S2",
+      "status": "started",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 4,
+      "at": "2026-11-22T12:30:53.844625Z",
+      "stage": "S2",
+      "status": "started",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 5,
+      "at": "2026-11-22T12:30:53.844646Z",
+      "stage": "S2",
+      "status": "started",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 6,
+      "at": "2026-11-22T12:30:53.844663Z",
+      "stage": "S2",
+      "status": "started",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 7,
+      "at": "2026-11-22T12:30:53.844678Z",
+      "stage": "S2",
+      "status": "started",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 8,
+      "at": "2026-11-22T12:30:54.151149Z",
+      "stage": "S2",
+      "status": "completed",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "findings": 9,
+        "tools": 0
+      },
+      "duration_ms": 306
+    },
+    {
+      "seq": 9,
+      "at": "2026-11-22T12:30:54.151180Z",
+      "stage": "S3",
+      "status": "started",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 10,
+      "at": "2026-11-22T12:30:54.151273Z",
+      "stage": "S3",
+      "status": "completed",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "endpoints": 1,
+        "parameterised": 0,
+        "parameters": 0
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 11,
+      "at": "2026-11-22T12:30:54.151286Z",
+      "stage": "S4",
+      "status": "started",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 12,
+      "at": "2026-11-22T12:30:54.151305Z",
+      "stage": "S4",
+      "status": "skipped",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "passive mode: no active engines selected",
+      "counts": {},
+      "duration_ms": 0
+    },
+    {
+      "seq": 13,
+      "at": "2026-11-22T12:30:54.151316Z",
+      "stage": "S5",
+      "status": "started",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 14,
+      "at": "2026-11-22T12:30:54.152683Z",
+      "stage": "S5",
+      "status": "completed",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "raw": 9,
+        "admitted": 9,
+        "queued": 0,
+        "confirmed": 0
+      },
+      "duration_ms": 1
+    },
+    {
+      "seq": 15,
+      "at": "2026-11-22T12:30:54.152703Z",
+      "stage": "S6",
+      "status": "started",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 16,
+      "at": "2026-11-22T12:30:54.153016Z",
+      "stage": "S6",
+      "status": "completed",
+      "subdomain": "api.acme-corp.example",
+      "round": 0,
+      "detail": "score 53, grade F",
+      "counts": {
+        "findings": 9
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 17,
+      "at": "2026-11-22T12:30:54.162654Z",
+      "stage": "S2",
+      "status": "completed",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "findings": 17,
+        "tools": 0
+      },
+      "duration_ms": 317
+    },
+    {
+      "seq": 18,
+      "at": "2026-11-22T12:30:54.162667Z",
+      "stage": "S3",
+      "status": "started",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 19,
+      "at": "2026-11-22T12:30:54.162802Z",
+      "stage": "S3",
+      "status": "completed",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "endpoints": 3,
+        "parameterised": 0,
+        "parameters": 2
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 20,
+      "at": "2026-11-22T12:30:54.162808Z",
+      "stage": "S4",
+      "status": "started",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 21,
+      "at": "2026-11-22T12:30:54.162813Z",
+      "stage": "S4",
+      "status": "skipped",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "passive mode: no active engines selected",
+      "counts": {},
+      "duration_ms": 0
+    },
+    {
+      "seq": 22,
+      "at": "2026-11-22T12:30:54.162817Z",
+      "stage": "S5",
+      "status": "started",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 23,
+      "at": "2026-11-22T12:30:54.163253Z",
+      "stage": "S5",
+      "status": "completed",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "raw": 17,
+        "admitted": 16,
+        "queued": 1,
+        "confirmed": 0
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 24,
+      "at": "2026-11-22T12:30:54.163262Z",
+      "stage": "S5",
+      "status": "info",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 1,
+      "detail": "re-test loop closed: no untried engine/endpoint hypothesis for 1 queued candidate(s)",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 25,
+      "at": "2026-11-22T12:30:54.163265Z",
+      "stage": "S6",
+      "status": "started",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 26,
+      "at": "2026-11-22T12:30:54.163359Z",
+      "stage": "S6",
+      "status": "completed",
+      "subdomain": "legacy.acme-corp.example",
+      "round": 0,
+      "detail": "score 20, grade F",
+      "counts": {
+        "findings": 16
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 27,
+      "at": "2026-11-22T12:30:54.253109Z",
+      "stage": "S2",
+      "status": "completed",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "findings": 4,
+        "tools": 0
+      },
+      "duration_ms": 408
+    },
+    {
+      "seq": 28,
+      "at": "2026-11-22T12:30:54.253146Z",
+      "stage": "S3",
+      "status": "started",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 29,
+      "at": "2026-11-22T12:30:54.253651Z",
+      "stage": "S3",
+      "status": "completed",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "endpoints": 5,
+        "parameterised": 0,
+        "parameters": 2
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 30,
+      "at": "2026-11-22T12:30:54.253669Z",
+      "stage": "S4",
+      "status": "started",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 31,
+      "at": "2026-11-22T12:30:54.253682Z",
+      "stage": "S4",
+      "status": "skipped",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "passive mode: no active engines selected",
+      "counts": {},
+      "duration_ms": 0
+    },
+    {
+      "seq": 32,
+      "at": "2026-11-22T12:30:54.253691Z",
+      "stage": "S5",
+      "status": "started",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 33,
+      "at": "2026-11-22T12:30:54.254314Z",
+      "stage": "S5",
+      "status": "completed",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "raw": 4,
+        "admitted": 4,
+        "queued": 0,
+        "confirmed": 0
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 34,
+      "at": "2026-11-22T12:30:54.254331Z",
+      "stage": "S6",
+      "status": "started",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 35,
+      "at": "2026-11-22T12:30:54.254474Z",
+      "stage": "S6",
+      "status": "completed",
+      "subdomain": "www.acme-corp.example",
+      "round": 0,
+      "detail": "score 94, grade A",
+      "counts": {
+        "findings": 4
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 36,
+      "at": "2026-11-22T12:30:54.257195Z",
+      "stage": "S2",
+      "status": "completed",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "findings": 25,
+        "tools": 0
+      },
+      "duration_ms": 412
+    },
+    {
+      "seq": 37,
+      "at": "2026-11-22T12:30:54.257205Z",
+      "stage": "S3",
+      "status": "started",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 38,
+      "at": "2026-11-22T12:30:54.257334Z",
+      "stage": "S3",
+      "status": "completed",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "endpoints": 3,
+        "parameterised": 0,
+        "parameters": 2
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 39,
+      "at": "2026-11-22T12:30:54.257339Z",
+      "stage": "S4",
+      "status": "started",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 40,
+      "at": "2026-11-22T12:30:54.257342Z",
+      "stage": "S4",
+      "status": "skipped",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "passive mode: no active engines selected",
+      "counts": {},
+      "duration_ms": 0
+    },
+    {
+      "seq": 41,
+      "at": "2026-11-22T12:30:54.257345Z",
+      "stage": "S5",
+      "status": "started",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 42,
+      "at": "2026-11-22T12:30:54.257973Z",
+      "stage": "S5",
+      "status": "completed",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "raw": 25,
+        "admitted": 19,
+        "queued": 5,
+        "confirmed": 0
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 43,
+      "at": "2026-11-22T12:30:54.257983Z",
+      "stage": "S5",
+      "status": "info",
+      "subdomain": "app.acme-corp.example",
+      "round": 1,
+      "detail": "re-test loop closed: no untried engine/endpoint hypothesis for 5 queued candidate(s)",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 44,
+      "at": "2026-11-22T12:30:54.257986Z",
+      "stage": "S6",
+      "status": "started",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 45,
+      "at": "2026-11-22T12:30:54.258060Z",
+      "stage": "S6",
+      "status": "completed",
+      "subdomain": "app.acme-corp.example",
+      "round": 0,
+      "detail": "score 43, grade F",
+      "counts": {
+        "findings": 19
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 46,
+      "at": "2026-11-22T12:30:54.259016Z",
+      "stage": "S2",
+      "status": "completed",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "findings": 19,
+        "tools": 0
+      },
+      "duration_ms": 414
+    },
+    {
+      "seq": 47,
+      "at": "2026-11-22T12:30:54.259021Z",
+      "stage": "S3",
+      "status": "started",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 48,
+      "at": "2026-11-22T12:30:54.259072Z",
+      "stage": "S3",
+      "status": "completed",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "endpoints": 1,
+        "parameterised": 0,
+        "parameters": 0
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 49,
+      "at": "2026-11-22T12:30:54.259076Z",
+      "stage": "S4",
+      "status": "started",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 50,
+      "at": "2026-11-22T12:30:54.259079Z",
+      "stage": "S4",
+      "status": "skipped",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "passive mode: no active engines selected",
+      "counts": {},
+      "duration_ms": 0
+    },
+    {
+      "seq": 51,
+      "at": "2026-11-22T12:30:54.259082Z",
+      "stage": "S5",
+      "status": "started",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 52,
+      "at": "2026-11-22T12:30:54.259495Z",
+      "stage": "S5",
+      "status": "completed",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {
+        "raw": 19,
+        "admitted": 17,
+        "queued": 1,
+        "confirmed": 0
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 53,
+      "at": "2026-11-22T12:30:54.259500Z",
+      "stage": "S5",
+      "status": "info",
+      "subdomain": "admin.acme-corp.example",
+      "round": 1,
+      "detail": "re-test loop closed: no untried engine/endpoint hypothesis for 1 queued candidate(s)",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 54,
+      "at": "2026-11-22T12:30:54.259503Z",
+      "stage": "S6",
+      "status": "started",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 55,
+      "at": "2026-11-22T12:30:54.259566Z",
+      "stage": "S6",
+      "status": "completed",
+      "subdomain": "admin.acme-corp.example",
+      "round": 0,
+      "detail": "score 0, grade F",
+      "counts": {
+        "findings": 17
+      },
+      "duration_ms": 0
+    },
+    {
+      "seq": 56,
+      "at": "2026-11-22T12:30:54.259631Z",
+      "stage": "S6",
+      "status": "started",
+      "subdomain": null,
+      "round": 0,
+      "detail": "",
+      "counts": {},
+      "duration_ms": null
+    },
+    {
+      "seq": 57,
+      "at": "2026-11-22T12:30:54.259805Z",
+      "stage": "S6",
+      "status": "completed",
+      "subdomain": null,
+      "round": 0,
+      "detail": "overall grade F",
+      "counts": {
+        "retest": 7,
+        "reachable": 5
+      },
+      "duration_ms": 0
+    }
+  ],
   "error": null,
   "demo": true
 }

@@ -238,6 +238,8 @@ Every audit runs as the six-stage workflow, and each stage transition is written
 | S5 Correlation | Cross-tool voting (eq. 1, τ = 0.55). Candidates below τ go back to S3 with their exact endpoint as a refined hypothesis, and S4 re-runs the active engines that can detect or confirm that class. This repeats for up to `--retest-rounds` rounds and stops early when there is nothing new to try |
 | S6 Risk & report | Per-host scoring and grading, then the engagement summary |
 
+The dashboard's **Workflow** tab shows the stage timeline, the voting outcome, the re-test queue, every tool run and the full run log. A running audit shows the S1–S6 stepper and the log live. Each finding card shows its C(f) score against τ, and the engines that detected it, could have detected it, or stayed silent. Each host's drawer adds its S3 application map, tool runs and re-test queue. The New audit panel picks passive tools and, behind an explicit opt-in, active engines and re-test settings.
+
 The result carries `stages` (one summary per stage: hosts, runs, duration, counts) and `run_log` (every event). Each subdomain also gets its `app_map` and `retest_rounds_run`, and each tool run records its `stage`, `round` and `target_url`. The SQLite store keeps the run log in `run_events` and writes it as the audit runs. Tool runs go in `tool_runs`, and below-τ candidates are stored in `findings` with `admitted = 0` and their `correlation_score`.
 
 ## REST API

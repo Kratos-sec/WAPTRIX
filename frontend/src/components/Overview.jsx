@@ -111,7 +111,7 @@ export default function Overview({ audit, onSelectSubdomain }) {
         <Kpi icon={Globe2} label="Subdomains" value={`${summary.subdomains_reachable}/${summary.subdomains_total}`}
           sub={`${summary.subdomains_total - summary.subdomains_reachable} unreachable · ${audit.scope_rejections.length} rejected`} />
         <Kpi icon={ListChecks} label="Findings" value={summary.total_findings}
-          sub={`${new Set(audit.subdomains.flatMap((s) => s.findings.map((f) => f.rule_id))).size} distinct rules`} />
+          sub={`${new Set(audit.subdomains.flatMap((s) => s.findings.map((f) => f.rule_id))).size} distinct rules${summary.total_retest ? ` · ${summary.total_retest} awaiting re-test` : ''}`} />
         <Kpi icon={AlertTriangle} label="High / critical" value={highCrit} accent={highCrit ? 'text-red-300' : 'text-emerald-300'}
           sub={`${counts.medium ?? 0} medium · ${counts.low ?? 0} low · ${counts.info ?? 0} info`} />
       </div>

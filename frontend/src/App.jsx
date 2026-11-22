@@ -18,16 +18,19 @@ import CategoryDrawer from './components/CategoryDrawer'
 import ExportMenu from './components/ExportMenu'
 import FindingsExplorer from './components/FindingsExplorer'
 import IssueDrawer from './components/IssueDrawer'
+import LiveRun from './components/LiveRun'
 import NewAuditPanel from './components/NewAuditPanel'
 import Overview from './components/Overview'
 import RulesCatalog from './components/RulesCatalog'
 import SubdomainDrawer from './components/SubdomainDrawer'
 import SubdomainTable from './components/SubdomainTable'
+import WorkflowView from './components/WorkflowView'
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'subdomains', label: 'Subdomains' },
   { id: 'findings', label: 'Findings' },
+  { id: 'workflow', label: 'Workflow' },
   { id: 'rules', label: 'Rule catalog' },
 ]
 
@@ -241,23 +244,7 @@ export default function App() {
       <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6">
         {!audit && <EmptyState onDemo={loadDemo} onNew={() => setShowNew(true)} busy={busy} backendDown={backendDown} />}
 
-        {audit?.status === 'running' && (
-          <div className="panel mx-auto mt-10 max-w-xl p-8 text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-cyan-300" />
-            <h2 className="mt-4 text-lg font-semibold text-white">Passive audit in progress</h2>
-            <p className="mt-1 text-sm text-slate-400">Authorization {audit.authorization_ref}</p>
-            {audit.progress && (
-              <>
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-ink-700">
-                  <div className="h-full rounded-full bg-cyan-400 transition-all" style={{ width: `${(100 * audit.progress.done) / Math.max(audit.progress.total, 1)}%` }} />
-                </div>
-                <p className="mt-2 font-mono text-xs text-slate-400">
-                  {audit.progress.done}/{audit.progress.total} subdomains{audit.progress.current ? ` · last: ${audit.progress.current}` : ''}
-                </p>
-              </>
-            )}
-          </div>
-        )}
+        {audit?.status === 'running' && <LiveRun audit={audit} />}
 
         {audit?.status === 'failed' && (
           <div className="panel mx-auto mt-10 max-w-xl border-red-500/40 p-8 text-center">
@@ -294,13 +281,14 @@ export default function App() {
             {tab === 'overview' && <Overview audit={audit} onSelectSubdomain={openSubdomain} />}
             {tab === 'subdomains' && <SubdomainTable audit={audit} onSelect={openSubdomain} />}
             {tab === 'findings' && <FindingsExplorer audit={audit} />}
+            {tab === 'workflow' && <WorkflowView audit={audit} />}
             {tab === 'rules' && <RulesCatalog />}
           </>
         )}
       </main>
 
       <footer className="mx-auto max-w-[1500px] px-6 pb-8 text-center text-[11px] text-slate-600">
-        WAPTrix performs strictly passive, read-only inspection. Only audit systems you are authorized to test.
+        WAPTrix is passive and read-only by default. Active scanning runs only on explicit opt-in, within declared scope domains. Only audit systems you are authorized to test.
       </footer>
 
       {panel && completed && panel.type === 'subdomain' && (

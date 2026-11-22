@@ -6,6 +6,46 @@ import { GradeBadge, SeverityBadge, StatusBadge } from './Badges'
 import Drawer, { KV, Section } from './Drawer'
 import ExportMenu from './ExportMenu'
 import FindingCard from './FindingCard'
+import ToolRunsTable from './ToolRunsTable'
+
+const SOURCE_STYLE = {
+  page: 'text-cyan-300', link: 'text-slate-300', form: 'text-amber-200', script: 'text-slate-500', retest: 'text-violet-300',
+}
+
+function AppMapSection({ map }) {
+  const [paramsOnly, setParamsOnly] = useState(false)
+  const endpoints = paramsOnly ? map.endpoints.filter((e) => e.params.length) : map.endpoints
+  const parameters = [...new Set(map.endpoints.flatMap((e) => e.params))].sort()
+  return (
+    <Section title={`Application map · S3 (${map.endpoints.length} endpoints${map.truncated ? ', truncated' : ''})`} right={
+      <label className="flex items-center gap-1.5 text-xs text-slate-400">
+        <input type="checkbox" className="accent-cyan-400" checked={paramsOnly} onChange={(e) => setParamsOnly(e.target.checked)} />
+        With parameters only
+      </label>
+    }>
+      {parameters.length > 0 && (
+        <p className="mb-2 text-xs text-slate-400">
+          Parameter inventory:{' '}
+          {parameters.map((p) => <span key={p} className="mr-1.5 rounded bg-ink-800 px-1.5 py-0.5 font-mono text-[11px] text-slate-200">{p}</span>)}
+        </p>
+      )}
+      <div className="max-h-72 overflow-auto rounded-md border border-slate-800">
+        <table className="w-full text-[11px]">
+          <tbody className="divide-y divide-slate-800/60 font-mono">
+            {endpoints.map((e) => (
+              <tr key={`${e.method} ${e.url}`} className="align-top">
+                <td className="whitespace-nowrap px-2 py-1.5 text-slate-400">{e.method}</td>
+                <td className="break-all px-2 py-1.5 text-slate-200">{e.url}</td>
+                <td className="px-2 py-1.5 text-slate-400">{e.params.join(', ')}</td>
+                <td className={`whitespace-nowrap px-2 py-1.5 text-right ${SOURCE_STYLE[e.source] ?? 'text-slate-400'}`}>{e.source}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Section>
+  )
+}
 
 export default function SubdomainDrawer({ audit, subdomain, initialCategory, onClose, onBack, onNotify }) {
   const sub = audit.subdomains.find((s) => s.subdomain === subdomain)
@@ -37,7 +77,7 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
           <div className="min-w-0 flex-1">
             <h2 className="truncate font-mono text-lg font-semibold text-white">{sub.subdomain}</h2>
             <p className="text-xs text-slate-400">
-              {sub.reachable ? `Score ${sub.score}/100 · ${sub.findings.length} findings · scanned ${formatDate(sub.scanned_at)} in ${sub.duration_ms} ms` : sub.error}
+              {sub.reachable ? `Score ${sub.score}/100 · ${sub.findings.length} findings${sub.retest_queue?.length ? ` · ${sub.retest_queue.length} awaiting re-test` : ''} · scanned ${formatDate(sub.scanned_at)} in ${sub.duration_ms} ms` : sub.error}
             </p>
           </div>
           <ExportMenu auditId={audit.id} subdomain={sub.subdomain} label="Export host" onNotify={onNotify} />
@@ -146,10 +186,30 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
 
           <Section title={`Findings${category ? ` · ${category}` : ''} (${findings.length})`}>
             <div className="space-y-2">
-              {findings.length === 0 && <p className="text-sm text-slate-400">No passive issues in this view.</p>}
+              {findings.length === 0 && <p className="text-sm text-slate-400">No issues in this view.</p>}
               {findings.map((f) => <FindingCard key={f.id} finding={f} />)}
             </div>
           </Section>
+
+          {sub.retest_queue?.length > 0 && (
+            <Section title={`Awaiting re-test (${sub.retest_queue.length})`} right={
+              <span className="text-[11px] text-slate-500">
+                below τ after {sub.retest_rounds_run} re-test round{sub.retest_rounds_run === 1 ? '' : 's'} · not scored
+              </span>
+            }>
+              <div className="space-y-2">
+                {sub.retest_queue.map((f) => <FindingCard key={f.id} finding={f} />)}
+              </div>
+            </Section>
+          )}
+
+          {sub.app_map && <AppMapSection map={sub.app_map} />}
+
+          {sub.tool_runs?.length > 0 && (
+            <Section title={`Tool runs (${sub.tool_runs.length})`}>
+              <ToolRunsTable runs={sub.tool_runs} />
+            </Section>
+          )}
     </Drawer>
   )
 }

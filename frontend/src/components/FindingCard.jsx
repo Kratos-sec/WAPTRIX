@@ -5,10 +5,38 @@ import { SEVERITY_META } from '../lib/format'
 import { usePanels } from '../lib/panels'
 import { SeverityBadge } from './Badges'
 
+function VotingBreakdown({ corr }) {
+  const pct = Math.min(100, Math.round(corr.score * 100))
+  const tau = Math.round(corr.threshold * 100)
+  return (
+    <div className="rounded-md border border-slate-800 bg-ink-950/60 p-3 text-xs">
+      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="panel-title">Cross-tool voting</span>
+        <span className={`font-mono ${corr.admitted ? 'text-emerald-300' : 'text-violet-300'}`}>
+          C(f) = {corr.score.toFixed(2)} {corr.admitted ? '≥' : '<'} τ = {corr.threshold}
+        </span>
+        <span className="font-mono text-slate-500">class {corr.tag}</span>
+        {corr.confirmed && <span className="chip bg-emerald-500/10 text-emerald-300 ring-1 ring-emerald-500/30">Actively confirmed (+γ)</span>}
+        {!corr.admitted && <span className="chip bg-violet-500/10 text-violet-300 ring-1 ring-violet-500/30">Awaiting re-test</span>}
+      </div>
+      <div className="relative h-1.5 rounded-full bg-ink-700" aria-hidden="true">
+        <div className={`h-full rounded-full ${corr.admitted ? 'bg-emerald-400' : 'bg-violet-400'}`} style={{ width: `${pct}%` }} />
+        <div className="absolute -top-1 h-3.5 w-0.5 bg-slate-300" style={{ left: `${tau}%` }} title={`τ = ${corr.threshold}`} />
+      </div>
+      <dl className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-3">
+        <div><dt className="text-slate-500">Detected by (T)</dt><dd className="font-mono text-slate-200">{corr.detectors.join(', ') || '—'}</dd></div>
+        <div><dt className="text-slate-500">Capable engines that ran (E)</dt><dd className="font-mono text-slate-300">{corr.applicable.join(', ') || '—'}</dd></div>
+        <div><dt className="text-slate-500">Silent (E∖T)</dt><dd className="font-mono text-slate-400">{corr.silent.join(', ') || 'none'}</dd></div>
+      </dl>
+    </div>
+  )
+}
+
 export default function FindingCard({ finding, showSubdomain = false, defaultOpen = false, hideIssueLink = false }) {
   const [open, setOpen] = useState(defaultOpen)
   const { openIssue } = usePanels()
   const [description, detail] = finding.description.split('\n\n')
+  const corr = finding.correlation
   return (
     <div
       className="rounded-lg border border-slate-800 bg-ink-850/70 transition hover:border-slate-700"
@@ -25,6 +53,11 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
             <span>{finding.cwe}</span>
             {finding.cvss_score != null && <span>CVSS {finding.cvss_score.toFixed(1)}</span>}
             {finding.sources?.length > 0 && <span className="text-slate-400">via {finding.sources.join(', ')}</span>}
+            {corr && (
+              <span className={corr.admitted ? 'text-emerald-300/90' : 'text-violet-300'} title="Weighted cross-tool agreement C(f), paper eq. 1">
+                C(f) {corr.score.toFixed(2)}{corr.admitted ? '' : ` < τ ${corr.threshold}`}{corr.confirmed ? ' · confirmed' : ''}
+              </span>
+            )}
           </div>
         </div>
         <ChevronDown className={`mt-1 h-4 w-4 shrink-0 text-slate-500 transition ${open ? 'rotate-180' : ''}`} />
@@ -39,6 +72,7 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
             {finding.cvss_score != null && <div className="flex gap-2 sm:col-span-2"><dt className="text-slate-500">CVSS v3.1</dt><dd className="break-all font-mono text-slate-300">{finding.cvss_score.toFixed(1)} · {finding.cvss_vector}</dd></div>}
             {finding.sources?.length > 0 && <div className="flex gap-2 sm:col-span-2"><dt className="text-slate-500">Detected by</dt><dd className="text-slate-300">{finding.sources.join(', ')}{finding.tool_refs?.length > 0 && <span className="ml-2 font-mono text-[11px] text-slate-500">{finding.tool_refs.join(' · ')}</span>}</dd></div>}
           </dl>
+          {corr && <VotingBreakdown corr={corr} />}
           <p className="leading-relaxed text-slate-300">{description}</p>
           {detail && <p className="leading-relaxed text-slate-400">{detail}</p>}
           {finding.evidence && (

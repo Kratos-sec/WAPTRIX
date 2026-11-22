@@ -320,12 +320,17 @@ def test_log_endpoint(tmp_path, monkeypatch):
 
     with TestClient(app) as client:
         demo = client.post("/api/demo").json()
-        assert client.get(f"/api/audits/{demo['id']}/log").json() == []
+        full = client.get(f"/api/audits/{demo['id']}/log").json()
+        assert [e["seq"] for e in full] == [e["seq"] for e in demo["run_log"]] and full
+        assert full[0]["stage"] == "S1" and full[-1]["stage"] == "S6"
         assert client.get("/api/audits/nope/log").status_code == 404
+
+        # Events streamed while running are visible incrementally through ?after=.
         store = app.state.store
-        log = RunLog(sink=lambda e: store.append_event(demo["id"], e))
-        with log.stage(Stage.S2, "www.acme-corp.example"):
+        store.create_running("live", AuditRequest(subdomains=[HOST], authorization_ref="ENG-LIVE-1"))
+        log = RunLog(sink=lambda e: store.append_event("live", e))
+        with log.stage(Stage.S2, HOST):
             pass
-        body = client.get(f"/api/audits/{demo['id']}/log", params={"after": 1}).json()
+        body = client.get("/api/audits/live/log", params={"after": 1}).json()
         assert [(e["seq"], e["stage"], e["status"]) for e in body] == [(2, "S2", "completed")]
         assert datetime.fromisoformat(body[0]["at"]).tzinfo == timezone.utc

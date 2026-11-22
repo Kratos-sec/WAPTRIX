@@ -28,6 +28,8 @@ export const api = {
   rules: () => request('/api/rules'),
   listAudits: () => request('/api/audits'),
   getAudit: (id) => request(`/api/audits/${encodeURIComponent(id)}`),
+  auditLog: (id, after = 0) => request(`/api/audits/${encodeURIComponent(id)}/log?after=${after}`),
+  tools: () => request('/api/tools'),
   createAudit: (body) => request('/api/audits', { method: 'POST', body: JSON.stringify(body) }),
   deleteAudit: (id) => request(`/api/audits/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   loadDemo: () => request('/api/demo', { method: 'POST' }),

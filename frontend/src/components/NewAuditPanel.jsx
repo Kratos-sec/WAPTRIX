@@ -1,7 +1,39 @@
-import { useRef, useState } from 'react'
-import { FileUp, Loader2, Play, ShieldAlert, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { FileUp, Loader2, Play, ShieldAlert, Swords, Wrench, X } from 'lucide-react'
+import { api } from '../lib/api'
 
-const DEFAULT_OPTIONS = { concurrency: 5, requests_per_second: 2, timeout: 10, include_metadata: true, allow_private: false }
+const DEFAULT_OPTIONS = {
+  concurrency: 5, requests_per_second: 2, timeout: 10, include_metadata: true, allow_private: false,
+  tool_timeout: 600, retest_rounds: 1, max_endpoints: 5,
+}
+
+// Adapter name -> registry entry that reports its availability (zap-active is served by the ZAP daemon).
+const PASSIVE_TOOLS = [['whatweb', 'whatweb'], ['sslyze', 'sslyze'], ['testssl', 'testssl'], ['retire', 'retire'], ['zap', 'zap']]
+const ACTIVE_TOOLS = [['nmap', 'nmap'], ['nuclei', 'nuclei'], ['nikto', 'nikto'], ['wapiti', 'wapiti'], ['sqlmap', 'sqlmap'], ['zap-active', 'zap']]
+
+function ToolPicker({ tools, registry, selected, onToggle, tone = 'cyan' }) {
+  return (
+    <div className="grid gap-1.5 sm:grid-cols-2">
+      {tools.map(([name, entry]) => {
+        const info = registry?.[entry]
+        const available = registry ? Boolean(info?.available) : true
+        return (
+          <label key={name} title={info?.purpose}
+            className={`flex items-start gap-2 rounded-md border px-2.5 py-1.5 text-xs ${available ? 'border-slate-800 hover:border-slate-700' : 'border-slate-800/60 opacity-50'}`}>
+            <input type="checkbox" className={`mt-0.5 ${tone === 'red' ? 'accent-red-400' : 'accent-cyan-400'}`}
+              checked={selected.includes(name)} disabled={!available} onChange={() => onToggle(name)} />
+            <span className="min-w-0">
+              <span className="font-mono text-slate-100">{name}</span>
+              <span className="ml-1.5 text-[10px] text-slate-500">
+                {!registry ? '' : available ? (info?.version ? `v${info.version}` : 'available') : 'not installed'}
+              </span>
+            </span>
+          </label>
+        )
+      })}
+    </div>
+  )
+}
 
 function parseTargets(text) {
   return [...new Set(
@@ -19,7 +51,23 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
   const [options, setOptions] = useState(DEFAULT_OPTIONS)
   const [attested, setAttested] = useState(false)
   const [error, setError] = useState(null)
+  const [registry, setRegistry] = useState(null)
+  const [tools, setTools] = useState([])
+  const [active, setActive] = useState(false)
+  const [activeTools, setActiveTools] = useState([])
+  const [activeAttested, setActiveAttested] = useState(false)
   const fileRef = useRef(null)
+
+  useEffect(() => {
+    api.tools()
+      .then((list) => setRegistry(Object.fromEntries(list.map((t) => [t.name, t]))))
+      .catch(() => setRegistry(null))
+  }, [])
+
+  const toggle = (setter) => (name) => setter((list) => (list.includes(name) ? list.filter((t) => t !== name) : [...list, name]))
+  const scopeDomains = parseTargets(scope)
+  const activeOn = active && activeTools.length > 0
+  const activeBlocked = active && (activeTools.length === 0 || scopeDomains.length === 0 || !activeAttested)
 
   const parsed = parseTargets(targets)
 
@@ -38,11 +86,17 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
       await onSubmit({
         subdomains: parsed,
         authorization_ref: authRef.trim(),
-        scope_domains: parseTargets(scope),
+        scope_domains: scopeDomains,
         ...options,
         concurrency: Number(options.concurrency),
         requests_per_second: Number(options.requests_per_second),
         timeout: Number(options.timeout),
+        tool_timeout: Number(options.tool_timeout),
+        retest_rounds: Number(options.retest_rounds),
+        max_endpoints: Number(options.max_endpoints),
+        tools,
+        active: activeOn,
+        active_tools: activeOn ? activeTools : [],
       })
     } catch (err) {
       setError(err.message)
@@ -57,10 +111,14 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
       <form onSubmit={submit} className="panel w-full max-w-3xl p-6">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-white">New passive audit</h2>
+            <h2 className="text-lg font-semibold text-white">New {activeOn ? 'active' : 'passive'} audit</h2>
             <p className="mt-1 text-sm text-slate-400">
-              Read-only <span className="font-mono text-slate-300">GET</span> requests and TLS handshakes only. No
-              fuzzing, injection or brute-forcing.
+              {activeOn ? (
+                <span className="text-red-200">Active mode: the selected engines send probes and payloads to in-scope hosts.</span>
+              ) : (
+                <>Read-only <span className="font-mono text-slate-300">GET</span> requests and TLS handshakes only. No
+                fuzzing, injection or brute-forcing.</>
+              )}
             </p>
           </div>
           <button type="button" onClick={onClose} className="btn-ghost p-2" aria-label="Close">
@@ -124,6 +182,55 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
           </div>
         </div>
 
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <div className="rounded-lg border border-slate-800 p-3">
+            <div className="mb-2 flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-cyan-300" />
+              <span className="panel-title">Passive tools · S2</span>
+            </div>
+            <p className="mb-2 text-[11px] text-slate-500">Run alongside the built-in checks. Only requests a normal visitor would make.</p>
+            <ToolPicker tools={PASSIVE_TOOLS} registry={registry} selected={tools} onToggle={toggle(setTools)} />
+            {registry === null && <p className="mt-2 text-[11px] text-slate-500">Tool status unavailable; the API reports unknown tools on submit.</p>}
+          </div>
+
+          <div className={`rounded-lg border p-3 ${active ? 'border-red-500/40 bg-red-500/5' : 'border-slate-800'}`}>
+            <label className="mb-2 flex items-center gap-2">
+              <input type="checkbox" className="accent-red-400" checked={active} onChange={(e) => setActive(e.target.checked)} />
+              <Swords className={`h-4 w-4 ${active ? 'text-red-300' : 'text-slate-500'}`} />
+              <span className="panel-title">Active scanning · S4 (opt-in)</span>
+            </label>
+            {!active ? (
+              <p className="text-[11px] text-slate-500">
+                Off. Turning it on lets the selected engines send probes and payloads. sqlmap runs in detection-only mode.
+                You need scope domains and an explicit confirmation.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <ToolPicker tools={ACTIVE_TOOLS} registry={registry} selected={activeTools} onToggle={toggle(setActiveTools)} tone="red" />
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="label" htmlFor="rounds" title="Bounded S5→S3 re-test rounds for below-τ candidates">Re-test rounds</label>
+                    <input id="rounds" type="number" min={0} max={3} className="input" value={options.retest_rounds} onChange={setOpt('retest_rounds')} />
+                  </div>
+                  <div>
+                    <label className="label" htmlFor="maxep" title="Parameterised endpoints per host for sqlmap">Endpoints/host</label>
+                    <input id="maxep" type="number" min={1} max={50} className="input" value={options.max_endpoints} onChange={setOpt('max_endpoints')} />
+                  </div>
+                  <div>
+                    <label className="label" htmlFor="tooltimeout">Tool limit s</label>
+                    <input id="tooltimeout" type="number" min={10} max={3600} className="input" value={options.tool_timeout} onChange={setOpt('tool_timeout')} />
+                  </div>
+                </div>
+                {scopeDomains.length === 0 && <p className="text-[11px] text-red-300">Set scope domains to bound the engagement.</p>}
+                <label className="flex items-start gap-2 text-[11px] text-red-100">
+                  <input type="checkbox" className="mt-0.5 accent-red-400" checked={activeAttested} onChange={(e) => setActiveAttested(e.target.checked)} />
+                  My written authorization explicitly covers active testing (probes and injection payloads) of every listed host.
+                </label>
+              </div>
+            )}
+          </div>
+        </div>
+
         <label className="mt-5 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-100">
           <input type="checkbox" className="mt-0.5 accent-amber-400" checked={attested} onChange={(e) => setAttested(e.target.checked)} />
           <span>
@@ -136,9 +243,10 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
 
         <div className="mt-5 flex justify-end gap-2">
           <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
-          <button type="submit" className="btn-primary" disabled={busy || !attested || parsed.length === 0 || authRef.trim().length < 3}>
+          <button type="submit" className={activeOn ? 'btn bg-red-500 text-white hover:bg-red-400' : 'btn-primary'}
+            disabled={busy || !attested || activeBlocked || parsed.length === 0 || authRef.trim().length < 3}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            Start passive audit
+            Start {activeOn ? 'active' : 'passive'} audit
           </button>
         </div>
       </form>
