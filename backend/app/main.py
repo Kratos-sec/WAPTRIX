@@ -247,10 +247,18 @@ def delete_audit(request: Request, audit_id: str) -> Response:
 
 
 @app.post("/api/demo")
-async def load_demo(request: Request) -> JSONResponse:
-    from sample_data import aload_demo_audit
+async def load_demo(
+    request: Request,
+    dataset: str = Query("acme", description="acme (offline synthetic) or testbeds (real public test-bed snapshot)"),
+) -> JSONResponse:
+    from sample_data import aload_demo_audit, load_testbeds_audit
 
-    audit = await aload_demo_audit()
+    if dataset == "acme":
+        audit = await aload_demo_audit()
+    elif dataset == "testbeds":
+        audit = load_testbeds_audit()
+    else:
+        raise HTTPException(status_code=400, detail="dataset must be 'acme' or 'testbeds'")
     _store(request).save(audit)
     return JSONResponse(audit.model_dump(mode="json"))
 

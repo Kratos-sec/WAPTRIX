@@ -333,3 +333,18 @@ async def aload_demo_audit() -> AuditResult:
 def write_demo(result: AuditResult) -> Path:
     DEMO_PATH.write_text(json.dumps(json.loads(result.model_dump_json()), indent=2) + "\n", encoding="utf-8")
     return DEMO_PATH
+
+
+# Snapshot of a real passive run against public, purpose-built test beds (badssl.com, vulnweb,
+# webappsecurity) listed in ../demo/public-testbeds.txt. Unlike the ACME demo it reflects live
+# third-party hosts, so it is captured once and loaded as-is rather than regenerated offline.
+# Re-capture: python -m app.cli audit -s ../demo/public-testbeds.txt -a DEMO-PUBLIC-TESTBEDS -f json --no-save
+TESTBEDS_PATH = Path(__file__).with_name("testbeds_audit.json")
+TESTBEDS_ID = "demo-public-testbeds"
+
+
+def load_testbeds_audit() -> AuditResult:
+    result = AuditResult.model_validate_json(TESTBEDS_PATH.read_text(encoding="utf-8"))
+    result.id = TESTBEDS_ID
+    result.demo = True
+    return result

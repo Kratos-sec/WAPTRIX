@@ -32,7 +32,7 @@ export const api = {
   tools: () => request('/api/tools'),
   createAudit: (body) => request('/api/audits', { method: 'POST', body: JSON.stringify(body) }),
   deleteAudit: (id) => request(`/api/audits/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-  loadDemo: () => request('/api/demo', { method: 'POST' }),
+  loadDemo: (dataset = 'acme') => request(`/api/demo?dataset=${dataset}`, { method: 'POST' }),
   exportUrl: (id, format, subdomain) => {
     const params = new URLSearchParams({ format })
     if (subdomain) params.set('subdomain', subdomain)

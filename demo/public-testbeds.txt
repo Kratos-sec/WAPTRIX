@@ -1,0 +1,12 @@
+# WAPTrix passive demo — public security test beds (read-only GET + TLS, legal to scan)
+# TLS/cert variety (badssl.com — purpose-built for TLS testing):
+expired.badssl.com
+self-signed.badssl.com
+wrong.host.badssl.com
+revoked.badssl.com
+badssl.com
+hsts.badssl.com
+mixed-script.badssl.com
+# Intentionally-vulnerable demo apps (vendor-authorized for scanner testing):
+testasp.vulnweb.com
+zero.webappsecurity.com

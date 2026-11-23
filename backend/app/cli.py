@@ -217,12 +217,17 @@ def demo(
     subdomain: Optional[str] = typer.Option(None, "--only", help="Export reports for this single subdomain only"),
     regenerate: bool = typer.Option(False, "--regenerate", help="Rebuild the dataset from the engine instead of the bundled JSON"),
     save: bool = typer.Option(True, "--save/--no-save", help="Persist the demo audit in the local SQLite database"),
+    dataset: str = typer.Option("acme", "--dataset", "-d", help="acme (offline synthetic) or testbeds (real public test-bed snapshot)"),
 ) -> None:
-    """Run the built-in offline 5-subdomain demo audit (no network access)."""
-    from sample_data import build_demo_audit, load_demo_audit, write_demo
+    """Load a bundled demo audit (no network access): the synthetic ACME estate or the public test-bed snapshot."""
+    from sample_data import build_demo_audit, load_demo_audit, load_testbeds_audit, write_demo
 
     fmt_list = _parse_formats(formats)
-    if regenerate:
+    if dataset not in ("acme", "testbeds"):
+        raise typer.BadParameter("dataset must be 'acme' or 'testbeds'", param_hint="--dataset")
+    if dataset == "testbeds":
+        result = load_testbeds_audit()
+    elif regenerate:
         result = asyncio.run(build_demo_audit())
         write_demo(result)
     else:
