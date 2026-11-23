@@ -30,7 +30,7 @@ export default function SubdomainTable({ audit, onSelect }) {
           <ArrowUpDown className="h-3.5 w-3.5" />
           {Object.keys(SORTS).map((key) => (
             <button key={key} onClick={() => setSort(key)}
-              className={`rounded-md px-2 py-1 capitalize ${sort === key ? 'bg-ink-700 text-cyan-300' : 'hover:text-slate-200'}`}>
+              className={`rounded-md px-2 py-1 capitalize ${sort === key ? 'bg-ink-700 text-accent-300' : 'hover:text-slate-200'}`}>
               {key}
             </button>
           ))}
@@ -38,7 +38,7 @@ export default function SubdomainTable({ audit, onSelect }) {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[880px] text-sm">
-          <thead className="bg-ink-850/60 text-left text-[11px] uppercase tracking-wider text-slate-500">
+          <thead className="bg-ink-850/60 text-left text-xs font-medium text-slate-500">
             <tr>
               <th className="px-4 py-2.5 font-medium">Subdomain</th>
               <th className="px-3 py-2.5 font-medium">Grade</th>
@@ -49,7 +49,7 @@ export default function SubdomainTable({ audit, onSelect }) {
               <th className="px-4 py-2.5 font-medium">Findings</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/70">
+          <tbody className="divide-y divide-slate-800">
             {rows.map((s) => {
               const tls = s.tls
               const certOk = tls && !tls.error && tls.trusted !== false && tls.hostname_match !== false && (tls.days_to_expiry ?? 0) >= 0

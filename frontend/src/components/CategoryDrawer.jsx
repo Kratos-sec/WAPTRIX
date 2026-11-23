@@ -48,7 +48,7 @@ export default function CategoryDrawer({ audit, categoryId, onClose, onBack }) {
       header={
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-sm text-cyan-300">{categoryId}</span>
+            <span className="font-mono text-sm text-accent-300">{categoryId}</span>
             <StatusBadge status={aggregate.status} />
           </div>
           <h2 className="mt-1 text-lg font-semibold text-white">{aggregate.name}</h2>
@@ -71,12 +71,12 @@ export default function CategoryDrawer({ audit, categoryId, onClose, onBack }) {
       </Section>
 
       <Section title={`Subdomains (${audit.subdomains.length})`}>
-        <div className="divide-y divide-slate-800/70">
+        <div className="divide-y divide-slate-800">
           {audit.subdomains.map((s) => {
             const c = s.categories.find((x) => x.id === categoryId)
             return (
               <button key={s.subdomain} onClick={() => openSubdomain(s.subdomain, categoryId)}
-                className="flex w-full items-center gap-3 py-2 text-left hover:bg-ink-800/40">
+                className="flex w-full items-center gap-3 py-2 text-left hover:bg-ink-800/60">
                 <GradeBadge grade={s.grade} size="sm" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-mono text-sm text-slate-100">{s.subdomain}</span>
@@ -94,9 +94,9 @@ export default function CategoryDrawer({ audit, categoryId, onClose, onBack }) {
 
       <Section title={`Rules evaluated (${ruleRows.length})`}>
         {triggered.length > 0 && (
-          <div className="mb-3 divide-y divide-slate-800/70">
+          <div className="mb-3 divide-y divide-slate-800">
             {triggered.map((r) => (
-              <button key={r.id} onClick={() => openIssue(r.id)} className="flex w-full items-center gap-3 py-2 text-left hover:bg-ink-800/40">
+              <button key={r.id} onClick={() => openIssue(r.id)} className="flex w-full items-center gap-3 py-2 text-left hover:bg-ink-800/60">
                 <SeverityBadge severity={r.severity} />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm text-slate-100">{r.title}</span>
@@ -110,9 +110,9 @@ export default function CategoryDrawer({ audit, categoryId, onClose, onBack }) {
         {clean.length > 0 && (
           <>
             <div className="mb-1 text-xs text-slate-500">Checked and not observed on any host</div>
-            <div className="divide-y divide-slate-800/70">
+            <div className="divide-y divide-slate-800">
               {clean.map((r) => (
-                <button key={r.id} onClick={() => openIssue(r.id)} className="flex w-full items-center gap-3 py-2 text-left hover:bg-ink-800/40">
+                <button key={r.id} onClick={() => openIssue(r.id)} className="flex w-full items-center gap-3 py-2 text-left hover:bg-ink-800/60">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
                   <span className="flex-1 text-sm text-slate-300">{r.title}</span>
                   <span className="font-mono text-[11px] text-slate-500">{r.id}</span>
@@ -130,7 +130,7 @@ export default function CategoryDrawer({ audit, categoryId, onClose, onBack }) {
           <ul className="space-y-1.5">
             {meta.manual_tests.map((t) => (
               <li key={t.title} className="flex gap-3 text-sm">
-                <span className="w-28 shrink-0 font-mono text-xs leading-5 text-cyan-300">{t.wstg ?? 'Review'}</span>
+                <span className="w-28 shrink-0 font-mono text-xs leading-5 text-accent-300">{t.wstg ?? 'Review'}</span>
                 <span className="text-slate-300">{t.title}</span>
               </li>
             ))}

@@ -20,7 +20,7 @@ function ToolPicker({ tools, registry, selected, onToggle, tone = 'cyan' }) {
         return (
           <label key={name} title={info?.purpose}
             className={`flex items-start gap-2 rounded-md border px-2.5 py-1.5 text-xs ${available ? 'border-slate-800 hover:border-slate-700' : 'border-slate-800/60 opacity-50'}`}>
-            <input type="checkbox" className={`mt-0.5 ${tone === 'red' ? 'accent-red-400' : 'accent-cyan-400'}`}
+            <input type="checkbox" className={`mt-0.5 ${tone === 'red' ? 'accent-red-400' : 'accent-accent-400'}`}
               checked={selected.includes(name)} disabled={!available} onChange={() => onToggle(name)} />
             <span className="min-w-0">
               <span className="font-mono text-slate-100">{name}</span>
@@ -107,7 +107,7 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
     setOptions((o) => ({ ...o, [key]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-ink-950/80 p-4 backdrop-blur-sm sm:p-10">
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/30 p-4 sm:p-10">
       <form onSubmit={submit} className="panel w-full max-w-3xl p-6">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
@@ -130,7 +130,7 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
           <div className="md:col-span-3">
             <div className="mb-1 flex items-center justify-between">
               <label className="label mb-0" htmlFor="targets">Subdomains (one per line)</label>
-              <button type="button" className="text-xs text-cyan-300 hover:text-cyan-200" onClick={() => fileRef.current?.click()}>
+              <button type="button" className="text-xs text-accent-300 hover:text-accent-200" onClick={() => fileRef.current?.click()}>
                 <FileUp className="mr-1 inline h-3.5 w-3.5" />Upload .txt
               </button>
               <input ref={fileRef} type="file" accept=".txt,text/plain" className="hidden" onChange={handleFile} />
@@ -172,11 +172,11 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
               </div>
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-300">
-              <input type="checkbox" className="accent-cyan-400" checked={options.include_metadata} onChange={setOpt('include_metadata')} />
+              <input type="checkbox" className="accent-accent-400" checked={options.include_metadata} onChange={setOpt('include_metadata')} />
               Inspect robots.txt &amp; security.txt
             </label>
             <label className="flex items-center gap-2 text-sm text-slate-300">
-              <input type="checkbox" className="accent-cyan-400" checked={options.allow_private} onChange={setOpt('allow_private')} />
+              <input type="checkbox" className="accent-accent-400" checked={options.allow_private} onChange={setOpt('allow_private')} />
               Allow private / internal IPs
             </label>
           </div>
@@ -185,7 +185,7 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border border-slate-800 p-3">
             <div className="mb-2 flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-cyan-300" />
+              <Wrench className="h-4 w-4 text-accent-300" />
               <span className="panel-title">Passive tools · S2</span>
             </div>
             <p className="mb-2 text-[11px] text-slate-500">Run alongside the built-in checks. Only requests a normal visitor would make.</p>
@@ -243,7 +243,7 @@ export default function NewAuditPanel({ onSubmit, onClose, busy }) {
 
         <div className="mt-5 flex justify-end gap-2">
           <button type="button" className="btn-ghost" onClick={onClose}>Cancel</button>
-          <button type="submit" className={activeOn ? 'btn bg-red-500 text-white hover:bg-red-400' : 'btn-primary'}
+          <button type="submit" className={activeOn ? 'btn bg-red-500 text-[#fff] hover:bg-red-600' : 'btn-primary'}
             disabled={busy || !attested || activeBlocked || parsed.length === 0 || authRef.trim().length < 3}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
             Start {activeOn ? 'active' : 'passive'} audit

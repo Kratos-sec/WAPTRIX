@@ -14,7 +14,7 @@ export default function StageTimeline({ state = {}, summaries = [], compact = fa
             <div className="flex items-center gap-2">
               <span className={`h-2 w-2 shrink-0 rounded-full ${meta.dot}`} />
               <span className="font-mono text-xs font-semibold text-slate-200">{stage.id}</span>
-              <span className={`ml-auto text-[10px] font-semibold uppercase tracking-wide ${meta.text}`}>{meta.label}</span>
+              <span className={`ml-auto text-[11px] font-medium ${meta.text}`}>{meta.label}</span>
             </div>
             <div className={`mt-1 font-medium text-slate-100 ${compact ? 'text-[11px] leading-tight' : 'text-sm'}`}>{stage.name}</div>
             {!compact && (

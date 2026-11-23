@@ -24,14 +24,14 @@ export default function ToolRunsTable({ runs, showSubdomain = false }) {
             <th className="px-2 py-1.5 text-right font-medium">Time</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800/60 font-mono">
+        <tbody className="divide-y divide-slate-800 font-mono">
           {runs.map((run, i) => {
             const o = outcome(run)
             return (
               <tr key={`${run.subdomain ?? ''}-${run.tool}-${run.target_url ?? ''}-${run.round}-${i}`} className="align-top">
-                {showSubdomain && <td className="whitespace-nowrap px-2 py-1.5 text-cyan-300/80">{run.subdomain}</td>}
+                {showSubdomain && <td className="whitespace-nowrap px-2 py-1.5 text-accent-300/80">{run.subdomain}</td>}
                 <td className="whitespace-nowrap px-2 py-1.5 text-slate-100">{run.tool}</td>
-                <td className="whitespace-nowrap px-2 py-1.5 text-cyan-300">
+                <td className="whitespace-nowrap px-2 py-1.5 text-accent-300">
                   {run.stage ?? '—'}{run.round > 0 && <span className="ml-1 text-violet-300" title="Re-test round">r{run.round}</span>}
                 </td>
                 <td className="max-w-[18rem] break-all px-2 py-1.5 text-slate-400">{run.target_url ?? '—'}</td>

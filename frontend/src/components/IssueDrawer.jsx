@@ -18,7 +18,7 @@ function Stat({ label, value }) {
 
 function Link({ href, children }) {
   return (
-    <a href={href} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 break-all text-cyan-300 hover:text-cyan-200">
+    <a href={href} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 break-all text-accent-300 hover:text-accent-200">
       <ExternalLink className="h-3 w-3 shrink-0" />{children}
     </a>
   )
@@ -99,8 +99,8 @@ export default function IssueDrawer({ audit, ruleId, onClose, onBack }) {
               <div className="flex flex-wrap gap-2">
                 {rule.owasp.map((cid) => (
                   <button key={cid} onClick={() => openCategory(cid)}
-                    className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-cyan-500/60 hover:text-cyan-200">
-                    <span className="font-mono text-cyan-300">{shortCat(cid)}</span> {categories[cid]?.name}
+                    className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-accent-500/60 hover:text-accent-200">
+                    <span className="font-mono text-accent-300">{shortCat(cid)}</span> {categories[cid]?.name}
                   </button>
                 ))}
               </div>
@@ -140,7 +140,7 @@ export default function IssueDrawer({ audit, ruleId, onClose, onBack }) {
           <div className="space-y-4">
             {hosts.map(({ sub, findings }) => (
               <div key={sub.subdomain}>
-                <button onClick={() => openSubdomain(sub.subdomain)} className="mb-2 flex items-center gap-2 text-left hover:text-cyan-300">
+                <button onClick={() => openSubdomain(sub.subdomain)} className="mb-2 flex items-center gap-2 text-left hover:text-accent-300">
                   <GradeBadge grade={sub.grade} size="sm" />
                   <span className="font-mono text-sm text-slate-100">{sub.subdomain}</span>
                   <span className="text-xs text-slate-500">{findings.length} instance{findings.length === 1 ? '' : 's'}</span>

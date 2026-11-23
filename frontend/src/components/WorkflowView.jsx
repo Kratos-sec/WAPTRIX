@@ -43,7 +43,7 @@ export default function WorkflowView({ audit }) {
     <div className="space-y-5">
       <section className="panel p-4">
         <div className="mb-3 flex items-center gap-2">
-          <Workflow className="h-4 w-4 text-cyan-300" />
+          <Workflow className="h-4 w-4 text-accent-300" />
           <h2 className="panel-title">Six-stage assessment workflow</h2>
         </div>
         {hasLog ? (
@@ -86,7 +86,7 @@ export default function WorkflowView({ audit }) {
 
       <section className="panel p-4">
         <div className="mb-3 flex items-center gap-2">
-          <GitBranch className="h-4 w-4 text-cyan-300" />
+          <GitBranch className="h-4 w-4 text-accent-300" />
           <h2 className="panel-title">Tool runs ({stats.runs.length})</h2>
         </div>
         <ToolRunsTable runs={stats.runs} showSubdomain />
@@ -95,7 +95,7 @@ export default function WorkflowView({ audit }) {
       {hasLog && (
         <section className="panel p-4">
           <div className="mb-3 flex items-center gap-2">
-            <Scale className="h-4 w-4 text-cyan-300" />
+            <Scale className="h-4 w-4 text-accent-300" />
             <h2 className="panel-title">Run log</h2>
           </div>
           <RunLog events={audit.run_log} />

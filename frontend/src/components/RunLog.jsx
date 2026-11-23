@@ -31,7 +31,7 @@ export default function RunLog({ events, maxHeight = 'max-h-[28rem]', follow = f
           {STAGES.map((s) => <option key={s.id} value={s.id}>{s.id} {s.name}</option>)}
         </select>
         <label className="flex items-center gap-1.5 text-slate-400">
-          <input type="checkbox" className="accent-cyan-400" checked={showStarts} onChange={(e) => setShowStarts(e.target.checked)} />
+          <input type="checkbox" className="accent-accent-400" checked={showStarts} onChange={(e) => setShowStarts(e.target.checked)} />
           Show stage starts
         </label>
         <span className="ml-auto font-mono text-slate-500">{rows.length} event(s){follow ? ' · newest first' : ''}</span>
@@ -41,13 +41,13 @@ export default function RunLog({ events, maxHeight = 'max-h-[28rem]', follow = f
           <p className="p-4 text-xs text-slate-500">No events in this view.</p>
         ) : (
           <table className="w-full text-[11px]">
-            <tbody className="divide-y divide-slate-800/60 font-mono">
+            <tbody className="divide-y divide-slate-800 font-mono">
               {shown.map((e) => {
                 const meta = STAGE_STATUS[e.status] ?? STAGE_STATUS.info
                 return (
                   <tr key={e.seq} className="align-top">
                     <td className="whitespace-nowrap px-2 py-1.5 text-slate-500">{time(e.at)}</td>
-                    <td className="whitespace-nowrap px-2 py-1.5 text-cyan-300">
+                    <td className="whitespace-nowrap px-2 py-1.5 text-accent-300">
                       {e.stage}{e.round > 0 && <span className="ml-1 text-violet-300" title="Re-test round">r{e.round}</span>}
                     </td>
                     <td className={`whitespace-nowrap px-2 py-1.5 ${meta.text}`}>{meta.label.toLowerCase()}</td>

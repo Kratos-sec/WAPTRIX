@@ -12,7 +12,7 @@ export const STAGE_STATUS = {
   completed: { label: 'Done', dot: 'bg-emerald-400', text: 'text-emerald-300', ring: 'ring-emerald-500/40 bg-emerald-500/10' },
   skipped: { label: 'Skipped', dot: 'bg-slate-500', text: 'text-slate-400', ring: 'ring-slate-600/50 bg-slate-500/5' },
   failed: { label: 'Failed', dot: 'bg-red-400', text: 'text-red-300', ring: 'ring-red-500/40 bg-red-500/10' },
-  started: { label: 'Running', dot: 'bg-cyan-400 animate-pulse', text: 'text-cyan-300', ring: 'ring-cyan-500/50 bg-cyan-500/10' },
+  started: { label: 'Running', dot: 'bg-accent-400 animate-pulse', text: 'text-accent-300', ring: 'ring-accent-500/50 bg-accent-500/10' },
   info: { label: 'Info', dot: 'bg-sky-400', text: 'text-sky-300', ring: 'ring-sky-500/40 bg-sky-500/10' },
   pending: { label: 'Pending', dot: 'bg-slate-700', text: 'text-slate-500', ring: 'ring-slate-800 bg-transparent' },
 }

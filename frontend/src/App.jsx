@@ -1,19 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Database,
-  FlaskConical,
-  Loader2,
-  Plus,
-  Radar,
-  ShieldCheck,
-  Trash2,
-  XCircle,
-} from 'lucide-react'
+import { AlertTriangle, CheckCircle2, FlaskConical, Globe2, Loader2, Menu, Moon, Plus, Sun, Trash2, X, XCircle } from 'lucide-react'
 import { api } from './lib/api'
 import { formatDate } from './lib/format'
 import { CatalogContext, PanelContext } from './lib/panels'
+import { useTheme } from './lib/theme'
+import { GradeBadge } from './components/Badges'
 import CategoryDrawer from './components/CategoryDrawer'
 import ExportMenu from './components/ExportMenu'
 import FindingsExplorer from './components/FindingsExplorer'
@@ -42,36 +33,123 @@ function Toast({ toast, onClose }) {
   }, [toast, onClose])
   if (!toast) return null
   const Icon = toast.type === 'error' ? XCircle : toast.type === 'warning' ? AlertTriangle : CheckCircle2
-  const tone = toast.type === 'error' ? 'border-red-500/40 text-red-200' : toast.type === 'warning' ? 'border-amber-500/40 text-amber-100' : 'border-emerald-500/40 text-emerald-100'
+  const tone = toast.type === 'error' ? 'text-red-300' : toast.type === 'warning' ? 'text-amber-300' : 'text-emerald-300'
   return (
-    <div className={`fixed bottom-5 right-5 z-50 flex max-w-md items-start gap-2 rounded-lg border bg-ink-850 px-4 py-3 text-sm shadow-2xl ${tone}`} role="status">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+    <div className="fixed bottom-5 right-5 z-50 flex max-w-md items-start gap-2.5 rounded-lg border border-slate-800 bg-ink-900 px-4 py-3 text-[13px] text-slate-200 shadow-float" role="status">
+      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} />
       <span>{toast.message}</span>
     </div>
   )
 }
 
+function Logo() {
+  return (
+    <svg viewBox="0 0 32 32" className="h-6 w-6 shrink-0" aria-hidden="true">
+      <rect width="32" height="32" rx="7" className="fill-accent-500" />
+      <path d="M16 6.5 8.5 9.5v5.6c0 4.8 3.2 8.7 7.5 10.4 4.3-1.7 7.5-5.6 7.5-10.4V9.5L16 6.5Z" fill="none" stroke="#fff" strokeWidth="1.8" />
+      <path d="M12.5 16h7M16 12.5v7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function AuditListEntry({ item, selected, onSelect }) {
+  const running = item.status === 'running'
+  const failed = item.status === 'failed'
+  return (
+    <button onClick={() => onSelect(item.id)} aria-current={selected ? 'true' : undefined}
+      className={`nav-item items-start gap-3 py-2 ${selected ? 'nav-item-active' : ''}`}>
+      {running ? (
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-accent-500/10 text-accent-300"><Loader2 className="h-3.5 w-3.5 animate-spin" /></span>
+      ) : failed ? (
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-red-500/10 text-red-300"><XCircle className="h-3.5 w-3.5" /></span>
+      ) : (
+        <GradeBadge grade={item.grade} size="sm" />
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium">{item.authorization_ref}</span>
+        <span className="block truncate text-[11px] text-slate-500">
+          {formatDate(item.created_at)}
+          {item.status === 'completed' && <>, {item.total_findings} findings</>}
+          {running && ', running'}
+          {failed && ', failed'}
+        </span>
+      </span>
+      {item.demo && <span className="mt-0.5 rounded bg-violet-500/10 px-1 text-[10px] font-medium text-violet-300">demo</span>}
+    </button>
+  )
+}
+
+function Sidebar({ audits, selectedId, onSelect, onNew, onDemo, busy, backendDown, health, theme, onToggleTheme, open, onClose }) {
+  return (
+    <>
+      {open && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={onClose} aria-hidden="true" />}
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[264px] flex-col border-r border-slate-800 bg-ink-950 transition-transform lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        aria-label="Audits">
+        <div className="flex items-center gap-2.5 px-4 pb-3 pt-4">
+          <Logo />
+          <span className="text-[15px] font-semibold tracking-tight text-slate-100">WAPTrix</span>
+          <button className="ml-auto rounded-md p-1.5 text-slate-400 hover:bg-ink-800 lg:hidden" onClick={onClose} aria-label="Close menu"><X className="h-4 w-4" /></button>
+        </div>
+        <div className="px-3 pb-3">
+          <button className="btn-primary w-full justify-center" onClick={onNew} disabled={backendDown}><Plus className="h-4 w-4" />New audit</button>
+        </div>
+
+        <div className="flex items-center justify-between px-4 pb-1 pt-3">
+          <h2 className="text-xs font-medium text-slate-500">Audit history</h2>
+          {audits.length > 0 && <span className="font-mono text-[11px] text-slate-500">{audits.length}</span>}
+        </div>
+        <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
+          {audits.length === 0 && (
+            <p className="px-2 py-3 text-xs leading-relaxed text-slate-500">Audits you run show up here.</p>
+          )}
+          {audits.map((a) => (
+            <AuditListEntry key={a.id} item={a} selected={a.id === selectedId} onSelect={(id) => { onSelect(id); onClose() }} />
+          ))}
+        </nav>
+
+        <div className="space-y-1 border-t border-slate-800 p-2">
+          <button className="nav-item" onClick={() => onDemo('acme')} disabled={busy || backendDown} title="Synthetic five-host estate, built offline">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin text-slate-400" /> : <FlaskConical className="h-4 w-4 text-slate-400" />}Load ACME demo
+          </button>
+          <button className="nav-item" onClick={() => onDemo('testbeds')} disabled={busy || backendDown} title="Recorded passive run against badssl.com, vulnweb and other public test beds">
+            <Globe2 className="h-4 w-4 text-slate-400" />Load test-bed demo
+          </button>
+          <button className="nav-item" onClick={onToggleTheme}>
+            {theme === 'dark' ? <Sun className="h-4 w-4 text-slate-400" /> : <Moon className="h-4 w-4 text-slate-400" />}
+            {theme === 'dark' ? 'Light theme' : 'Dark theme'}
+          </button>
+          <div className="flex items-center gap-2 px-2 py-1.5 text-[11px] text-slate-500">
+            <span className={`h-1.5 w-1.5 rounded-full ${backendDown ? 'bg-red-400' : health ? 'bg-emerald-400' : 'bg-slate-500'}`} />
+            {backendDown ? 'API unreachable' : health ? <>API v{health.version}{health.pdf_engine ? '' : ', HTML reports only'}</> : 'Connecting to API'}
+          </div>
+        </div>
+      </aside>
+    </>
+  )
+}
+
 function EmptyState({ onDemo, onNew, busy, backendDown }) {
   return (
-    <div className="mx-auto mt-16 max-w-2xl text-center">
-      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-cyan-500/10 ring-1 ring-cyan-500/30">
-        <Radar className="h-8 w-8 text-cyan-300" />
-      </div>
-      <h1 className="text-2xl font-bold text-white">Passive OWASP Top 10 (2025) compliance, per subdomain</h1>
-      <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-slate-400">
-        WAPTrix inspects headers, TLS, cookies, CORS, disclosure, forms and security metadata using only read-only GET
-        requests and TLS handshakes, then maps every finding to CWE, WSTG v4.2, CVSS v3.1 and OWASP Top 10 (2025).
+    <div className="mx-auto mt-[12vh] max-w-xl">
+      <h1 className="text-[28px] font-semibold leading-tight tracking-tight text-slate-100">Audit a web estate against the OWASP Top 10 (2025)</h1>
+      <p className="mt-3 text-[15px] leading-relaxed text-slate-400">
+        Give WAPTrix a list of hosts. It reads headers, TLS, cookies, CORS, forms and disclosure with read-only requests,
+        then grades every host and maps each finding to CWE, WSTG v4.2 and CVSS v3.1. Active scanners run only when you opt in.
       </p>
       {backendDown && (
-        <p className="mx-auto mt-4 max-w-md rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-200">
-          API not reachable. Start it with <code className="font-mono">uvicorn app.main:app --port 8000</code> in <code className="font-mono">backend/</code>.
-        </p>
+        <div className="mt-5 rounded-md border border-red-500/30 bg-red-500/5 p-3 text-[13px] text-red-200">
+          The API isn't reachable. Start it from <code className="font-mono">backend/</code> with{' '}
+          <code className="font-mono">uvicorn app.main:app --port 8000</code>, or run <code className="font-mono">docker compose up</code>.
+        </div>
       )}
-      <div className="mt-6 flex justify-center gap-3">
-        <button className="btn-primary" onClick={onDemo} disabled={busy || backendDown}>
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlaskConical className="h-4 w-4" />}Load demo audit
+      <div className="mt-6 flex flex-wrap gap-2">
+        <button className="btn-primary" onClick={onNew} disabled={backendDown}><Plus className="h-4 w-4" />New audit</button>
+        <button className="btn-ghost" onClick={() => onDemo('acme')} disabled={busy || backendDown}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FlaskConical className="h-4 w-4" />}Load ACME demo
         </button>
-        <button className="btn-ghost" onClick={onNew} disabled={backendDown}><Plus className="h-4 w-4" />New audit</button>
+        <button className="btn-ghost" onClick={() => onDemo('testbeds')} disabled={busy || backendDown}>
+          <Globe2 className="h-4 w-4" />Load test-bed demo
+        </button>
       </div>
     </div>
   )
@@ -89,6 +167,8 @@ export default function App() {
   const [showNew, setShowNew] = useState(false)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(null)
+  const [navOpen, setNavOpen] = useState(false)
+  const [theme, toggleTheme] = useTheme()
   const pollRef = useRef(null)
 
   const notify = useCallback((t) => setToast(t), [])
@@ -138,14 +218,16 @@ export default function App() {
     return () => { cancelled = true; clearTimeout(pollRef.current) }
   }, [selectedId, refreshList, notify])
 
-  async function loadDemo() {
+  async function loadDemo(dataset = 'acme') {
     setBusy(true)
     try {
-      const demo = await api.loadDemo()
+      const demo = await api.loadDemo(dataset)
       await refreshList()
       setSelectedId(demo.id)
       setTab('overview')
-      notify({ type: 'success', message: 'Demo audit loaded (offline synthetic data).' })
+      notify({ type: 'success', message: dataset === 'testbeds'
+        ? 'Test-bed demo loaded: a recorded passive run against public test sites.'
+        : 'ACME demo loaded: synthetic data, no network access.' })
     } catch (err) {
       notify({ type: 'error', message: err.message })
     } finally {
@@ -193,103 +275,93 @@ export default function App() {
   const onBack = panels.length > 1 ? backPanel : undefined
   const completed = audit?.status === 'completed'
 
+  const activeMode = audit?.request?.active && audit?.request?.active_tools?.length > 0
+
   return (
     <CatalogContext.Provider value={catalog}>
     <PanelContext.Provider value={panelApi}>
-    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.07),transparent_55%)]">
-      <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-ink-950/85 backdrop-blur">
-        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
-          <div className="mr-2 flex items-center gap-2.5">
-            <ShieldCheck className="h-7 w-7 text-cyan-300" />
-            <div>
-              <div className="text-base font-extrabold tracking-tight text-white">WAP<span className="text-cyan-300">Trix</span></div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Passive audit · OWASP 2025</div>
-            </div>
+    <div className="flex min-h-screen bg-ink-950">
+      <Sidebar audits={audits} selectedId={selectedId} onSelect={setSelectedId} onNew={() => setShowNew(true)} onDemo={loadDemo}
+        busy={busy} backendDown={backendDown} health={health} theme={theme} onToggleTheme={toggleTheme}
+        open={navOpen} onClose={() => setNavOpen(false)} />
+
+      <div className="flex min-w-0 flex-1 flex-col lg:py-2 lg:pr-2">
+        <div className="flex min-h-0 flex-1 flex-col bg-ink-900 lg:rounded-xl lg:border lg:border-slate-800">
+          <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-2.5 lg:hidden">
+            <button className="rounded-md p-1.5 text-slate-300 hover:bg-ink-800" onClick={() => setNavOpen(true)} aria-label="Open audit history"><Menu className="h-5 w-5" /></button>
+            <Logo />
+            <span className="font-semibold text-slate-100">WAPTrix</span>
           </div>
 
-          {audits.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-slate-500" />
-              <select className="input w-auto max-w-[22rem] py-1.5" value={selectedId ?? ''} onChange={(e) => setSelectedId(e.target.value)} aria-label="Select audit">
-                {audits.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.authorization_ref} · {formatDate(a.created_at)} · {a.status === 'completed' ? `${a.grade} (${a.overall_score ?? '—'})` : a.status}{a.demo ? ' · demo' : ''}
-                  </option>
+          {completed && (
+            <header className="sticky top-0 z-20 border-b border-slate-800 bg-ink-900/95 px-5 pt-5 backdrop-blur sm:px-8 lg:rounded-t-xl">
+              <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="truncate text-xl font-semibold tracking-tight text-slate-100">{audit.authorization_ref}</h1>
+                    {audit.demo && <span className="chip bg-violet-500/10 text-violet-300">Demo data</span>}
+                    <span className={`chip ${activeMode ? 'bg-red-500/10 text-red-300' : 'bg-emerald-500/10 text-emerald-300'}`}>
+                      {activeMode ? 'Active scan' : 'Passive only'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Completed {formatDate(audit.completed_at)}, engine v{audit.engine_version}, ID <span className="font-mono">{audit.id.slice(0, 8)}</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ExportMenu auditId={audit.id} label="Export" onNotify={notify} />
+                  <button className="btn-ghost px-2" onClick={removeAudit} title="Delete audit" aria-label="Delete audit"><Trash2 className="h-4 w-4" /></button>
+                </div>
+              </div>
+              <nav className="-mb-px mt-3 flex gap-5 overflow-x-auto" aria-label="Sections">
+                {TABS.map((t) => (
+                  <button key={t.id} className={`tab shrink-0 ${tab === t.id ? 'tab-active' : ''}`} onClick={() => setTab(t.id)} aria-current={tab === t.id ? 'page' : undefined}>{t.label}</button>
                 ))}
-              </select>
-              {audit && <button className="btn-ghost p-2" onClick={removeAudit} title="Delete audit" aria-label="Delete audit"><Trash2 className="h-4 w-4" /></button>}
-            </div>
+              </nav>
+            </header>
           )}
 
-          <div className="ml-auto flex items-center gap-2">
-            {health && (
-              <span className="hidden items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1 text-[11px] text-emerald-300 md:inline-flex">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />API v{health.version} · passive{health.pdf_engine ? '' : ' · PDF→HTML'}
-              </span>
+          <main className="flex-1 px-5 py-6 sm:px-8">
+            {!audit && <EmptyState onDemo={loadDemo} onNew={() => setShowNew(true)} busy={busy} backendDown={backendDown} />}
+
+            {audit?.status === 'running' && <LiveRun audit={audit} />}
+
+            {audit?.status === 'failed' && (
+              <div className="mx-auto mt-[10vh] max-w-xl">
+                <XCircle className="h-6 w-6 text-red-300" />
+                <h2 className="mt-3 text-lg font-semibold text-slate-100">Audit {audit.authorization_ref} failed</h2>
+                <p className="mt-1 font-mono text-[13px] text-red-300">{audit.error}</p>
+                <p className="mt-3 text-[13px] text-slate-400">Check the targets and scope, then start a new audit.</p>
+                <button className="btn-ghost mt-4" onClick={() => setShowNew(true)}><Plus className="h-4 w-4" />New audit</button>
+              </div>
             )}
-            {completed && <ExportMenu auditId={audit.id} label="Export audit" onNotify={notify} />}
-            <button className="btn-ghost" onClick={loadDemo} disabled={busy || backendDown}><FlaskConical className="h-4 w-4" /><span className="hidden sm:inline">Load demo</span></button>
-            <button className="btn-primary" onClick={() => setShowNew(true)} disabled={backendDown}><Plus className="h-4 w-4" />New audit</button>
-          </div>
+
+            {completed && (
+              <div className="mx-auto max-w-[1360px]">
+                {audit.scope_rejections.length > 0 && (
+                  <div className="mb-5 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-[13px] text-amber-200">
+                    <AlertTriangle className="mr-1.5 inline h-4 w-4 text-amber-300" />
+                    The scope guard rejected {audit.scope_rejections.length} input{audit.scope_rejections.length === 1 ? '' : 's'}:{' '}
+                    {audit.scope_rejections.map((r) => (
+                      <span key={r.input} className="mr-3 font-mono text-xs">{r.input} <span className="opacity-70">({r.reason})</span></span>
+                    ))}
+                  </div>
+                )}
+
+                {tab === 'overview' && <Overview audit={audit} onSelectSubdomain={openSubdomain} />}
+                {tab === 'subdomains' && <SubdomainTable audit={audit} onSelect={openSubdomain} />}
+                {tab === 'findings' && <FindingsExplorer audit={audit} />}
+                {tab === 'workflow' && <WorkflowView audit={audit} />}
+                {tab === 'rules' && <RulesCatalog />}
+              </div>
+            )}
+          </main>
+
+          <footer className="px-5 pb-5 text-[11px] text-slate-500 sm:px-8">
+            Passive and read-only by default. Active scanners run only on explicit opt-in, inside declared scope domains. Audit only systems you're authorized to test.
+          </footer>
         </div>
-        {completed && (
-          <nav className="mx-auto flex max-w-[1500px] gap-1 px-4 sm:px-6" aria-label="Sections">
-            {TABS.map((t) => (
-              <button key={t.id} className={`tab ${tab === t.id ? 'tab-active' : ''}`} onClick={() => setTab(t.id)}>{t.label}</button>
-            ))}
-          </nav>
-        )}
-      </header>
-
-      <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6">
-        {!audit && <EmptyState onDemo={loadDemo} onNew={() => setShowNew(true)} busy={busy} backendDown={backendDown} />}
-
-        {audit?.status === 'running' && <LiveRun audit={audit} />}
-
-        {audit?.status === 'failed' && (
-          <div className="panel mx-auto mt-10 max-w-xl border-red-500/40 p-8 text-center">
-            <XCircle className="mx-auto h-8 w-8 text-red-400" />
-            <h2 className="mt-4 text-lg font-semibold text-white">Audit failed</h2>
-            <p className="mt-1 text-sm text-red-200">{audit.error}</p>
-          </div>
-        )}
-
-        {completed && (
-          <>
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h1 className="text-xl font-bold text-white">
-                  {audit.authorization_ref}
-                  {audit.demo && <span className="ml-2 rounded-md bg-violet-500/15 px-2 py-0.5 align-middle text-xs font-semibold text-violet-300 ring-1 ring-violet-500/40">DEMO DATA</span>}
-                </h1>
-                <p className="text-xs text-slate-500">
-                  Audit <span className="font-mono">{audit.id}</span> · started {formatDate(audit.created_at)} · completed {formatDate(audit.completed_at)} · engine v{audit.engine_version}
-                </p>
-              </div>
-            </div>
-
-            {audit.scope_rejections.length > 0 && (
-              <div className="mb-5 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-100">
-                <AlertTriangle className="mr-1.5 inline h-4 w-4 text-amber-300" />
-                Scope guard rejected {audit.scope_rejections.length} input(s):{' '}
-                {audit.scope_rejections.map((r) => (
-                  <span key={r.input} className="mr-3 font-mono text-xs text-amber-200/90">{r.input} <span className="text-amber-200/60">({r.reason})</span></span>
-                ))}
-              </div>
-            )}
-
-            {tab === 'overview' && <Overview audit={audit} onSelectSubdomain={openSubdomain} />}
-            {tab === 'subdomains' && <SubdomainTable audit={audit} onSelect={openSubdomain} />}
-            {tab === 'findings' && <FindingsExplorer audit={audit} />}
-            {tab === 'workflow' && <WorkflowView audit={audit} />}
-            {tab === 'rules' && <RulesCatalog />}
-          </>
-        )}
-      </main>
-
-      <footer className="mx-auto max-w-[1500px] px-6 pb-8 text-center text-[11px] text-slate-600">
-        WAPTrix is passive and read-only by default. Active scanning runs only on explicit opt-in, within declared scope domains. Only audit systems you are authorized to test.
-      </footer>
+      </div>
 
       {panel && completed && panel.type === 'subdomain' && (
         <SubdomainDrawer key={panels.length} audit={audit} subdomain={panel.subdomain} initialCategory={panel.category}

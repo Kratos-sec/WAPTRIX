@@ -70,7 +70,7 @@ export default function FindingsExplorer({ audit }) {
           <input className="input pl-8" placeholder="Search title, rule, evidence, CWE…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-300">
-          <input type="checkbox" className="accent-cyan-400" checked={groupByRule} onChange={(e) => setGroupByRule(e.target.checked)} />
+          <input type="checkbox" className="accent-accent-400" checked={groupByRule} onChange={(e) => setGroupByRule(e.target.checked)} />
           Group by rule
         </label>
       </div>
@@ -82,7 +82,7 @@ export default function FindingsExplorer({ audit }) {
           {groups.map(([ruleId, items]) => (
             <div key={ruleId} className="panel p-3">
               <div className="mb-2 flex items-center justify-between px-1">
-                <button onClick={() => openIssue(ruleId)} className="text-left text-sm font-medium text-slate-100 hover:text-cyan-300">{items[0].title}</button>
+                <button onClick={() => openIssue(ruleId)} className="text-left text-sm font-medium text-slate-100 hover:text-accent-300">{items[0].title}</button>
                 <div className="font-mono text-xs text-slate-500">{ruleId} · {items.length} on {new Set(items.map((i) => i.subdomain)).size} host(s)</div>
               </div>
               <div className="space-y-2">{items.map((f) => <FindingCard key={f.id} finding={f} showSubdomain />)}</div>

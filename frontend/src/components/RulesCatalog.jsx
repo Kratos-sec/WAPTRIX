@@ -31,7 +31,7 @@ export default function RulesCatalog() {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[960px] text-sm">
-          <thead className="bg-ink-850/60 text-left text-[11px] uppercase tracking-wider text-slate-500">
+          <thead className="bg-ink-850/60 text-left text-xs font-medium text-slate-500">
             <tr>
               <th className="px-4 py-2.5 font-medium">Rule</th>
               <th className="px-3 py-2.5 font-medium">Severity</th>
@@ -42,16 +42,16 @@ export default function RulesCatalog() {
               <th className="px-4 py-2.5 text-right font-medium">CVSS 3.1</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/70">
+          <tbody className="divide-y divide-slate-800">
             {filtered.map((r) => (
-              <tr key={r.id} className="align-top hover:bg-ink-800/40">
+              <tr key={r.id} className="align-top hover:bg-ink-800/60">
                 <td className="px-4 py-2.5">
                   <div className="text-slate-100">{r.title}</div>
                   <div className="font-mono text-[11px] text-slate-500">{r.id}</div>
                 </td>
                 <td className="px-3 py-2.5"><SeverityBadge severity={r.severity} /></td>
                 <td className="px-3 py-2.5 font-mono text-xs text-slate-400">{r.check}</td>
-                <td className="px-3 py-2.5 font-mono text-xs text-cyan-300">{r.owasp.join(', ')}</td>
+                <td className="px-3 py-2.5 font-mono text-xs text-accent-300">{r.owasp.join(', ')}</td>
                 <td className="px-3 py-2.5 text-xs text-slate-300" title={r.cwe_name}>{r.cwe}</td>
                 <td className="px-3 py-2.5 font-mono text-xs text-slate-300">{r.wstg ?? '—'}</td>
                 <td className="px-4 py-2.5 text-right font-mono text-xs text-slate-200" title={r.cvss_vector}>{r.cvss_score.toFixed(1)}</td>

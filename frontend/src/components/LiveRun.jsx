@@ -40,12 +40,12 @@ export default function LiveRun({ audit }) {
     <div className="mx-auto mt-6 max-w-5xl space-y-4">
       <div className="panel p-6">
         <div className="flex flex-wrap items-center gap-4">
-          <Loader2 className="h-7 w-7 animate-spin text-cyan-300" />
+          <Loader2 className="h-7 w-7 animate-spin text-accent-300" />
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-semibold text-white">{activeMode ? 'Active' : 'Passive'} audit in progress</h2>
             <p className="text-sm text-slate-400">
               Authorization {audit.authorization_ref}
-              {stage && <> · now in <span className="font-mono text-cyan-300">{stage.id}</span> {stage.name}{progress.stage_host ? ` on ${progress.stage_host}` : ''}</>}
+              {stage && <> · now in <span className="font-mono text-accent-300">{stage.id}</span> {stage.name}{progress.stage_host ? ` on ${progress.stage_host}` : ''}</>}
             </p>
           </div>
           {progress && (
@@ -56,7 +56,7 @@ export default function LiveRun({ audit }) {
         </div>
         {progress && (
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-ink-700">
-            <div className="h-full rounded-full bg-cyan-400 transition-all" style={{ width: `${(100 * progress.done) / Math.max(progress.total, 1)}%` }} />
+            <div className="h-full rounded-full bg-accent-400 transition-all" style={{ width: `${(100 * progress.done) / Math.max(progress.total, 1)}%` }} />
           </div>
         )}
         <div className="mt-5">

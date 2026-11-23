@@ -9,7 +9,7 @@ import FindingCard from './FindingCard'
 import ToolRunsTable from './ToolRunsTable'
 
 const SOURCE_STYLE = {
-  page: 'text-cyan-300', link: 'text-slate-300', form: 'text-amber-200', script: 'text-slate-500', retest: 'text-violet-300',
+  page: 'text-accent-300', link: 'text-slate-300', form: 'text-amber-200', script: 'text-slate-500', retest: 'text-violet-300',
 }
 
 function AppMapSection({ map }) {
@@ -19,7 +19,7 @@ function AppMapSection({ map }) {
   return (
     <Section title={`Application map · S3 (${map.endpoints.length} endpoints${map.truncated ? ', truncated' : ''})`} right={
       <label className="flex items-center gap-1.5 text-xs text-slate-400">
-        <input type="checkbox" className="accent-cyan-400" checked={paramsOnly} onChange={(e) => setParamsOnly(e.target.checked)} />
+        <input type="checkbox" className="accent-accent-400" checked={paramsOnly} onChange={(e) => setParamsOnly(e.target.checked)} />
         With parameters only
       </label>
     }>
@@ -31,7 +31,7 @@ function AppMapSection({ map }) {
       )}
       <div className="max-h-72 overflow-auto rounded-md border border-slate-800">
         <table className="w-full text-[11px]">
-          <tbody className="divide-y divide-slate-800/60 font-mono">
+          <tbody className="divide-y divide-slate-800 font-mono">
             {endpoints.map((e) => (
               <tr key={`${e.method} ${e.url}`} className="align-top">
                 <td className="whitespace-nowrap px-2 py-1.5 text-slate-400">{e.method}</td>
@@ -90,7 +90,7 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
 
           <Section title="OWASP Top 10 (2025) status" right={category && (
             <div className="flex gap-3 text-xs">
-              <button className="inline-flex items-center gap-1 text-cyan-300 hover:text-cyan-200" onClick={() => openCategory(category)}>
+              <button className="inline-flex items-center gap-1 text-accent-300 hover:text-accent-200" onClick={() => openCategory(category)}>
                 <Info className="h-3.5 w-3.5" />About {shortCat(category)}
               </button>
               <button className="text-slate-400 hover:text-slate-200" onClick={() => setCategory(null)}>Clear filter</button>
@@ -99,9 +99,9 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
             <div className="grid gap-2 sm:grid-cols-2">
               {sub.categories.map((c) => (
                 <button key={c.id} onClick={() => setCategory(category === c.id ? null : c.id)}
-                  className={`flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-xs transition ${category === c.id ? 'border-cyan-500/60 bg-cyan-500/10' : 'border-slate-800 hover:border-slate-700 hover:bg-ink-800/60'}`}>
+                  className={`flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-xs transition ${category === c.id ? 'border-accent-500/60 bg-accent-500/10' : 'border-slate-800 hover:border-slate-700 hover:bg-ink-800/60'}`}>
                   <span className="min-w-0">
-                    <span className="font-mono text-cyan-300">{shortCat(c.id)}</span>{' '}
+                    <span className="font-mono text-accent-300">{shortCat(c.id)}</span>{' '}
                     <span className="text-slate-200">{c.name}</span>
                     <span className="block text-[10px] text-slate-500">{COVERAGE_LABEL[c.coverage]} coverage · {c.finding_count} finding(s)</span>
                   </span>
@@ -165,7 +165,7 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
               <div className="flex gap-1 text-xs">
                 {['https', 'http'].map((src) => (
                   <button key={src} onClick={() => setHeaderSource(src)} disabled={!sub[src]?.status_code}
-                    className={`rounded-md px-2 py-1 uppercase ${headerSource === src ? 'bg-ink-700 text-cyan-300' : 'text-slate-400 hover:text-slate-200 disabled:opacity-40'}`}>
+                    className={`rounded-md px-2 py-1 uppercase ${headerSource === src ? 'bg-ink-700 text-accent-300' : 'text-slate-400 hover:text-slate-200 disabled:opacity-40'}`}>
                     {src}
                   </button>
                 ))}
@@ -175,7 +175,7 @@ export default function SubdomainDrawer({ audit, subdomain, initialCategory, onC
                 <pre className="max-h-72 overflow-auto rounded-md border border-slate-800 bg-ink-950 p-3 font-mono text-[11px] leading-relaxed">
                   <span className="text-slate-500">{`GET ${observation.final_url} → ${observation.status_code} (${observation.elapsed_ms} ms, ${observation.body_bytes} bytes)\n`}</span>
                   {Object.entries(observation.headers).map(([k, v]) => (
-                    <span key={k}><span className="text-cyan-300">{k}</span>: <span className="text-slate-300">{v}</span>{'\n'}</span>
+                    <span key={k}><span className="text-accent-300">{k}</span>: <span className="text-slate-300">{v}</span>{'\n'}</span>
                   ))}
                 </pre>
               ) : (

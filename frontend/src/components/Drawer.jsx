@@ -3,7 +3,7 @@ import { ArrowLeft, X } from 'lucide-react'
 
 export function Section({ title, children, right }) {
   return (
-    <section className="rounded-lg border border-slate-800 bg-ink-900/60 p-4">
+    <section className="rounded-lg border border-slate-800 bg-ink-900 p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
         <h3 className="panel-title">{title}</h3>
         {right}
@@ -30,9 +30,9 @@ export default function Drawer({ label, onClose, onBack, header, children }) {
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-ink-950/70 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex justify-end bg-black/30" onClick={onClose}>
       <aside
-        className="flex h-full w-full max-w-4xl flex-col border-l border-slate-800 bg-ink-950 shadow-2xl"
+        className="flex h-full w-full max-w-4xl flex-col border-l border-slate-800 bg-ink-950 shadow-float animate-[drawer-in_180ms_ease-out]"
         onClick={(e) => e.stopPropagation()}
         aria-label={label}
       >

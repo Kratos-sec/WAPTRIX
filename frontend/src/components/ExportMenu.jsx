@@ -42,14 +42,14 @@ export default function ExportMenu({ auditId, subdomain, label = 'Export', onNot
         <ChevronDown className="h-3.5 w-3.5 opacity-60" />
       </button>
       {open && (
-        <div role="menu" className={`absolute z-30 mt-2 w-56 overflow-hidden rounded-lg border border-slate-700 bg-ink-850 py-1 shadow-2xl ${align === 'right' ? 'right-0' : 'left-0'}`}>
-          <div className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-slate-500">
+        <div role="menu" className={`absolute z-30 mt-2 w-56 overflow-hidden rounded-lg border border-slate-700 bg-ink-850 py-1 shadow-float ${align === 'right' ? 'right-0' : 'left-0'}`}>
+          <div className="px-3 py-1.5 text-xs font-medium text-slate-500">
             {subdomain ? `Subdomain: ${subdomain}` : 'Full engagement'}
           </div>
           {OPTIONS.map(({ format, label: text, icon: Icon }) => (
             <button key={format} role="menuitem" onClick={() => run(format)} disabled={busy !== null}
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-200 hover:bg-ink-700 disabled:opacity-50">
-              {busy === format ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4 text-cyan-300" />}
+              {busy === format ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4 text-accent-300" />}
               {text}
             </button>
           ))}

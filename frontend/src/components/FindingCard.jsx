@@ -39,8 +39,8 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
   const corr = finding.correlation
   return (
     <div
-      className="rounded-lg border border-slate-800 bg-ink-850/70 transition hover:border-slate-700"
-      style={{ borderLeft: `3px solid ${SEVERITY_META[finding.severity]?.color ?? '#64748b'}` }}
+      className="rounded-md border border-slate-800 bg-ink-900 transition-colors hover:border-slate-700"
+      style={{ borderLeft: `3px solid ${SEVERITY_META[finding.severity]?.color ?? '#94a3b8'}` }}
     >
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-start gap-3 px-4 py-3 text-left" aria-expanded={open}>
         <SeverityBadge severity={finding.severity} />
@@ -48,7 +48,7 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
           <div className="font-medium text-slate-100">{finding.title}</div>
           <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 font-mono text-[11px] text-slate-500">
             <span className="text-slate-400">{finding.rule_id}</span>
-            {showSubdomain && <span className="text-cyan-300/80">{finding.subdomain}</span>}
+            {showSubdomain && <span className="text-accent-300/80">{finding.subdomain}</span>}
             <span>{finding.owasp.join(' · ')}</span>
             <span>{finding.cwe}</span>
             {finding.cvss_score != null && <span>CVSS {finding.cvss_score.toFixed(1)}</span>}
@@ -67,7 +67,7 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
           <dl className="grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
             <div className="flex gap-2"><dt className="text-slate-500">URL</dt><dd className="break-all font-mono text-slate-300">{finding.url}</dd></div>
             <div className="flex gap-2"><dt className="text-slate-500">Confidence</dt><dd className="capitalize text-slate-300">{finding.confidence}</dd></div>
-            {finding.cwe && <div className="flex gap-2"><dt className="text-slate-500">CWE</dt><dd><a href={cweUrl(finding.cwe)} target="_blank" rel="noreferrer noopener" className="text-cyan-300 hover:text-cyan-200">{finding.cwe} {finding.cwe_name}</a></dd></div>}
+            {finding.cwe && <div className="flex gap-2"><dt className="text-slate-500">CWE</dt><dd><a href={cweUrl(finding.cwe)} target="_blank" rel="noreferrer noopener" className="text-accent-300 hover:text-accent-200">{finding.cwe} {finding.cwe_name}</a></dd></div>}
             <div className="flex gap-2"><dt className="text-slate-500">WSTG v4.2</dt><dd className="font-mono text-slate-300">{finding.wstg ?? '—'}</dd></div>
             {finding.cvss_score != null && <div className="flex gap-2 sm:col-span-2"><dt className="text-slate-500">CVSS v3.1</dt><dd className="break-all font-mono text-slate-300">{finding.cvss_score.toFixed(1)} · {finding.cvss_vector}</dd></div>}
             {finding.sources?.length > 0 && <div className="flex gap-2 sm:col-span-2"><dt className="text-slate-500">Detected by</dt><dd className="text-slate-300">{finding.sources.join(', ')}{finding.tool_refs?.length > 0 && <span className="ml-2 font-mono text-[11px] text-slate-500">{finding.tool_refs.join(' · ')}</span>}</dd></div>}
@@ -83,12 +83,12 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
               </pre>
             </div>
           )}
-          <div className="rounded-md border border-cyan-500/20 bg-cyan-500/5 p-3">
-            <div className="panel-title mb-1 text-cyan-300/80">Remediation</div>
+          <div className="rounded-md border border-accent-500/20 bg-accent-500/5 p-3">
+            <div className="panel-title mb-1 text-accent-300/80">Remediation</div>
             <p className="leading-relaxed text-slate-200">{finding.remediation}</p>
           </div>
           {!hideIssueLink && (
-            <button onClick={() => openIssue(finding.rule_id)} className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200">
+            <button onClick={() => openIssue(finding.rule_id)} className="inline-flex items-center gap-1.5 text-xs text-accent-300 hover:text-accent-200">
               <Layers className="h-3.5 w-3.5" />Issue details, CVSS breakdown and every affected host
             </button>
           )}
@@ -96,7 +96,7 @@ export default function FindingCard({ finding, showSubdomain = false, defaultOpe
             <ul className="space-y-1 text-xs">
               {finding.references.map((ref) => (
                 <li key={ref}>
-                  <a href={ref} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 break-all text-cyan-300 hover:text-cyan-200">
+                  <a href={ref} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 break-all text-accent-300 hover:text-accent-200">
                     <ExternalLink className="h-3 w-3 shrink-0" />{ref}
                   </a>
                 </li>
